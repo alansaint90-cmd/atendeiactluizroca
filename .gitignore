@@ -1,0 +1,9 @@
+.pnpm-store/
+**/node_modules/
+**/.next/
+**/tsconfig.tsbuildinfo
+**/scripts/.logs/
+.env
+.env.*
+!.env.example
+*.log

@@ -1,0 +1,88 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, expect, test, vi } from "vitest";
+import { FormularioLogin } from "../src/app/entrar/_components/formulario";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+
+beforeEach(() => vi.restoreAllMocks());
+
+function preencherLogin() {
+  fireEvent.change(screen.getByLabelText("E-mail"), { target: { value: "pessoa@example.com" } });
+  fireEvent.change(screen.getByLabelText("Senha", { exact: true }), { target: { value: "senha-de-teste" } });
+  fireEvent.click(screen.getByRole("button", { name: "Entrar", exact: true }));
+}
+
+test("prévia local abre o painel sem autenticar ou enviar credenciais", () => {
+  const pedido = vi.spyOn(globalThis, "fetch");
+  render(<FormularioLogin previaLocal />);
+  expect(screen.getByLabelText("E-mail")).not.toBeRequired();
+  expect(screen.getByLabelText("Senha", { exact: true })).not.toBeRequired();
+  fireEvent.click(screen.getByRole("button", { name: "Entrar", exact: true }));
+  expect(pedido).not.toHaveBeenCalled();
+  expect(screen.getByText(/Ambiente de testes:/)).toBeInTheDocument();
+});
+
+test("mostra e oculta a senha sem enviar o formulário", () => {
+  const fetchMock = vi.spyOn(globalThis, "fetch");
+  render(<FormularioLogin />);
+  const campo = screen.getByLabelText("Senha", { exact: true });
+  expect(campo).toHaveAttribute("type", "password");
+  fireEvent.click(screen.getByRole("button", { name: "Mostrar senha" }));
+  expect(campo).toHaveAttribute("type", "text");
+  fireEvent.click(screen.getByRole("button", { name: "Ocultar senha" }));
+  expect(campo).toHaveAttribute("type", "password");
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test.each([
+  [401, "E-mail ou senha incorretos."],
+  [429, "Muitas tentativas. Aguarde alguns minutos e tente novamente."],
+  [503, "O serviço está temporariamente indisponível. Tente novamente em instantes."],
+])("mostra a mensagem adequada ao erro HTTP %i", async (status, mensagem) => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue({ ok: false, status } as Response);
+  render(<FormularioLogin />);
+  preencherLogin();
+  expect(await screen.findByRole("alert")).toHaveTextContent(mensagem);
+  expect(screen.queryByText(/convite/i)).not.toBeInTheDocument();
+});
+
+test("explica falha de conexão sem exibir detalhes internos", async () => {
+  vi.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("Failed to fetch"));
+  render(<FormularioLogin />);
+  preencherLogin();
+  expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.");
+});
+
+test("não mostra convite nem retorno ao painel", () => {
+  render(<FormularioLogin />);
+  expect(screen.queryByText(/primeiro acesso com convite/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/voltar ao painel/i)).not.toBeInTheDocument();
+});
+
+test("oferece link para primeiro acesso e formulário com convite", () => {
+  const { unmount } = render(<FormularioLogin />);
+  expect(screen.getByRole("link", { name: "Primeiro acesso", exact: true })).toHaveAttribute("href", "/entrar/primeiro-acesso");
+  unmount();
+  render(<FormularioLogin primeiroAcesso />);
+  expect(screen.getByLabelText("Código de primeiro acesso")).toBeInTheDocument();
+  expect(screen.getByLabelText("Nova senha")).toHaveAttribute("autocomplete", "new-password");
+});
+test("primeiro acesso impede senhas diferentes sem enviar credenciais", async () => {
+  const pedido = vi.spyOn(globalThis, "fetch");
+  render(<FormularioLogin primeiroAcesso />);
+  fireEvent.change(screen.getByLabelText("Código de primeiro acesso"), { target: { value: "a".repeat(43) } });
+  fireEvent.change(screen.getByLabelText("Nova senha"), { target: { value: "senha ficticia de teste" } });
+  fireEvent.change(screen.getByLabelText("Confirmar senha", { exact: true }), { target: { value: "outra senha ficticia" } });
+  fireEvent.click(screen.getByRole("button", { name: "Definir senha e acessar" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("As senhas não coincidem.");
+  expect(pedido).not.toHaveBeenCalled();
+});
+test("primeiro acesso envia convite ao endpoint existente e limpa campos após sucesso", async () => {
+  const pedido = vi.spyOn(globalThis, "fetch").mockResolvedValue({ ok: true } as Response);
+  render(<FormularioLogin primeiroAcesso />);
+  fireEvent.change(screen.getByLabelText("Código de primeiro acesso"), { target: { value: "a".repeat(43) } });
+  for (const label of ["Nova senha", "Confirmar senha"]) fireEvent.change(screen.getByLabelText(label, { exact: true }), { target: { value: "senha ficticia de teste" } });
+  fireEvent.click(screen.getByRole("button", { name: "Definir senha e acessar" }));
+  expect(pedido).toHaveBeenCalledWith("/api/auth/passkey", expect.objectContaining({ method: "POST", body: JSON.stringify({ acao: "concluir_registro_senha", convite: "a".repeat(43), senha: "senha ficticia de teste" }) }));
+  await vi.waitFor(() => expect(screen.getByLabelText("Nova senha")).toHaveValue(""));
+});
