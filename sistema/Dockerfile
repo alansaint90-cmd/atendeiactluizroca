@@ -21,6 +21,7 @@ COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public
 COPY --from=build --chown=node:node /app/src/lib/db/migrations ./src/lib/db/migrations
 COPY --from=build --chown=node:node /app/.next/provisionar-proprietario.cjs ./scripts/provisionar-proprietario.cjs
+COPY --from=build --chown=node:node /app/scripts/provisionar-ct.mjs ./scripts/provisionar-ct.mjs
 
 USER node
 EXPOSE 3000

@@ -21,6 +21,17 @@ test("provisionamento empacotado funciona sem checkout e recusa configuração a
     const docker = await readFile("Dockerfile", "utf8");
     assert.match(docker, /pnpm build:provisionamento/);
     assert.match(docker, /COPY --from=build.*provisionar-proprietario\.cjs/);
+    assert.match(docker, /COPY --from=build.*provisionar-ct\.mjs/);
     assert.match(docker, /CMD \["node", "server\.js"\]/);
   } finally { await unlink(destino).catch(() => {}); await rmdir(pasta); }
+});
+
+test("comando do CT recusa ambiente incompleto sem expor variáveis ou tentar criar conta", () => {
+  const resultado = spawnSync(process.execPath, ["scripts/provisionar-ct.mjs"], { encoding: "utf8", timeout: 15000,
+    env: { ...process.env, DATABASE_URL: "", AUTH_ORIGIN: "", PROVISIONAR_EMAIL: "email-privado-de-teste@example.com" } });
+  assert.equal(resultado.status, 1);
+  assert.match(resultado.stderr, /DATABASE_URL, AUTH_ORIGIN/);
+  assert.match(resultado.stderr, /Nenhuma conta foi criada/);
+  assert.doesNotMatch(resultado.stderr, /email-privado-de-teste/);
+  assert.equal(resultado.stdout, "");
 });
