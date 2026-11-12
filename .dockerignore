@@ -1,0 +1,16 @@
+# O contexto do EasyPanel é a raiz; a aplicação fica em sistema/.
+**
+!sistema/
+!sistema/**
+**/.git
+**/node_modules
+**/.next
+**/.pnpm-store
+**/.env
+**/.env.*
+**/*.log
+**/*.tsbuildinfo
+**/next-env.d.ts
+**/tests/artifacts
+**/scripts/.logs
+**/chatbot-*.png

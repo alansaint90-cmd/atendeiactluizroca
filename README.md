@@ -25,3 +25,9 @@ Para iniciar a prévia: entre em `sistema` e execute `node scripts/previa-design
 Nesta máquina, `sistema/node_modules` é um vínculo com as dependências já instaladas na aplicação de origem. O inicializador usa Webpack para suportar esse vínculo. Em outra máquina, instale as dependências do próprio checkout antes de executar.
 
 A agenda autenticada tem backend PostgreSQL próprio para aulas e reservas, com migração aditiva. A ligação da agenda de aulas ao agente do WhatsApp ainda precisa ser implementada; o prompt solicita confirmação pela equipe. Campanhas, fluxos executáveis e planos ainda dependem de operação integrada; a prévia permite avaliar seus cadastros locais.
+
+## Publicação no EasyPanel
+
+Use contexto de build na raiz do repositório, Dockerfile `Dockerfile` e porta interna `3000`. O Dockerfile da raiz copia a aplicação de `sistema/` para `/app`; o Dockerfile interno continua disponível para builds cujo contexto seja a própria pasta `sistema/`.
+
+Cadastre as credenciais somente nas variáveis de ambiente do serviço. Preencha `APP_URL` e `AUTH_ORIGIN` com a URL HTTPS pública do CT, sem barra final. `EVOLUTION_API_URL` deve conter somente a URL base, sem sintaxe Markdown. O login real exige provisionamento do administrador; a prévia local não é disponibilizada em produção.
