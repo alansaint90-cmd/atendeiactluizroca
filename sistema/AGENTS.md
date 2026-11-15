@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Dúvidas antes da despedida — 14/11/2026
+
+O prompt responde dúvidas pendentes presentes no contexto antes de encerrar, incluindo fragmentos sobre o que levar à experimental. Orientações de roupa, quimono e equipamentos continuam pendentes de confirmação oficial. Não prometer retorno da equipe sem encaminhamento real; usar tratamento neutro e conferir divergência de nome. Esta regra não agrupa eventos futuros do WhatsApp.
+
 ## Histórico das respostas da IA — 14/11/2026
 
 Cada parte confirmada pela Evolution deve ser persistida no histórico operacional com texto, destinatário, instância e ID do provedor, junto da atribuição à IA e auditoria. Usar a mesma transação e o recebimento idempotente existente; o eco posterior não duplica a mensagem. Nunca depender exclusivamente do webhook de saída para mostrar respostas na caixa de entrada. Follow-ups confirmados seguem a mesma regra. Resultado de envio incerto não é reenviado para reparar o histórico. A correção não importa automaticamente respostas antigas ausentes.
