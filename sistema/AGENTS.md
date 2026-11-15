@@ -1,8 +1,8 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
-## Oferta temporária de experimentais — 15/11/2026
+## Experimentais apresentadas em pares — 15/11/2026
 
-Sem modificar aulas ou reservas existentes, a oferta do agente fica restrita ao Taekwondo e Muay Thai: segunda/quarta 15h45 e 21h15; terça/quinta todos os horários de Muay Thai cadastrados. Jiu-Jitsu e Muay Thai segunda/quarta 18h15 não são oferecidos para novas experimentais. `src/lib/aulas/oferta-experimental.ts` centraliza a política usada pelo prompt e pela ferramenta. Revalidar opções antigas antes da conferência e da confirmação; preservar reservas já gravadas e o cadastro completo.
+Todas as aulas cadastradas podem receber experimental, respeitando idade e disponibilidade. Não restringir a oferta por modalidade ou pelo antigo recorte de dias/horários. A ferramenta retorna até duas opções por consulta, com uma à tarde quando houver turma compatível, e guarda as turmas mostradas. Pedidos de alternativas retornam outras duas sem repetir as anteriores. Não alterar aulas ou reservas existentes; a seleção é apenas apresentação gradual da grade.
 
 ## Recepção da Luísa — 15/11/2026
 

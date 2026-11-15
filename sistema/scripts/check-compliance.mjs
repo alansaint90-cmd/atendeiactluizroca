@@ -373,9 +373,9 @@ function analyzeFile(file) {
     findings.push({ level: "error", id: "ct-reserva-confirmacao", file: rel, line: 1,
       msg: "A reserva pelo agente exige confirmação explícita e a transação validada da agenda." });
   }
-  if (rel === "src/lib/aulas/agente.ts" && (content.match(/permiteExperimental\(/g)?.length ?? 0) < 3) {
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("selecionarExperimentais(") || !content.includes("mostradas"))) {
     findings.push({ level: "error", id: "oferta-experimental-ct", file: rel, line: 1,
-      msg: "A oferta temporária precisa ser validada na consulta, conferência e confirmação da experimental." });
+      msg: "A oferta deve apresentar horários em pares e preservar as opções já exibidas." });
   }
   if (rel === "src/lib/operacao/memoria.ts" && !content.includes("m.provider_message_id<>")) {
     findings.push({ level: "error", id: "historico-evento-atual", file: rel, line: 1,
