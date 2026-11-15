@@ -43,7 +43,7 @@ export function ChatbotEditor({ initial, creating, onSave, onClose, error }: Pro
         </section>
         <section className="bot-section"><h2>Ajustes gerais</h2><p>Configure suas preferências de atendimento.</p><div className="bot-settings-grid">
           <div><strong>Aulas experimentais do CT Luiz Roca</strong><p>Cadastre turmas e reservas em Agenda de aulas. O atendimento automatizado solicita preferências e depende da equipe para concluir a reserva; não confirma horários por texto livre.</p></div>
-          <label>Atraso na resposta (em segundos)<input name="delay" type="number" min="0" max="3600" step="1" required value={draft.delay} onChange={e => update("delay", e.target.valueAsNumber)} /><small>Digite 0 para responder imediatamente.</small></label>
+          <label>Atraso na resposta (em segundos)<input name="delay" type="number" min="0" max="3600" step="1" required value={draft.delay} onChange={e => update("delay", e.target.valueAsNumber)} /><small>O CT aguarda pelo menos 15 segundos após a última mensagem para reunir o contexto. Valores maiores ampliam essa espera.</small></label>
           <label className="bot-switch"><input type="checkbox" checked={draft.transferMedia} onChange={e => update("transferMedia", e.target.checked)} />Transferir a conversa ao receber imagens ou documentos</label>
         </div><label className="bot-switch"><input type="checkbox" checked={draft.transferHuman} onChange={e => update("transferHuman", e.target.checked)} />Transferir a conversa quando o contato solicitar atendimento humano</label>
           <fieldset className="bot-transfer-fields" disabled={!draft.transferMedia && !draft.transferHuman}>

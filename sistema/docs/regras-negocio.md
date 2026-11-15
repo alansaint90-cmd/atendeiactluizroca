@@ -1,5 +1,11 @@
 # Regras do protótipo
 
+## Agenda integrada e continuidade — 15/11/2026
+
+O CT confirmou aulas semanais de 60 minutos, sem limite de alunos. Migração 0017 cadastra 36 horários únicos do quadro (unifica entradas repetidas geral/kids) e mantém somente Taekwondo no sábado. Capacidade NULL significa sem limite, não zero. Reservas semanais guardam data/hora da ocorrência, validam dia e horário e preservam as reservas pontuais antigas. A ferramenta consulta datas reais, prepara conferência e só grava após confirmação explícita. Responsável é obrigatório para menor; 3 anos e menores em turmas gerais sem faixa definida dependem da equipe. Não afirmar agendamento por texto livre.
+
+Textos recebidos em sequência são agrupados por conversa e instância com janela mínima de 15 segundos após o último recebimento. Nova mensagem durante geração invalida a resposta anterior antes do envio. Respostas longas são divididas em blocos de até 450 caracteres e cada ID confirmado é registrado; entrega incerta não é repetida. Histórico recente fica 30 dias no Redis (80 turnos); sem ele, o histórico operacional PostgreSQL e reservas reais restauram o contexto. Um novo oi retoma reservas existentes, sem nova abertura. A migração em produção exige backup antes do deploy.
+
 ## Dúvidas antes da despedida — 14/11/2026
 
 O prompt responde dúvidas pendentes presentes no contexto antes de encerrar, incluindo fragmentos sobre o que levar à experimental. Orientações de roupa, quimono e equipamentos continuam pendentes de confirmação oficial. Não prometer retorno da equipe sem encaminhamento real; usar tratamento neutro e conferir divergência de nome. Esta regra não agrupa eventos futuros do WhatsApp.

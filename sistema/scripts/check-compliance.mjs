@@ -365,6 +365,14 @@ function analyzeFile(file) {
     }
   }
 
+  if (rel === "src/lib/agent/worker.ts" && (!content.includes("estadoLote(") || !content.includes("agendaAulasDoAgente(") || !content.includes("contextoDoContato("))) {
+    findings.push({ level: "error", id: "ct-agenda-contexto", file: rel, line: 1,
+      msg: "O worker do CT exige agrupamento, agenda de aulas e contexto persistente." });
+  }
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("reservarAula(banco, cadastro.reserva") || !content.includes("confirmo") || !content.includes("systemUserId"))) {
+    findings.push({ level: "error", id: "ct-reserva-confirmacao", file: rel, line: 1,
+      msg: "A reserva pelo agente exige confirmação explícita e a transação validada da agenda." });
+  }
   if (rel === "src/lib/operacao/atribuir-ia.ts" && !/await receberOperacao\(/.test(content)) {
     findings.push({ level: "error", id: "historico-resposta-ia", file: rel, line: 1,
       msg: "O envio confirmado da IA deve persistir a resposta sem depender do eco da Evolution." });

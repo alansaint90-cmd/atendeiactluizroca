@@ -3,7 +3,13 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { agentRedis, agentKeys } from "../src/lib/agent/redis";
 import { messageStore } from "../src/lib/agent/store";
-import { runAgentTick } from "../src/lib/agent/worker";
+import { runAgentTick as executarCiclo } from "../src/lib/agent/worker";
+// Simula a passagem da janela mínima sem esperar 15 segundos reais por cenário.
+async function runAgentTick(dependencias: Parameters<typeof executarCiclo>[0]) {
+  const relogio = Date.now;
+  Date.now = () => relogio() + 16000;
+  try { return await executarCiclo(dependencias); } finally { Date.now = relogio; }
+}
 import { incomingMessage, digest } from "../src/lib/agent/message";
 import { enqueueEvolutionEventWithClient, streamKey } from "../src/lib/evolution/queue";
 import type { AgentConfig } from "../src/lib/agent/config";
@@ -349,7 +355,7 @@ test("saída manual em lote somente com LID pausa o telefone associado e cancela
   }
 });
 
- test("Redis real: delay aguarda cinco segundos e preserva evento pendente", { skip: !process.env.TEST_REDIS_URL }, async t => {
+ test("Redis real: delay aguarda quinze segundos e preserva evento pendente", { skip: !process.env.TEST_REDIS_URL }, async t => {
   const url = process.env.TEST_REDIS_URL!; const alvo = new URL(url);
   assert.ok(["localhost", "127.0.0.1"].includes(alvo.hostname) && alvo.pathname === "/15");
   const client = agentRedis(url); await client.connect();
@@ -362,15 +368,36 @@ test("saída manual em lote somente com LID pausa o telefone associado e cancela
     registrarEnvio: async () => {}, generate: async () => { geracoes++; return "Olá"; }, send: async () => { envios++; return randomUUID(); } };
   try {
     await enqueueEvolutionEventWithClient(client, evento);
-    await runAgentTick(dependencias);
+    await executarCiclo(dependencias);
     assert.equal(envios, 0); assert.equal(geracoes, 0);
-    agora = inicio + 4999; await runAgentTick(dependencias);
+    agora = inicio + 14999; await executarCiclo(dependencias);
     assert.equal(envios, 0); assert.equal(geracoes, 0);
-    agora = inicio + 5000; await runAgentTick(dependencias);
+    agora = inicio + 15000; await executarCiclo(dependencias);
     assert.equal(envios, 1); assert.equal(geracoes, 1);
-    await runAgentTick(dependencias); assert.equal(envios, 1);
+    await executarCiclo(dependencias); assert.equal(envios, 1);
   } finally {
     t.mock.restoreAll();
     await client.del(streamKey, agentKeys.lock, agentKeys.heartbeat, agentKeys.archive); client.disconnect();
   }
+});
+
+test("Redis real: três fragmentos geram uma resposta após silêncio de quinze segundos", {skip: !process.env.TEST_REDIS_URL}, async t=>{
+  const url=process.env.TEST_REDIS_URL!, alvo=new URL(url);
+  assert.ok(["localhost","127.0.0.1"].includes(alvo.hostname)&&alvo.pathname==="/15");
+  const client=agentRedis(url);await client.connect();
+  const instancia=`lote-${randomUUID()}`, inicio=Math.floor(Date.now()/1000)*1000;let agora=inicio;
+  t.mock.method(Date,"now",()=>agora);
+  const textos:string[]=[];let envios=0;
+  const dependencias={settings:async()=>({AI_ENABLED:"true" as const,OPENAI_API_KEY:"sk-test-only",OPENAI_MODEL:"modelo",EVOLUTION_API_URL:"https://example.invalid",EVOLUTION_API_KEY:"teste",EVOLUTION_INSTANCE_NAME:instancia,REDIS_URL:url}),chatbot:async()=>({...chatbotExample,delay:5,context:"Atenda o cliente.",openingMessages:[]}),registrarEnvio:async()=>{},generate:async(_c:AgentConfig,_h:unknown,texto:string)=>{textos.push(texto);return "Sobre o que levar, a equipe precisa confirmar a orientação.";},send:async()=>{envios++;return randomUUID();}};
+  const evento=(texto:string):EvolutionEvent=>({event:"messages.upsert",instance:instancia,data:{key:{id:randomUUID(),fromMe:false,remoteJid:"5511666555555@s.whatsapp.net"},messageTimestamp:agora/1000,message:{conversation:texto}}});
+  const conversa=incomingMessage(evento("Oi"),instancia)!.conversation;
+  try{
+    for(const [i,texto] of ["Não, obrigada","Precisa de quê?","Pra levar?"].entries()){agora=inicio+i*5000;await enqueueEvolutionEventWithClient(client,evento(texto));}
+    await executarCiclo(dependencias);await executarCiclo(dependencias);await executarCiclo(dependencias);
+    assert.equal(envios,0);
+    agora=inicio+24999;await executarCiclo(dependencias);assert.equal(envios,0);
+    agora=inicio+25000;await executarCiclo(dependencias);assert.equal(envios,1);
+    assert.deepEqual(textos,["Não, obrigada\nPrecisa de quê?\nPra levar?"]);
+    await executarCiclo(dependencias);assert.equal(envios,1);
+  }finally{t.mock.restoreAll();await client.del(streamKey,agentKeys.lock,agentKeys.heartbeat,`atendeia:{evolution}:lote:${conversa}`,`atendeia:{evolution}:lote-ultimo:${conversa}`);client.disconnect();}
 });

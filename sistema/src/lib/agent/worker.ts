@@ -1,3 +1,6 @@
+import { agendaAulasDoAgente } from "../aulas/agente";
+import { contextoDoContato, historicoDoContato } from "../operacao/memoria";
+import { lerLote, concluirLote, estadoLote } from "./lote";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { effectiveSettings } from "../settings/repository";
@@ -73,40 +76,56 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
       const config = configurarAgente(settingsDaInstancia(settings, instancia), chatbot);
       const followupConfig = followupDaInstancia(settings, instancia);
       if (parsed.success && config.success) await followups.observe(parsed.data, instancia);
-      const message = parsed.success && config.success ? incomingMessage(parsed.data, instancia, Date.now(), config.data.atendimento?.transferMedia) : null;
+      let message = parsed.success && config.success ? incomingMessage(parsed.data, instancia, Date.now(), config.data.atendimento?.transferMedia) : null;
       let result = "ignorada";
       const humanoAtivo = async (numero: string) => Object.keys(substituicoes).length === 0 && await atendimentoHumanoAtivo(db(), instancia, numero);
       if (message && config.success) {
-        if (!await pausaManualAtiva(client, message.conversation)
-          && deveAguardarResposta(config.data.delay ?? 5, message.timestamp)) return false;
+        const lote = !message.audio && !message.midia ? await lerLote(client, message) : null;
+        if (estadoLote(message.identity, lote?.atual ?? null, config.data.delay ?? 15) === "substituida") {
+          await finishEvent(client, token, id, JSON.stringify({ event: parsed.success ? parsed.data.event : "invalido" }), "agrupada");
+          return true;
+        }
+        const identidade = message.identity;
+        if (estadoLote(message.identity, lote?.atual ?? null, config.data.delay ?? 15) === "aguardar") return false;
+        if (lote?.fragmentos.length) message = { ...message, text: lote.texto };
+        const mensagem = message;
+        if (!await pausaManualAtiva(client, mensagem.conversation)
+          && deveAguardarResposta(Math.max(15, config.data.delay ?? 15), message.timestamp)) return false;
         const store = messageStore(client, token, message);
         const atendimentoAtivo = async () => {
           const atual = configurarAgente(settingsDaInstancia(await dependencies.settings(), instancia), await dependencies.chatbot(instancia));
           return atual.success && JSON.stringify(atual.data) === JSON.stringify(config.data)
-            && !await pausaManualAtiva(client, message.conversation) && !await humanoAtivo(message.number) && await client.get(agentKeys.lock) === token;
+            && (!lote?.atual || (await lerLote(client, mensagem)).atual?.identity === identidade)
+            && !await pausaManualAtiva(client, mensagem.conversation) && !await humanoAtivo(mensagem.number) && await client.get(agentKeys.lock) === token;
         };
-        result = await pausaManualAtiva(client, message.conversation) || await humanoAtivo(message.number) ? "pausa_manual" : await processMessage(message, config.data, {
-          ...store, generate: dependencies.generate, send: dependencies.send, transcribe: transcribeAudio,
+        result = await pausaManualAtiva(client, mensagem.conversation) || await humanoAtivo(mensagem.number) ? "pausa_manual" : await processMessage(message, config.data, {
+          ...store,
+          history: async () => { const historico = await store.history(); return historico.length || Object.keys(substituicoes).length ? historico : historicoDoContato(db(), instancia, mensagem.number); },
+          aulaExperimental: Object.keys(substituicoes).length ? undefined : agendaAulasDoAgente(db(), client, token, mensagem.conversation, mensagem.number, atendimentoAtivo),
+          contextoPersistido: Object.keys(substituicoes).length ? undefined : () => contextoDoContato(db(), instancia, mensagem.number),
+          generate: dependencies.generate, send: dependencies.send, transcribe: transcribeAudio,
           cadastroConsulta: cadastroDaConversa(client, token, message, instancia, atendimentoAtivo, config.data),
           registrarParte: async (id, texto) => {
             await followups.outgoing(instancia, id);
-            await dependencies.registrarEnvio(instancia, id, { numero: message.number, texto });
+            await dependencies.registrarEnvio(instancia, id, { numero: mensagem.number, texto });
           },
           transferir: async destino => {
-            await dependencies.transferir(instancia, message.number, destino);
-            await pausarTransferencia(client, token, message.conversation);
+            await dependencies.transferir(instancia, mensagem.number, destino);
+            await pausarTransferencia(client, token, mensagem.conversation);
           },
           enabled: atendimentoAtivo,
         });
-        if (result === "pausada" && (await pausaManualAtiva(client, message.conversation) || await humanoAtivo(message.number))) result = "pausa_manual";
+        if (result === "pausada" && (await pausaManualAtiva(client, mensagem.conversation) || await humanoAtivo(mensagem.number))) result = "pausa_manual";
+        if (result === "pausada" && lote?.atual && (await lerLote(client, mensagem)).atual?.identity !== identidade) result = "agrupada";
         const state = await store.read();
+        if ((["enviada", "incerta", "falhou", "pausa_manual", "aguardando_gatilho"].includes(result) || result === "agrupada" && !!state?.providerIds?.length) && lote) await concluirLote(client, token, mensagem.conversation, lote.fragmentos.length);
         if (state?.status === "enviada" && state.providerId) {
           // Estados antigos não registravam cada parte antes da confirmação.
           if (!state.providerIds?.includes(state.providerId)) {
-            await dependencies.registrarEnvio(config.data.EVOLUTION_INSTANCE_NAME, state.providerId, state.reply ? { numero: message.number, texto: state.partes?.at(-1) ?? state.reply } : undefined);
+            await dependencies.registrarEnvio(config.data.EVOLUTION_INSTANCE_NAME, state.providerId, state.reply ? { numero: mensagem.number, texto: state.partes?.at(-1) ?? state.reply } : undefined);
             await followups.outgoing(config.data.EVOLUTION_INSTANCE_NAME, state.providerId);
           }
-          if (!state.transferencia && !state.consulta && !await humanoAtivo(message.number) && followupConfig.instance === config.data.EVOLUTION_INSTANCE_NAME && state.configHash === digest(JSON.stringify(config.data))) {
+          if (!state.transferencia && !state.consulta && !await humanoAtivo(mensagem.number) && followupConfig.instance === config.data.EVOLUTION_INSTANCE_NAME && state.configHash === digest(JSON.stringify(config.data))) {
             await followups.schedule(message, followupConfig);
           }
         }

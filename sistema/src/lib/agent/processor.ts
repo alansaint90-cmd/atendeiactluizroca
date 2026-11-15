@@ -1,3 +1,5 @@
+import type { AcaoAulas } from "../aulas/agente-schema";
+import { dividirResposta } from "./blocos";
 import type { AgentConfig } from "./config";
 import type { IncomingMessage } from "./message";
 import { digest } from "./message";
@@ -19,6 +21,8 @@ export interface ProcessingPort {
   autorizarAtivacao?(gatilho: string): Promise<boolean>;
   transcribe?(config: AgentConfig, message: IncomingMessage): Promise<string>;
   transferir?(destino: string): Promise<void>;
+  aulaExperimental?(texto: string, acao?: AcaoAulas): Promise<string | null>;
+  contextoPersistido?(): Promise<string>;
   cadastroConsulta?(texto: string, iniciar: boolean): Promise<string | null>;
   generate(config: AgentConfig, history: Turn[], text: string): Promise<RespostaGerada>;
   send(config: AgentConfig, number: string, text: string): Promise<string>;
@@ -73,19 +77,25 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       const confirmadoNoHistorico = historico.some(turno => turno.role === "user" && mesmoNome(extrairNomeInformado(turno.content, []), salvo));
       const nome = informado ?? (mesmoNome(salvo, persona) && !confirmadoNoHistorico ? null : salvo);
       if (informado && port.rememberName) await port.rememberName(informado);
-      const instrucoes = `${instrucoesComNome(config.AI_SYSTEM_PROMPT, nome, historico.length === 0)}\nResponda primeiro à pergunta atual do cliente, de forma direta e objetiva. Não condicione informações sobre valor, pagamento, endereço da clínica, atendimento ou disponibilidade ao preenchimento do cadastro. Depois de esclarecer a dúvida, retome o fluxo na etapa em que parou, perguntando apenas o próximo dado pendente, sem reiniciar a conversa nem pedir novamente dados já informados. Se o cliente não quiser continuar, respeite a decisão. Não repita perguntas de cadastro no lugar da resposta solicitada. Não use o nome da assistente como rótulo ou prefixo das mensagens. Preserve a apresentação natural no início da conversa.`;
+      const memoria = await port.contextoPersistido?.() ?? "";
+      const instrucoes = `${memoria}\n${instrucoesComNome(config.AI_SYSTEM_PROMPT, nome, historico.length === 0)}\nResponda primeiro à pergunta atual do cliente, de forma direta e objetiva. Não condicione informações sobre valor, pagamento, endereço da clínica, atendimento ou disponibilidade ao preenchimento do cadastro. Depois de esclarecer a dúvida, retome o fluxo na etapa em que parou, perguntando apenas o próximo dado pendente, sem reiniciar a conversa nem pedir novamente dados já informados. Se o cliente não quiser continuar, respeite a decisão. Não repita perguntas de cadastro no lugar da resposta solicitada. Não use o nome da assistente como rótulo ou prefixo das mensagens. Preserve a apresentação natural no início da conversa.`;
       // Preservar o histórico armazenado, mas não ensinar novamente uma persona ou roteiro antigo.
       const contextoAtual = persona ? historico.filter(turno => turno.role === "user" || turno.revisao === revisao) : historico;
       const saudacao = /^(?:oi+|ol[aá]+|bom dia|boa tarde|boa noite)[\s!.😊👋]*$/iu.test((transcript ?? message.text).trim());
       if (!historico.length && !message.midia && ((!nome && saudacao) || Boolean(config.AI_ACTIVATION_TRIGGER && correspondeAoGatilho(message, config.AI_ACTIVATION_TRIGGER))) && config.openingMessages?.length) partes = config.openingMessages;
-      let cadastro = !partes && config.agendaConsultas && port.cadastroConsulta ? await port.cadastroConsulta(transcript ?? message.text, false) : null;
+      const respostaAula = config.agendaAulas ? await port.aulaExperimental?.(transcript ?? message.text) : null;
+      let cadastro = respostaAula ?? (!partes && config.agendaConsultas && port.cadastroConsulta ? await port.cadastroConsulta(transcript ?? message.text, false) : null);
       if (!partes && !cadastro && config.agendaConsultas && port.cadastroConsulta && deveConsultarAgenda(transcript ?? message.text, historico)) {
         cadastro = await port.cadastroConsulta(transcript ?? message.text, true);
       }
       const gerada = cadastro ?? (partes ? partes.join("\n\n") : message.midia && config.atendimento?.transferMedia ? { transferir: true as const }
         : await port.generate({ ...config, AI_SYSTEM_PROMPT: instrucoes }, contextoAtual, transcript ?? message.text));
       if (cadastro) { consulta = true; partes = undefined; reply = cadastro; }
-      else if (typeof gerada !== "string" && "agendar" in gerada) {
+      else if (typeof gerada !== "string" && "aula" in gerada) {
+        const resposta = await port.aulaExperimental?.(transcript ?? message.text, gerada.aula);
+        if (!resposta) throw new ProviderError("agenda_aulas_indisponivel");
+        reply = resposta; partes = dividirResposta(reply);
+      } else if (typeof gerada !== "string" && "agendar" in gerada) {
         if (!config.agendaConsultas || !port.cadastroConsulta) throw new ProviderError("agenda_indisponivel");
         const inicio = await port.cadastroConsulta(transcript ?? message.text, true);
         if (!inicio) throw new ProviderError("agenda_indisponivel");
@@ -97,6 +107,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
           || "Vou encaminhar seu atendimento para nossa equipe.";
       } else reply = partes ? gerada : removerRotuloDaPersona(respostaComNome(gerada, nome), persona);
       if (consulta) partes = mensagensDaConsulta(reply);
+      if (respostaAula) partes = dividirResposta(reply);
     }
     catch (error) {
       const code = error instanceof ProviderError ? error.code : "geracao_falhou";
@@ -116,7 +127,8 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
     state = { ...state, reply: semRotulo };
     await port.write(state);
   }
-  const partes = state.partes ?? [state.reply!];
+  const partes = state.partes ?? dividirResposta(state.reply!);
+  if (!state.partes) { state = { ...state, partes }; await port.write(state); }
   for (let indice = state.providerIds?.length ?? 0; indice < partes.length; indice++) {
     if (!await port.enabled()) return "pausada";
     await port.write({ ...state, status: "enviando" });

@@ -1,5 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import Redis from "ioredis";
+import { incomingMessage } from "../agent/message";
+import { chavesLote } from "../agent/lote";
 import type { EvolutionEvent } from "./schema";
 import { duracaoPausaManual, pausaManualKey, estadoManualKey, pausasManuaisParaEvento } from "../agent/pausa";
 
@@ -10,6 +12,11 @@ if redis.call('EXISTS', KEYS[2]) == 1 then return 0 end
 if redis.call('XLEN', KEYS[1]) >= 1000 then return -1 end
 redis.call('XADD', KEYS[1], '*', 'payload', ARGV[1])
 redis.call('SET', KEYS[2], '1', 'EX', 86400)
+if ARGV[4] and ARGV[4] ~= '' then
+  redis.call('RPUSH', KEYS[#KEYS-1], ARGV[4])
+  redis.call('EXPIRE', KEYS[#KEYS-1], 86400)
+  redis.call('SET', KEYS[#KEYS], ARGV[4], 'EX', 86400)
+end
 local pausas = cjson.decode(ARGV[2])
 for indice, pausa in ipairs(pausas) do
   local chave = 3 + (indice - 1) * 5
@@ -62,8 +69,11 @@ export async function enqueueEvolutionEventWithClient(client: Redis, event: Evol
   const pausas = await pausasManuaisParaEvento(client, event);
   const chaves = pausas.flatMap(pausa => [pausaManualKey(pausa.conversation), pausa.outgoingKey,
     `atendeia:{evolution}:followup:${pausa.conversation}`, "atendeia:{evolution}:followups", estadoManualKey(pausa.conversation)]);
-  const result = await client.eval(enqueueScript, 2 + chaves.length, streamKey, `atendeia:{evolution}:dedupe:${fingerprint}`,
-    ...chaves, payload, JSON.stringify(pausas.map(pausa => ({ ate: pausa.ate, conversation: pausa.conversation, retomar: pausa.retomar }))), Date.now());
+  const recebida = incomingMessage(event, event.instance);
+  const fragmento = recebida && !recebida.audio && !recebida.midia ? JSON.stringify({ identity: recebida.identity, text: recebida.text, at: Date.now() }) : "";
+  const lote = fragmento && recebida ? [...chavesLote(recebida.conversation)] : [];
+  const result = await client.eval(enqueueScript, 2 + chaves.length + lote.length, streamKey, `atendeia:{evolution}:dedupe:${fingerprint}`,
+    ...chaves, ...lote, payload, JSON.stringify(pausas.map(pausa => ({ ate: pausa.ate, conversation: pausa.conversation, retomar: pausa.retomar }))), Date.now(), fragmento);
   if (result === -1) throw new Error("Queue capacity reached");
   if (result !== 0 && result !== 1) throw new Error("Unexpected queue response");
   return result === 1 ? "queued" : "duplicate";

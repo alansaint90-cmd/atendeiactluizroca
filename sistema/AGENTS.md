@@ -1,5 +1,11 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Agenda integrada e continuidade — 15/11/2026
+
+O CT confirmou aulas semanais de 60 minutos, sem limite de alunos. Migração 0017 cadastra 36 horários únicos do quadro (unifica entradas repetidas geral/kids) e mantém somente Taekwondo no sábado. Capacidade NULL significa sem limite, não zero. Reservas semanais guardam data/hora da ocorrência, validam dia e horário e preservam as reservas pontuais antigas. A ferramenta consulta datas reais, prepara conferência e só grava após confirmação explícita. Responsável é obrigatório para menor; 3 anos e menores em turmas gerais sem faixa definida dependem da equipe. Não afirmar agendamento por texto livre.
+
+Textos recebidos em sequência são agrupados por conversa e instância com janela mínima de 15 segundos após o último recebimento. Nova mensagem durante geração invalida a resposta anterior antes do envio. Respostas longas são divididas em blocos de até 450 caracteres e cada ID confirmado é registrado; entrega incerta não é repetida. Histórico recente fica 30 dias no Redis (80 turnos); sem ele, o histórico operacional PostgreSQL e reservas reais restauram o contexto. Um novo oi retoma reservas existentes, sem nova abertura. A migração em produção exige backup antes do deploy.
+
 ## Dúvidas antes da despedida — 14/11/2026
 
 O prompt responde dúvidas pendentes presentes no contexto antes de encerrar, incluindo fragmentos sobre o que levar à experimental. Orientações de roupa, quimono e equipamentos continuam pendentes de confirmação oficial. Não prometer retorno da equipe sem encaminhamento real; usar tratamento neutro e conferir divergência de nome. Esta regra não agrupa eventos futuros do WhatsApp.
@@ -26,7 +32,7 @@ Envio manual exige sessão de operador ou superior, papel relido no banco e conv
 
 Este checkout atende o Centro de Treinamento Luiz Roca. A agenda médica herdada é referência legada e não deve ser montada no painel nem habilitada no agente. As regras específicas de clínica e TMF abaixo documentam o histórico da base; não são regras de atendimento do CT. Preserve as regras técnicas, autenticação, RBAC e auditoria.
 
-O modelo inicial usa exclusivamente `PROMPT_CT_LUIZ_ROCA` de `src/lib/ct/prompt.ts`; o auditor permite esse prompt oficial ou contexto vazio. Não reutilizar a identidade da clínica. A agenda de aulas usa `src/lib/aulas/` e as tabelas aditivas `atendeia_aulas` e `atendeia_aulas_reservas`: turmas por data, capacidade, faixa etária, responsável por menor, conferência e cancelamento com trava. Toda reserva precisa de sucesso no banco. A ferramenta de reserva de aulas ainda não está conectada ao agente do WhatsApp; não prometer confirmação automática.
+O modelo inicial usa exclusivamente `PROMPT_CT_LUIZ_ROCA` de `src/lib/ct/prompt.ts`; o auditor permite esse prompt oficial ou contexto vazio. Não reutilizar a identidade da clínica. A agenda de aulas usa `src/lib/aulas/` e as tabelas aditivas `atendeia_aulas` e `atendeia_aulas_reservas`: turmas por data, capacidade, faixa etária, responsável por menor, conferência e cancelamento com trava. Toda reserva precisa de sucesso no banco. A agenda de aulas agora está conectada ao agente conforme a atualização de 15/11/2026; só confirmar após gravação real.
 
 A rota `/previa-design` é um ambiente de testes explicitamente habilitado apenas em desenvolvimento. Todos os menus ficam disponíveis, com cadastros locais na chave `atendeai.ct-luiz-roca.teste.v1`. Nunca importar esses registros para produção automaticamente. Campanhas, follow-ups e mensagens locais não executam disparos; equipe local não cria credenciais, e planos locais não geram cobrança. Integrações reais permanecem no painel autenticado.
 

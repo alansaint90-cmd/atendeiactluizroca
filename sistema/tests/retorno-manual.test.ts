@@ -32,7 +32,7 @@ test("retomada usa a mesma transação da fila e chaves de pausa e controle por 
  assert.ok(chamada.includes(pausaManualKey(conversa)));
  assert.ok(chamada.includes(estadoManualKey(conversa)));
  assert.equal(chamada[1],7);
- const acao=JSON.parse(String(chamada[chamada.length-2]));
+ const acao=JSON.parse(String(chamada[chamada.length-3]));
  assert.equal(acao[0].retomar,true);
  assert.equal(acao[0].conversation,conversa);
 });

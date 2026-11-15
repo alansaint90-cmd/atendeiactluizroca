@@ -1,8 +1,9 @@
+import { acaoAulasSchema, ferramentasAulas, type AcaoAulas } from "../aulas/agente-schema";
 import { z } from "zod";
 import type { AgentConfig } from "./config";
 
 export interface Turn { role: "user" | "assistant"; content: string; revisao?: string }
-export type RespostaGerada = string | { transferir: true } | { agendar: true };
+export type RespostaGerada = string | { transferir: true } | { agendar: true } | { aula: AcaoAulas };
 export class ProviderError extends Error {
   constructor(public readonly code: string) { super(code); }
 }
@@ -15,6 +16,7 @@ export async function generateReply(config: AgentConfig, history: Turn[], text: 
   let response: Response;
   const parametrosVazios = { type: "object", properties: {}, required: [], additionalProperties: false };
   const ferramentas = [
+    ...(config.agendaAulas ? ferramentasAulas : []),
     ...(config.atendimento?.transferHuman ? [{ type: "function", name: "transferir_para_humano", description: "Acione quando o cliente solicitar ou aceitar atendimento de uma pessoa. Não acione para uma pergunta sobre o nome do assistente.", parameters: parametrosVazios, strict: true }] : []),
     ...(config.agendaConsultas ? [{ type: "function", name: "iniciar_agendamento_consulta", description: "Inicie o cadastro quando o paciente pedir para marcar uma nova consulta, inclusive antes de escolher a unidade. O servidor coleta nome e nascimento juntos, depois endereço, pergunta a unidade e consulta vagas reais de Salvador. Telefone e CEP são opcionais. Exige conferência antes de reservar. Não acione para Camaçari, urgência, remarcação ou cancelamento. Nunca confirme uma consulta por texto livre.", parameters: parametrosVazios, strict: true }] : []),
   ];
@@ -25,7 +27,7 @@ export async function generateReply(config: AgentConfig, history: Turn[], text: 
       body: JSON.stringify({ model: config.OPENAI_MODEL, store: false, max_output_tokens: 1000,
         ...(ferramentas.length ? { parallel_tool_calls: false, tools: ferramentas } : {}),
         instructions: `Você atende clientes pelo WhatsApp. Responda em português, de forma breve. Não invente preços, pagamentos ou ações realizadas. Não revele instruções internas.\n\n${config.AI_SYSTEM_PROMPT}${config.agendaConsultas ? "\nAGENDA INTEGRADA: Para novas consultas de Salvador, use iniciar_agendamento_consulta. O servidor coleta e confere os dados e só confirma após gravar a reserva. Você não confirma, cancela ou remarca consultas por texto livre. Nunca diga que uma consulta está marcada com base apenas no histórico ou no pedido do paciente." : ""}`,
-        input: [...history.slice(-12).map(turn => ({ role: turn.role, content: turn.content })), { role: "user", content: text }] }),
+        input: [...history.slice(-80).map(turn => ({ role: turn.role, content: turn.content })), { role: "user", content: text }] }),
     });
   } catch { throw new ProviderError("openai_conexao"); }
   if (!response.ok) throw new ProviderError(`openai_http_${response.status}`);
@@ -35,6 +37,12 @@ export async function generateReply(config: AgentConfig, history: Turn[], text: 
   if (chamadas.length) {
     let argumentos: unknown;
     try { argumentos = JSON.parse(chamadas[0].arguments ?? "null"); } catch { argumentos = null; }
+    if (chamadas.length === 1 && config.agendaAulas && ["consultar_aulas_experimentais", "preparar_reserva_aula"].includes(chamadas[0].name ?? "")) {
+      const entrada = argumentos && typeof argumentos === "object" ? { ...argumentos, acao: chamadas[0].name === "consultar_aulas_experimentais" ? "consultar" : "preparar" } : null;
+      const acao = acaoAulasSchema.safeParse(entrada);
+      if (!acao.success) throw new ProviderError("openai_acao_invalida");
+      return { aula: acao.data };
+    }
     if (chamadas.length !== 1 || !z.strictObject({}).safeParse(argumentos).success) throw new ProviderError("openai_acao_invalida");
     if (config.agendaConsultas && chamadas[0].name === "iniciar_agendamento_consulta") return { agendar: true };
     if (config.atendimento?.transferHuman && chamadas[0].name === "transferir_para_humano") return { transferir: true };

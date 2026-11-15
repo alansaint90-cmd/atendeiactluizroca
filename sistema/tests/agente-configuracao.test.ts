@@ -83,15 +83,14 @@ test("imagens transferem somente quando habilitadas e dispensam geração", asyn
 test("provedor oferece ação apenas se habilitada e não envia metadados internos no histórico", async () => {
   const request: typeof fetch = async (_url, init) => {
     const corpo = JSON.parse(String(init?.body));
-    assert.equal(corpo.tools[0].name, "transferir_para_humano");
-    assert.equal(corpo.tools[0].strict, true);
+    assert.equal(corpo.tools.find((t: { name: string }) => t.name === "transferir_para_humano")?.strict, true);
     assert.equal(corpo.input[0].revisao, undefined);
     return Response.json({ status: "completed", output: [{ type: "function_call", name: "transferir_para_humano", arguments: "{}" }] });
   };
   assert.deepEqual(await generateReply(config, [{ role: "user", content: "Olá", revisao: "interna" }], "Quero um atendente", request), { transferir: true });
   const desativada = configurarAgente(base, { ...bot, transferHuman: false }).data!;
   await assert.rejects(generateReply(desativada, [], "Oi", async (_url, init) => {
-    assert.equal(JSON.parse(String(init?.body)).tools, undefined);
+    assert.equal(JSON.parse(String(init?.body)).tools.some((t: { name: string }) => t.name === "transferir_para_humano"), false);
     return Response.json({ status: "completed", output: [{ type: "function_call", name: "transferir_para_humano", arguments: "{}" }] });
   }), /openai_acao_invalida/);
 });

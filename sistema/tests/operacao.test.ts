@@ -31,7 +31,7 @@ test("operacional grava dados reais, deduplica, audita e respeita exclusão lóg
       assert.equal(resumo.totalContatos, 1); assert.equal(resumo.abertas, 1); assert.equal(resumo.pendentes, 1);
       assert.equal(resumo.contatos[0].telefone, "+5571999999999"); assert.equal(resumo.conversas[0].mensagens.length, 1);
       assert.equal(resumo.volume.reduce((total, dia) => total + dia.total, 0), 1);
-      const auditorias = await cliente.query<{ quantidade: number }>("SELECT count(*)::int quantidade FROM atendeia_audit_logs WHERE is_deleted=false");
+      const auditorias = await cliente.query<{ quantidade: number }>("SELECT count(*)::int quantidade FROM atendeia_audit_logs WHERE is_deleted=false AND action<>'grade_ct_cadastrada'");
       assert.equal(auditorias.rows[0].quantidade, 6);
     });
     await t.test("saída não renomeia contato; replay após fechamento não reabre conversa", async () => {

@@ -1,3 +1,4 @@
+import { ocorrenciasAula } from "@/lib/aulas/recorrencia";
 import { useRelogio } from "@/lib/ct/relogio";
 import type { ReactNode } from "react";
 import type { PainelOperacional } from "@/lib/operacao/painel";
@@ -15,14 +16,14 @@ interface ResumoClinicaProps {
 export function ResumoClinica({ dados, agenda, periodo, podeVerAgenda, aoVerAgenda, filtros }: ResumoClinicaProps) {
   const agora = useRelogio();
   const percentual = dados?.totalAtendidas ? Math.round(dados.atendidasIa / dados.totalAtendidas * 100) : 0;
-  const futuras = agenda?.aulas.filter(a => Date.parse(a.inicio) > agora) ?? [];
-  const confirmadas = agenda?.reservas.filter(r => r.status === "confirmada" && futuras.some(a => a.id === r.aulaId)).length ?? 0;
+  const futuras = agenda?.aulas.flatMap(a => ocorrenciasAula(a, agora).slice(0,1).map(inicio => ({...a,inicio}))) ?? [];
+  const confirmadas = agenda?.reservas.filter(r => r.status === "confirmada" && (!r.inicio || Date.parse(r.inicio) > agora) && futuras.some(a => a.id === r.aulaId)).length ?? 0;
   const cards = [
     { nome: "Conversas no período", valor: dados?.novas, nota: periodo, cor: "blue", icone: "message" },
     { nome: "Atendimentos pela IA", valor: dados?.atendidasIa, nota: dados ? `${percentual}% das conversas atendidas` : "Aguardando indicadores", cor: "green", icone: "spark" },
     ...(podeVerAgenda ? [
       { nome: "Experimentais confirmadas", valor: agenda ? confirmadas : undefined, nota: "Reservas nas aulas futuras", cor: "blue", icone: "calendar" },
-      { nome: "Vagas disponíveis", valor: agenda ? futuras.reduce((n, a) => n + a.capacidade, 0) - confirmadas : undefined, nota: "Nas turmas futuras do CT", cor: "orange", icone: "clock" },
+      { nome: "Vagas disponíveis", valor: futuras.some(a => a.capacidade === null) ? "Sem limite" : agenda ? futuras.reduce((n, a) => n + (a.capacidade ?? 0), 0) - confirmadas : undefined, nota: "Nas turmas futuras do CT", cor: "orange", icone: "clock" },
     ] : []),
   ];
   return <>

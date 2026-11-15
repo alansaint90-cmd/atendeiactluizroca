@@ -18,7 +18,7 @@ test("CT exige responsável de menor e mantém o prompt sem agenda médica", () 
   assert.equal(alunoSchema.safeParse({ ...aluno, idade: 12 }).success, false);
   assert.equal(alunoSchema.safeParse({ ...aluno, idade: 12, responsavel: "Responsável de Teste" }).success, true);
   const instrucoes = montarInstrucoesDoAgente({ ...chatbotExample, agendaConsultas: true });
-  assert.match(instrucoes, /CT Luiz Roca/);
+  assert.match(instrucoes, /CT Luís Roca/);
   assert.doesNotMatch(instrucoes, /Juliana|Bonvida|SEMERGE|iniciar_agendamento_consulta/);
 });
 
@@ -48,7 +48,7 @@ test("agenda PostgreSQL valida idade, capacidade, repetição, auditoria e cance
     await assert.rejects(reservarAula(banco, { ...pedido, aluno: { ...aluno, nome: "Outra Pessoa" } }, systemUserId), /já utilizada/);
     await assert.rejects(reservarAula(banco, { ...pedido, solicitacaoId: randomUUID(), aluno: { ...aluno, nome: "Outro Aluno" } }, systemUserId), /lotada/);
     let agenda = await consultarAulas(banco);
-    assert.equal(agenda.aulas.length, 1); assert.equal(agenda.reservas.length, 1);
+    assert.equal(agenda.aulas.filter(a => a.modalidade === aula.modalidade).length, 1); assert.equal(agenda.reservas.length, 1);
     const r = agenda.reservas[0];
     await assert.rejects(cancelarReservaAula(banco, { id: r.id, atualizadoEm: new Date(0).toISOString() }, systemUserId), /alterada/);
     await cancelarReservaAula(banco, { id: r.id, atualizadoEm: r.atualizadoEm }, systemUserId);
@@ -58,7 +58,7 @@ test("agenda PostgreSQL valida idade, capacidade, repetição, auditoria e cance
     agenda = await consultarAulas(banco);
     assert.equal(agenda.reservas.filter(r => r.status === "confirmada").length, 1);
     assert.equal(agenda.reservas.filter(r => r.status === "cancelada").length, 1);
-    const logs = await cliente.query<{ action: string; changed_fields: unknown }>("SELECT action,changed_fields FROM atendeia_audit_logs WHERE entity_type='aula' ORDER BY created_at");
+    const logs = await cliente.query<{ action: string; changed_fields: unknown }>("SELECT action,changed_fields FROM atendeia_audit_logs WHERE entity_type='aula' AND action<>'grade_ct_cadastrada' ORDER BY created_at");
     assert.equal(logs.rows.length, 4);
     assert.ok(logs.rows.every(l => JSON.stringify(l.changed_fields) === "[]"));
   } finally { await cliente.close(); }

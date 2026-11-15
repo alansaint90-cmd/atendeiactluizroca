@@ -18,7 +18,7 @@ export function messageStore(client: Redis, token: string, message: IncomingMess
       return client.get(nameKey);
     },
     async rememberName(name: string) {
-      await assertResult(await client.eval(owned + "redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3]); return 1",
+      await assertResult(await client.eval(owned + "redis.call('PEXPIRE', KEYS[1], 120000); redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3]); return 1",
         2, agentKeys.lock, nameKey, token, name, nameRetention));
     },
     async read(): Promise<DeliveryState | null> {
@@ -26,18 +26,18 @@ export function messageStore(client: Redis, token: string, message: IncomingMess
       return value ? JSON.parse(value) as DeliveryState : null;
     },
     async write(state: DeliveryState) {
-      await assertResult(await client.eval(owned + "redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3]); return 1",
+      await assertResult(await client.eval(owned + "redis.call('PEXPIRE', KEYS[1], 120000); redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3]); return 1",
         2, agentKeys.lock, stateKey, token, JSON.stringify(state), retention));
     },
     async history(): Promise<Turn[]> {
-      return (await client.lrange(historyKey, -12, -1)).map(value => JSON.parse(value) as Turn);
+      return (await client.lrange(historyKey, -80, -1)).map(value => JSON.parse(value) as Turn);
     },
     async complete(state: DeliveryState, turns: Turn[]) {
       await assertResult(await client.eval(owned + `
         redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
         redis.call('RPUSH', KEYS[3], ARGV[4], ARGV[5])
-        redis.call('LTRIM', KEYS[3], -12, -1)
-        redis.call('EXPIRE', KEYS[3], 86400)
+        redis.call('LTRIM', KEYS[3], -80, -1)
+        redis.call('EXPIRE', KEYS[3], 2592000)
         return 1`, 3, agentKeys.lock, stateKey, historyKey, token, JSON.stringify(state), retention,
       JSON.stringify(turns[0]), JSON.stringify(turns[1])));
     },

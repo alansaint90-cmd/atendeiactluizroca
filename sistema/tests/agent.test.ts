@@ -392,3 +392,19 @@ test("Evolution recebe texto e telefone corretos; exige confirmação de envio",
     if (parsed.success) assert.equal(parsed.data.delay, delay);
   }
 });
+
+test("ferramentas da agenda usam parâmetros validados, sem confirmar por texto livre", async () => {
+  const { aula } = await generateReply({ ...config, agendaAulas: true }, [], "Quero jiu-jitsu", async () => new Response(JSON.stringify({status:"completed",output:[{type:"function_call",name:"consultar_aulas_experimentais",arguments:JSON.stringify({modalidade:"Jiu-Jitsu",idade:25})}]}))) as { aula: { acao: string } };
+  assert.equal(aula.acao,"consultar");
+  await assert.rejects(generateReply({ ...config, agendaAulas:true }, [], "Agende", async () => new Response(JSON.stringify({status:"completed",output:[{type:"function_call",name:"preparar_reserva_aula",arguments:JSON.stringify({opcao:1,nome:"Aluno Teste"})}]}))), /openai_acao_invalida/);
+});
+
+test("blocos confirmados são registrados e falha em uma parte não repete as anteriores", async () => {
+  const f=fixture(); let envios=0; const registrados:string[]=[];
+  f.port.generate=async()=>Array.from({length:30},()=>"Uma orientação curta sobre a aula experimental.").join(" ");
+  f.port.send=async(_c,_n,texto)=>{assert.ok(texto.length<=450);envios++;if(envios===2)throw new ProviderError("envio_incerto");return "bloco-1";};
+  f.port.registrarParte=async(id,texto)=>{assert.ok(texto.length<=450);registrados.push(id);};
+  assert.equal(await processMessage(message,config,f.port),"incerta");
+  assert.equal(await processMessage(message,config,f.port),"incerta");
+  assert.equal(envios,2);assert.deepEqual(registrados,["bloco-1"]);
+});

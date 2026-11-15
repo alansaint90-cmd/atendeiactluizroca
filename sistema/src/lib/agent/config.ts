@@ -17,6 +17,7 @@ export const agentConfigSchema = agentBaseConfigSchema.extend({
   delay: chatbotSchema.shape.delay.optional(),
   openingMessages: chatbotSchema.shape.openingMessages,
   agendaConsultas: chatbotSchema.shape.agendaConsultas,
+  agendaAulas: z.boolean().optional(),
   atendimento: z.object({ transferHuman: z.boolean(), transferMedia: z.boolean(),
     destination: z.string(), transferNotice: z.string() }).optional(),
 });
@@ -29,7 +30,7 @@ export function configurarAgente(settings: unknown, chatbot: Chatbot | null) {
     delay: chatbot?.delay ?? 5,
     openingMessages: chatbot?.openingMessages,
     // O CT usa aulas em grupo; a agenda médica legada não pode ser ativada.
-    agendaConsultas: false,
+    agendaConsultas: false, agendaAulas: true,
     atendimento: chatbot ? { transferHuman: chatbot.transferHuman, transferMedia: chatbot.transferMedia,
       destination: chatbot.destination, transferNotice: chatbot.transferNotice } : undefined } : {});
 }
