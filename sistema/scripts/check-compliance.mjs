@@ -365,6 +365,10 @@ function analyzeFile(file) {
     }
   }
 
+  if (rel === "src/lib/operacao/atribuir-ia.ts" && !/await receberOperacao\(/.test(content)) {
+    findings.push({ level: "error", id: "historico-resposta-ia", file: rel, line: 1,
+      msg: "O envio confirmado da IA deve persistir a resposta sem depender do eco da Evolution." });
+  }
   if (rel === "src/components/workspace.tsx" && !/ChatbotsPage\s+ativo=/.test(content)) {
     findings.push({ level: "error", id: "chatbots-atualizacao", file: rel, line: 1,
       msg: "Chatbot IA deve receber o estado de navegação para atualizar as instâncias ao abrir o menu." });

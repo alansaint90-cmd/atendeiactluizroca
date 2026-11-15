@@ -16,7 +16,7 @@ import { configuracaoPermiteFollowup, processFollowup } from "../followups/proce
 import { executarAgendamentos } from "../agendamentos/worker";
 import { chatbotDaInstancia } from "../chatbots/server-repository";
 import { db } from "../db/client";
-import { registrarEnvioIa } from "../operacao/atribuir-ia";
+import { registrarEnvioIa, type RespostaEnviadaIa } from "../operacao/atribuir-ia";
 import { pausaManualAtiva, pausarTransferencia } from "./pausa";
 import { transferirAtendimento } from "../operacao/transferir";
 import { cadastroDaConversa } from "../consultas/fluxo-servidor";
@@ -33,7 +33,7 @@ function report(status: string) {
 
 const dependenciasPadrao = { settings: effectiveSettings, generate: generateReply, send: sendReply,
   transferir: (instancia: string, numero: string, destino: string) => transferirAtendimento(db(), instancia, numero, destino),
-  registrarEnvio: (instancia: string, id: string) => registrarEnvioIa(db(), instancia, id),
+  registrarEnvio: (instancia: string, id: string, resposta?: RespostaEnviadaIa) => registrarEnvioIa(db(), instancia, id, resposta),
   chatbot: (instancia: string) => chatbotDaInstancia(db(), instancia) };
 export async function runAgentTick(substituicoes: Partial<typeof dependenciasPadrao> = {}) {
   const dependencies = { ...dependenciasPadrao, ...substituicoes,
@@ -88,9 +88,9 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
         result = await pausaManualAtiva(client, message.conversation) || await humanoAtivo(message.number) ? "pausa_manual" : await processMessage(message, config.data, {
           ...store, generate: dependencies.generate, send: dependencies.send, transcribe: transcribeAudio,
           cadastroConsulta: cadastroDaConversa(client, token, message, instancia, atendimentoAtivo, config.data),
-          registrarParte: async id => {
+          registrarParte: async (id, texto) => {
             await followups.outgoing(instancia, id);
-            await dependencies.registrarEnvio(instancia, id);
+            await dependencies.registrarEnvio(instancia, id, { numero: message.number, texto });
           },
           transferir: async destino => {
             await dependencies.transferir(instancia, message.number, destino);
@@ -103,7 +103,7 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
         if (state?.status === "enviada" && state.providerId) {
           // Estados antigos não registravam cada parte antes da confirmação.
           if (!state.providerIds?.includes(state.providerId)) {
-            await dependencies.registrarEnvio(config.data.EVOLUTION_INSTANCE_NAME, state.providerId);
+            await dependencies.registrarEnvio(config.data.EVOLUTION_INSTANCE_NAME, state.providerId, state.reply ? { numero: message.number, texto: state.partes?.at(-1) ?? state.reply } : undefined);
             await followups.outgoing(config.data.EVOLUTION_INSTANCE_NAME, state.providerId);
           }
           if (!state.transferencia && !state.consulta && !await humanoAtivo(message.number) && followupConfig.instance === config.data.EVOLUTION_INSTANCE_NAME && state.configHash === digest(JSON.stringify(config.data))) {
@@ -146,6 +146,7 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
         },
         send: (number, text) => dependencies.send(config.data, number, text),
         delivered: async (id, text) => {
+          await dependencies.registrarEnvio(instancia, id, { numero: job.number, texto: text });
           await followups.outgoing(config.data.EVOLUTION_INSTANCE_NAME, id);
           await followups.history(job, text, digest(config.data.AI_SYSTEM_PROMPT));
         },

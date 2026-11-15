@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Histórico das respostas da IA — 14/11/2026
+
+Cada parte confirmada pela Evolution deve ser persistida no histórico operacional com texto, destinatário, instância e ID do provedor, junto da atribuição à IA e auditoria. Usar a mesma transação e o recebimento idempotente existente; o eco posterior não duplica a mensagem. Nunca depender exclusivamente do webhook de saída para mostrar respostas na caixa de entrada. Follow-ups confirmados seguem a mesma regra. Resultado de envio incerto não é reenviado para reparar o histórico. A correção não importa automaticamente respostas antigas ausentes.
+
 ## Atualização da lista de instâncias — 14/11/2026
 
 Chatbot IA consulta as instâncias configuradas ao abrir o menu, sem carregar antecipadamente na seção escondida. Atualizar instâncias permite repetir a consulta sem recarregar o painel. Rascunhos, editor aberto e salvamento impedem atualização que sobrescreva a edição; a instância selecionada é preservada se continuar configurada. Não inferir nem cadastrar uma instância a partir do navegador.

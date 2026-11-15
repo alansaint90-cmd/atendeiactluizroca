@@ -117,3 +117,31 @@ test("painel informa o SQLSTATE da causa interna de uma falha na etapa P04", asy
     assert.doesNotMatch(avisos.join(" "), /detalhe privado/);
   } finally { console.error = registrar; }
 });
+
+test("respostas da IA aparecem na caixa de entrada sem eco e não duplicam com eco tardio", async () => {
+  const cliente = new PGlite(); const banco = drizzle(cliente);
+  try {
+    await applyMigrations(banco);
+    await receberOperacao(banco, evento("ctluizroca", "pergunta", false, "5571999999999"));
+    await registrarEnvioIa(banco, "ctluizroca", "resposta-confirmada", { numero: "5571999999999", texto: "Temos Taekwondo, Muay Thai e Jiu-Jitsu." });
+    const { consultarOperacao } = await import("../src/lib/operacao/consultas");
+    let caixa = await consultarOperacao(banco);
+    assert.equal(caixa.conversas.length, 1);
+    assert.deepEqual(caixa.conversas[0].mensagens.map(m => m.direcao), ["inbound", "outbound"]);
+    assert.equal(caixa.conversas[0].mensagens[1].conteudo, "Temos Taekwondo, Muay Thai e Jiu-Jitsu.");
+    await registrarEnvioIa(banco, "ctluizroca", "resposta-confirmada", { numero: "5571999999999", texto: "Temos Taekwondo, Muay Thai e Jiu-Jitsu." });
+    await receberOperacao(banco, evento("ctluizroca", "resposta-confirmada", true, "5571999999999"));
+    caixa = await consultarOperacao(banco);
+    assert.equal(caixa.conversas[0].mensagens.length, 2);
+    const autoria = await cliente.query<{ sender_type: string }>("SELECT sender_type FROM atendeia_messages WHERE provider_message_id='resposta-confirmada'");
+    assert.equal(autoria.rows[0].sender_type, "bot");
+    await receberOperacao(banco, evento("ctluizroca", "eco-primeiro", true, "5571999999999"));
+    await registrarEnvioIa(banco, "ctluizroca", "eco-primeiro", { numero: "5571999999999", texto: "Resposta" });
+    const antecipado = await cliente.query<{ total: number; sender_type: string }>("SELECT count(*)::int total,min(sender_type) sender_type FROM atendeia_messages WHERE provider_message_id='eco-primeiro'");
+    assert.equal(antecipado.rows[0].total, 1); assert.equal(antecipado.rows[0].sender_type, "bot");
+    await registrarEnvioIa(banco, "outro-chip", "resposta-confirmada", { numero: "5571999999999", texto: "Resposta de outra instância" });
+    caixa = await consultarOperacao(banco);
+    assert.equal(caixa.conversas.length, 2);
+    assert.equal(caixa.conversas.find(c => c.canal === "outro-chip")?.mensagens[0].conteudo, "Resposta de outra instância");
+  } finally { await cliente.close(); }
+});

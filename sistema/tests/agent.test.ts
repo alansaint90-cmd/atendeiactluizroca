@@ -74,7 +74,7 @@ test("agenda envia menu, conferência e confirmação em partes sem repetir entr
       if (falhar && enviados.length === 2) throw new ProviderError("envio_incerto");
       return `parte-${enviados.length}`;
     };
-    f.port.registrarParte = async id => { registrados.push(id); };
+    f.port.registrarParte = async (id, texto) => { assert.equal(texto, partes[registrados.length]); registrados.push(id); };
     const configuracao = { ...config, agendaConsultas: true };
     assert.equal(await processMessage(message, configuracao, f.port), falhar ? "incerta" : "enviada");
     await processMessage(message, configuracao, f.port);

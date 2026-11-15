@@ -1,10 +1,15 @@
+import { z } from "zod";
+import { receberOperacao } from "./receber";
 import { sql } from "drizzle-orm";
 import { systemUserId } from "../db/bootstrap";
 import { linhas, type BancoSql } from "../db/porta";
 
-/** O ID confirmado pelo provedor liga o envio do worker ao eco posterior da Evolution. */
-export async function registrarEnvioIa(banco: BancoSql, instancia: string, provedorId: string) {
+export interface RespostaEnviadaIa { numero: string; texto: string }
+
+/** Persiste a resposta confirmada sem depender do eco posterior da Evolution. */
+export async function registrarEnvioIa(banco: BancoSql, instancia: string, provedorId: string, resposta?: RespostaEnviadaIa) {
   if (!instancia || !provedorId || instancia.length > 200 || provedorId.length > 200) throw new Error("Identidade de envio inválida.");
+  const mensagem = resposta ? z.strictObject({ numero: z.string().regex(/^[1-9]\d{6,14}$/), texto: z.string().min(1).max(12000) }).parse(resposta) : null;
   await banco.transaction(async tx => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${instancia} || ':' || ${provedorId}, 0))`);
     const novo = linhas<{ id: string }>(await tx.execute(sql`INSERT INTO atendeia_envios_ia(instance_name,provider_message_id,modified_by)
@@ -19,5 +24,11 @@ export async function registrarEnvioIa(banco: BancoSql, instancia: string, prove
       RETURNING m.id`));
     for (const linha of alteradas) await tx.execute(sql`INSERT INTO atendeia_audit_logs(action,entity_type,entity_id,changed_fields,modified_by)
       VALUES ('mensagem_identificada_ia','mensagem',${linha.id},'["sender_type"]'::jsonb,${systemUserId})`);
+    if (mensagem) await receberOperacao({ execute: consulta => tx.execute(consulta), transaction: trabalho => trabalho(tx) }, {
+      event: "messages.upsert", instance: instancia, data: {
+        key: { id: provedorId, fromMe: true, remoteJid: `${mensagem.numero}@s.whatsapp.net` },
+        messageTimestamp: Math.floor(Date.now() / 1000), message: { conversation: mensagem.texto },
+      },
+    });
   });
 }
