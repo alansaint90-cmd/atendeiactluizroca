@@ -20,7 +20,7 @@ export function Workspace({ papel, nome, email, foto, rotaInicial = "dashboard" 
   return <PainelShell papel={papel} nome={nome} email={email} foto={foto} rota={route} titulo={route === "plans" ? "Minha assinatura" : nav.find(item => item[0] === route)?.[1] ?? "Dashboard"} aoNavegar={setRoute}>
       <main className="content">
         {/* Keep form drafts mounted across navigation, but hide inactive sections. */}
-        {gestor && <><div hidden={route !== "chatbot"} className="page-stack"><ChatbotsPage /></div>
+        {gestor && <><div hidden={route !== "chatbot"} className="page-stack"><ChatbotsPage ativo={route === "chatbot"} /></div>
         <div hidden={route !== "followups"}><FollowupsPage ativo={route === "followups"} /></div>
         <div hidden={route !== "tags"}><TagsPage ativo={route === "tags"} /></div>
         <div hidden={route !== "agendamentos"}><AgendamentosPage ativoNaTela={route === "agendamentos"} /></div>

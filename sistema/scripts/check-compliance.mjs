@@ -365,6 +365,10 @@ function analyzeFile(file) {
     }
   }
 
+  if (rel === "src/components/workspace.tsx" && !/ChatbotsPage\s+ativo=/.test(content)) {
+    findings.push({ level: "error", id: "chatbots-atualizacao", file: rel, line: 1,
+      msg: "Chatbot IA deve receber o estado de navegação para atualizar as instâncias ao abrir o menu." });
+  }
   if (rel === "src/lib/ct/prompt.ts" && (!content.includes("31/12/2026") || !content.includes("31/03/2027") || !content.includes("grade regular não comprova vaga") || !content.includes("custo ou gratuidade ainda não foi informado"))) {
     findings.push({ level: "error", id: "prompt-ct-condicoes", file: rel, line: 1,
       msg: "O prompt do CT exige validade comercial explícita e distinção entre grade, vaga e custo da experimental." });

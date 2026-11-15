@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Atualização da lista de instâncias — 14/11/2026
+
+Chatbot IA consulta as instâncias configuradas ao abrir o menu, sem carregar antecipadamente na seção escondida. Atualizar instâncias permite repetir a consulta sem recarregar o painel. Rascunhos, editor aberto e salvamento impedem atualização que sobrescreva a edição; a instância selecionada é preservada se continuar configurada. Não inferir nem cadastrar uma instância a partir do navegador.
+
 ## Base comercial e horários — 14/11/2026
 
 O prompt oficial usa a grafia CT Luís Roca, endereço e grade fornecidos pelo CT. Taekwondo desde 3 anos; turma de 3 anos depende da equipe, pois a arte começa em 4+. Jiu-Jitsu desde 10; Muay Thai para adolescentes/adultos sem idade mínima numérica. Grade não representa disponibilidade nem reserva. Mensalidades até 31/12/2026: adulto R$ 199 e kids R$ 220, preservadas para essas matrículas até 31/03/2027 inclusive. Novos alunos desde 01/01/2027: R$ 250. Categoria dos adolescentes, custo da experimental e reajuste dos antigos após março não foram definidos. Não sobrescrever chatbots salvos automaticamente; aplicar o contexto na instância correta pelo painel.

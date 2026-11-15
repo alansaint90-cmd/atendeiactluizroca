@@ -128,3 +128,39 @@ test("configura o terceiro número e permite desativá-lo enviando campo vazio",
     expect(campo).toHaveValue(valor);
   }
 });
+
+test("instância salva depois de abrir o painel aparece ao entrar em Chatbot IA", async () => {
+  actions.carregar.mockResolvedValueOnce({ ok: true, dados: { itens: [], instancias: [] } });
+  const tela = render(<ChatbotsPage ativo={false} />);
+  expect(actions.carregar).not.toHaveBeenCalled();
+  tela.rerender(<ChatbotsPage ativo />);
+  await screen.findByText("Nenhum chatbot cadastrado. Crie o primeiro assistente.");
+  tela.rerender(<ChatbotsPage ativo={false} />);
+  actions.carregar.mockResolvedValue({ ok: true, dados: { itens: [], instancias: [{ nome: "ctluizroca", chatbotId: null }] } });
+  tela.rerender(<ChatbotsPage ativo />);
+  await waitFor(() => expect(screen.getByLabelText("Número / instância")).toHaveValue("ctluizroca"));
+  expect(screen.getByRole("button", { name: "+ Novo chatbot de IA" })).toBeEnabled();
+});
+
+test("atualização manual recupera instâncias sem recarregar o navegador", async () => {
+  actions.carregar.mockResolvedValueOnce({ ok: true, dados: { itens: [], instancias: [] } });
+  render(<ChatbotsPage />);
+  const atualizar = await screen.findByRole("button", { name: "Atualizar instâncias" });
+  actions.carregar.mockResolvedValue({ ok: true, dados: { itens: [], instancias: [{ nome: "ctluizroca", chatbotId: null }] } });
+  fireEvent.click(atualizar);
+  await waitFor(() => expect(screen.getByLabelText("Número / instância")).toHaveValue("ctluizroca"));
+});
+
+test("voltar ao chatbot preserva prompt não salvo sem consultar novamente", async () => {
+  const registro = { id: crypto.randomUUID(), configuracao: { ...chatbotExample, context: "Texto salvo" }, versao: 0 };
+  actions.carregar.mockResolvedValue({ ok: true, dados: { itens: [registro], instancias: [{ nome: "ctluizroca", chatbotId: registro.id }] } });
+  const tela = render(<ChatbotsPage ativo />);
+  const campo = await screen.findByLabelText("Prompt de atendimento");
+  fireEvent.change(campo, { target: { value: "Rascunho preservado" } });
+  const consultas = actions.carregar.mock.calls.length;
+  tela.rerender(<ChatbotsPage ativo={false} />);
+  tela.rerender(<ChatbotsPage ativo />);
+  expect(campo).toHaveValue("Rascunho preservado");
+  expect(actions.carregar).toHaveBeenCalledTimes(consultas);
+  expect(screen.getByRole("button", { name: "Atualizar instâncias" })).toBeDisabled();
+});

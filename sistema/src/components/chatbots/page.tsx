@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { carregarChatbots, salvarChatbot } from "@/lib/actions/chatbots";
 import { chatbotExample } from "@/lib/chatbots/defaults";
 import type { ChatbotPersistido } from "@/lib/chatbots/server-repository";
 import { type Chatbot } from "@/lib/chatbots/schema";
 import { ChatbotEditor } from "./editor";
 
-export function ChatbotsPage() {
+export function ChatbotsPage({ ativo = true }: { ativo?: boolean }) {
   const [itens, setItens] = useState<ChatbotPersistido[] | null>(null);
   const [selected, setSelected] = useState("");
   const [instancias, setInstancias] = useState<{ nome: string; chatbotId: string | null }[]>([]);
@@ -18,20 +18,28 @@ export function ChatbotsPage() {
   const [error, setError] = useState("");
   const [editor, setEditor] = useState<{ bot: Chatbot; registro: ChatbotPersistido | null } | null>(null);
 
+  const [revisao, setRevisao] = useState(0);
+  const [carregando, setCarregando] = useState(false);
+  const estadoAtual = useRef({ dirty, saving, editor, instancia });
+  useEffect(() => { estadoAtual.current = { dirty, saving, editor, instancia }; }, [dirty, saving, editor, instancia]);
+
   useEffect(() => {
-    let ativo = true;
+    if (!ativo || estadoAtual.current.dirty || estadoAtual.current.saving || estadoAtual.current.editor) return;
+    let vigente = true;
+    setCarregando(true);
     void carregarChatbots().then(resultado => {
-      if (!ativo) return;
+      if (!vigente || estadoAtual.current.dirty || estadoAtual.current.saving || estadoAtual.current.editor) return;
       if (!resultado.ok) { setError(resultado.erro); setItens([]); return; }
       const dados = resultado.dados.itens;
       setInstancias(resultado.dados.instancias);
-      setInstancia(resultado.dados.instancias[0]?.nome ?? "");
+      const canal = resultado.dados.instancias.find(item => item.nome === estadoAtual.current.instancia) ?? resultado.dados.instancias[0];
+      setInstancia(canal?.nome ?? "");
       setItens(dados);
-      const primeiro = dados.find(item => item.id === resultado.dados.instancias[0]?.chatbotId) ?? dados[0];
-      if (primeiro) { setSelected(primeiro.id); setContext(primeiro.configuracao.context); }
-    }).catch(() => { if (ativo) { setError("Não foi possível carregar os assistentes. Recarregue a página."); setItens([]); } });
-    return () => { ativo = false; };
-  }, []);
+      const primeiro = dados.find(item => item.id === canal?.chatbotId);
+      setSelected(primeiro?.id ?? ""); setContext(primeiro?.configuracao.context ?? ""); setError("");
+    }).catch(() => { if (vigente) { setError("Não foi possível carregar os assistentes. Recarregue a página."); setItens([]); } }).finally(() => { if (vigente) setCarregando(false); });
+    return () => { vigente = false; };
+  }, [ativo, revisao]);
 
   useEffect(() => {
     if (!dirty) return;
@@ -74,6 +82,8 @@ export function ChatbotsPage() {
         const registro = itens.find(item => item.id === instancias.find(canal => canal.nome === nome)?.chatbotId);
         setInstancia(nome); setSelected(registro?.id ?? ""); setContext(registro?.configuracao.context ?? ""); setDirty(false); setMessage(""); setError("");
       }}>{!instancias.length && <option value="">Configure uma instância em Configurações</option>}{instancias.map(canal => <option key={canal.nome} value={canal.nome}>{canal.nome}</option>)}</select></label>
+      <div><button type="button" className="secondary" disabled={carregando || saving || dirty || !!editor} onClick={() => setRevisao(valor => valor + 1)}>{carregando ? "Atualizando instâncias…" : "Atualizar instâncias"}</button></div>
+      {!instancias.length && !error && <p role="status">Nenhuma instância carregada. Se você acabou de salvar em Configurações, clique em Atualizar instâncias.</p>}
       {visiveis.length ? <div className="table chatbot-table"><table><thead><tr><th>Identificador</th><th>Persona</th><th>Personalidade</th><th>Ações</th></tr></thead><tbody>{visiveis.map(item => <tr key={item.id}><td data-label="Identificador">{item.configuracao.identifier}</td><td data-label="Persona">{item.configuracao.persona}</td><td data-label="Personalidade">{item.configuracao.personalities.join(" · ")}</td><td data-label="Ações"><button className="secondary" disabled={saving} data-edit-bot={item.id} onClick={() => {
         if (!discard()) return; setDirty(false); setContext(selecionado?.configuracao.context ?? ""); setError(""); setEditor({ bot: item.configuracao, registro: item });
       }}>Configurar</button></td></tr>)}</tbody></table></div> : <p>Nenhum chatbot cadastrado. Crie o primeiro assistente.</p>}
