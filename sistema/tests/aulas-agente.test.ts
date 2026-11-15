@@ -31,16 +31,17 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     assert.equal(agenda.aulas.length,36);
     assert.ok(agenda.aulas.every(a => a.duracao===60 && a.capacidade===null && a.diaSemana!==null));
     assert.ok(agenda.aulas.filter(a => a.diaSemana===6).every(a => a.modalidade==="Taekwondo"));
+    const gradeAntes=JSON.stringify(agenda.aulas);
     const conversar = agendaAulasDoAgente(banco,redisCadastro(),"lease","conversa-a","5571999999999",async()=>true);
-    const lista = await conversar("Quero jiu-jitsu",{acao:"consultar",modalidade:"Jiu-Jitsu",idade:25});
-    assert.match(lista!, /1\. Jiu-Jitsu/);
+    const lista = await conversar("Quero Muay Thai",{acao:"consultar",modalidade:"Muay Thai",idade:25});
+    assert.match(lista!, /1\. Muay Thai/);
     const conferencia = await conversar("Meu nome é Aluno de Teste, tenho 25 anos",{acao:"preparar",opcao:1,nome:"Aluno de Teste",idade:25,responsavel:""});
     assert.match(conferencia!, /Responda “confirmo”/);
     assert.equal((await consultarAulas(banco)).reservas.length,0);
     await conversar("Qual roupa devo levar?");
     assert.equal((await consultarAulas(banco)).reservas.length,0,"pergunta não autoriza reserva");
     const recusado=agendaAulasDoAgente(banco,redisCadastro(),"lease","conversa-recusada","5571777777777",async()=>true);
-    await recusado("Jiu",{acao:"consultar",modalidade:"jiu",idade:25});
+    await recusado("Muay",{acao:"consultar",modalidade:"muay",idade:25});
     await recusado("Outro Aluno",{acao:"preparar",opcao:1,nome:"Outro Aluno",idade:25,responsavel:""});
     assert.match((await recusado("não obrigado"))!,/Conferência cancelada/);
     assert.equal(await recusado("confirmo"),null);
@@ -58,8 +59,32 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     const aluno={nome:"Outro Aluno",idade:25,telefone:"+5571888888888",responsavel:""};
     for(const inicio of datas.slice(0,2)) await reservarAula(banco,{aulaId:aula.id,inicio,aluno,solicitacaoId:randomUUID(),conferido:true},systemUserId);
     await assert.rejects(reservarAula(banco,{aulaId:aula.id,inicio:new Date(Date.parse(datas[0])+86400000).toISOString(),aluno,solicitacaoId:randomUUID(),conferido:true},systemUserId), /não correspondem/);
+    assert.equal(JSON.stringify((await consultarAulas(banco)).aulas),gradeAntes,"a oferta não altera o cadastro das aulas");
+    const jiu=agenda.aulas.find(a=>a.modalidade==="Jiu-Jitsu")!, dataJiu=ocorrenciasAula(jiu)[0];
+    const alunoJiu={nome:"Aluno Antigo",idade:25,telefone:"+5571666666666",responsavel:""};
+    await reservarAula(banco,{aulaId:jiu.id,inicio:dataJiu,aluno:alunoJiu,solicitacaoId:randomUUID(),conferido:true},systemUserId);
+    const antigo=agendaAulasDoAgente(banco,redisCadastro(),"lease","antigo","5571666666666",async()=>true);
+    assert.match((await antigo("oi"))!,/Jiu-Jitsu/);
+    assert.match((await antigo("Tem jiu?",{acao:"consultar",modalidade:"Jiu-Jitsu",idade:25}))!,/oferecemos experimentais de Taekwondo/);
+    const pendente={opcoes:[{aulaId:jiu.id,inicio:dataJiu,modalidade:jiu.modalidade,turma:jiu.turma}],reserva:{aulaId:jiu.id,inicio:dataJiu,aluno:{...alunoJiu,nome:"Outro Interessado",telefone:"+5571555555555"},solicitacaoId:randomUUID(),conferido:true}};
+    const redisAntigo={get:async()=>JSON.stringify(pendente),eval:async()=>1} as unknown as Redis;
+    const confirmarAntigo=agendaAulasDoAgente(banco,redisAntigo,"lease","pendente","5571555555555",async()=>true);
+    assert.match((await confirmarAntigo("confirmo"))!,/saiu da oferta/);
+    assert.equal((await reservasDoContato(banco,"5571555555555")).length,0);
+    assert.equal((await reservasDoContato(banco,"5571666666666")).length,1,"preserva a reserva antiga de Jiu-Jitsu");
     const menor=agendaAulasDoAgente(banco,redisCadastro(),"lease","conversa-b","5571888888888",async()=>true);
     await menor("Taekwondo para 3 anos",{acao:"consultar",modalidade:"Taekwondo",idade:3});
     assert.match((await menor("Taekwondo para 3 anos",{acao:"consultar",modalidade:"Taekwondo",idade:3}))!, /Nenhuma reserva foi feita|nenhuma reserva foi feita/);
   } finally { await cliente.close(); }
+});
+
+test("oferta permite Taekwondo e somente os dias e horários de Muay Thai solicitados", async()=>{
+  const {permiteExperimental}=await import("../src/lib/aulas/oferta-experimental");
+  const base={inicio:"2026-11-16T18:15:00-03:00",diaSemana:1,modalidade:"Muay Thai"};
+  assert.equal(permiteExperimental(base),false);
+  for(const dia of [1,3]) for(const hora of ["15:45","21:15"]) assert.equal(permiteExperimental({...base,diaSemana:dia,inicio:`2026-11-16T${hora}:00-03:00`}),true);
+  for(const dia of [2,4]) for(const hora of ["06:00","08:00","09:00","20:15"]) assert.equal(permiteExperimental({...base,diaSemana:dia,inicio:`2026-11-16T${hora}:00-03:00`}),true);
+  assert.equal(permiteExperimental({...base,diaSemana:6}),false);
+  assert.equal(permiteExperimental({...base,modalidade:"Jiu-Jitsu"}),false);
+  assert.equal(permiteExperimental({...base,modalidade:"Taekwondo",diaSemana:6}),true);
 });

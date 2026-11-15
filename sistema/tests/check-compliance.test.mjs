@@ -175,6 +175,7 @@ try {
     ["worker CT sem agenda e contexto reprova", reprova("agent/worker.ts", "ct-agenda-contexto")],
     ["agendamento CT sem confirmação reprova", reprova("aulas/agente.ts", "ct-reserva-confirmacao")],
     ["histórico sem excluir evento atual reprova", reprova("operacao/memoria.ts", "historico-evento-atual")],
+    ["oferta experimental sem filtro nas três etapas reprova", reprova("aulas/agente.ts", "oferta-experimental-ct")],
     ["modelo inicial com roteiro comercial reprova", reprova("chatbots/defaults.ts", "prompt-legado")],
     ["importação automática do navegador reprova", reprova("chatbots/page.tsx", "prompt-legado")],
     ["orquestrador no prompt do chatbot reprova", reprova("chatbots/prompt-servidor.ts", "orquestrador-legado")],

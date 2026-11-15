@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Oferta temporária de experimentais — 15/11/2026
+
+Sem modificar aulas ou reservas existentes, a oferta do agente fica restrita ao Taekwondo e Muay Thai: segunda/quarta 15h45 e 21h15; terça/quinta todos os horários de Muay Thai cadastrados. Jiu-Jitsu e Muay Thai segunda/quarta 18h15 não são oferecidos para novas experimentais. `src/lib/aulas/oferta-experimental.ts` centraliza a política usada pelo prompt e pela ferramenta. Revalidar opções antigas antes da conferência e da confirmação; preservar reservas já gravadas e o cadastro completo.
+
 ## Recepção da Luísa — 15/11/2026
 
 Novo contato com saudação recebe somente: “Boas-vindas ao CT Luis Roca. Eu sou Luísa. Como posso te ajudar?”. Oferta de experimental e pergunta de nome vêm depois da resposta, uma pergunta por vez. Contatos com histórico ou reserva não recebem a abertura novamente. O histórico restaurado do banco exclui o evento atual para não confundir a primeira mensagem com conversa anterior. Preservar demais configurações do chatbot salvo e registrar revisão e auditoria ao aplicar a recepção na instância do CT.

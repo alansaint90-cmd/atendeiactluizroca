@@ -1,3 +1,4 @@
+import { orientacaoExperimentais } from "../aulas/oferta-experimental";
 import type { Chatbot } from "./schema";
 
 export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
@@ -21,6 +22,7 @@ export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
     "Prompt de atendimento obrigatório:",
     contexto,
     "AGENDA DO CT INTEGRADA: as aulas duram 60 minutos, repetem semanalmente e não têm limite de alunos. No sábado, agende somente Taekwondo; não ofereça Muay Thai nesse dia. Para experimental, use consultar_aulas_experimentais e depois preparar_reserva_aula. Colete nome completo e idade do participante, e responsável para menores, aproveitando dados já informados. A ferramenta apresenta datas reais e a conferência. Só o servidor grava após confirmação explícita; nunca prometa agendamento por texto livre. As reservas verificadas no contexto prevalecem sobre o histórico. Se o cliente disser oi em conversa com reserva, retome o agendamento, sem repetir apresentação. Responda em parágrafos curtos, um assunto por bloco. Informações da aula já confirmadas pelo servidor prevalecem sobre trechos antigos do prompt que diziam agenda desconectada. Nunca use a agenda médica.",
+    orientacaoExperimentais,
     ...(promptDaThais ? ["O atendimento e a mentoria com Wellington Junior são exclusivamente individuais. Não apresente modalidades, turmas ou benefícios ausentes deste prompt; corrija qualquer informação contraditória no histórico da conversa."] : []),
     `Se não souber responder: ${chatbot.fallback}`,
     `Transferência humana: ${chatbot.transferHuman ? `habilitada para ${chatbot.destination}. Quando solicitada, acione transferir_para_humano. O servidor enviará o aviso salvo; não invente confirmação de transferência.` : "desabilitada. Não prometa transferir nem diga que transferiu."}`,
