@@ -7,9 +7,19 @@ import { carregarAgendaAulas } from "@/lib/actions/aulas";
 vi.mock("@/lib/actions/aulas", () => ({ carregarAgendaAulas: vi.fn() }));
 vi.mock("@/lib/actions/operacao", () => ({ carregarOperacao: vi.fn() }));
 vi.mock("@/lib/actions/painel", () => ({ carregarPainel: vi.fn() }));
+vi.mock("@/lib/actions/atendimento", () => ({ assumirAtendimento: vi.fn(), enviarMensagemManual: vi.fn(), validarCanalAtendimento: vi.fn() }));
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 const painelVazio = { abertas: 0, pendentes: 0, atendimentoIa: 0, atendimentoHumano: 0,
   novas: 0, atendidasIa: 0, atendidasHumano: 0, totalAtendidas: 0, canais: [], contatos: [], evolucao: [], atualizadoEm: "2026-09-17T10:00:00.000Z" };
+
+test("caixa de entrada usa o novo layout sem o bloco de avisos ou data de atualização", async () => {
+  vi.mocked(carregarOperacao).mockResolvedValue({ok:true,dados:{abertas:0,pendentes:0,qualificados:0,taxaResposta:0,totalContatos:0,contatos:[],conversas:[],volume:[],atualizadoEm:new Date().toISOString()}});
+  render(<OperacaoPage rota="inbox"/>);
+  expect(await screen.findByRole("region",{name:"Caixa de entrada do WhatsApp"})).toBeInTheDocument();
+  expect(screen.queryByText(/Dados reais do WhatsApp/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/Atualizado em/)).not.toBeInTheDocument();
+  expect(screen.getByRole("button",{name:"Atualizar conversas"})).toBeInTheDocument();
+});
 
 test("gerente vê métricas reais, percentual e abre a agenda", async () => {
   vi.mocked(carregarPainel).mockResolvedValue({ ok: true, dados: { ...painelVazio, novas: 24, atendidasIa: 18, totalAtendidas: 24 } });

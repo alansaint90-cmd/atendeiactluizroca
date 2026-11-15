@@ -22,6 +22,7 @@ import { transferirAtendimento } from "../operacao/transferir";
 import { cadastroDaConversa } from "../consultas/fluxo-servidor";
 import { deveAguardarResposta } from "./espera";
 import { ativacaoValida } from "./ativacao";
+import { atendimentoHumanoAtivo } from "../atendimento/atendimento";
 
 const streamResult = z.array(z.tuple([z.string(), z.array(z.tuple([z.string(), z.array(z.string())]))]));
 let started = false;
@@ -74,6 +75,7 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
       if (parsed.success && config.success) await followups.observe(parsed.data, instancia);
       const message = parsed.success && config.success ? incomingMessage(parsed.data, instancia, Date.now(), config.data.atendimento?.transferMedia) : null;
       let result = "ignorada";
+      const humanoAtivo = async (numero: string) => Object.keys(substituicoes).length === 0 && await atendimentoHumanoAtivo(db(), instancia, numero);
       if (message && config.success) {
         if (!await pausaManualAtiva(client, message.conversation)
           && deveAguardarResposta(config.data.delay ?? 5, message.timestamp)) return false;
@@ -81,9 +83,9 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
         const atendimentoAtivo = async () => {
           const atual = configurarAgente(settingsDaInstancia(await dependencies.settings(), instancia), await dependencies.chatbot(instancia));
           return atual.success && JSON.stringify(atual.data) === JSON.stringify(config.data)
-            && !await pausaManualAtiva(client, message.conversation) && await client.get(agentKeys.lock) === token;
+            && !await pausaManualAtiva(client, message.conversation) && !await humanoAtivo(message.number) && await client.get(agentKeys.lock) === token;
         };
-        result = await pausaManualAtiva(client, message.conversation) ? "pausa_manual" : await processMessage(message, config.data, {
+        result = await pausaManualAtiva(client, message.conversation) || await humanoAtivo(message.number) ? "pausa_manual" : await processMessage(message, config.data, {
           ...store, generate: dependencies.generate, send: dependencies.send, transcribe: transcribeAudio,
           cadastroConsulta: cadastroDaConversa(client, token, message, instancia, atendimentoAtivo, config.data),
           registrarParte: async id => {
@@ -96,7 +98,7 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
           },
           enabled: atendimentoAtivo,
         });
-        if (result === "pausada" && await pausaManualAtiva(client, message.conversation)) result = "pausa_manual";
+        if (result === "pausada" && (await pausaManualAtiva(client, message.conversation) || await humanoAtivo(message.number))) result = "pausa_manual";
         const state = await store.read();
         if (state?.status === "enviada" && state.providerId) {
           // Estados antigos não registravam cada parte antes da confirmação.
@@ -104,7 +106,7 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
             await dependencies.registrarEnvio(config.data.EVOLUTION_INSTANCE_NAME, state.providerId);
             await followups.outgoing(config.data.EVOLUTION_INSTANCE_NAME, state.providerId);
           }
-          if (!state.transferencia && !state.consulta && followupConfig.instance === config.data.EVOLUTION_INSTANCE_NAME && state.configHash === digest(JSON.stringify(config.data))) {
+          if (!state.transferencia && !state.consulta && !await humanoAtivo(message.number) && followupConfig.instance === config.data.EVOLUTION_INSTANCE_NAME && state.configHash === digest(JSON.stringify(config.data))) {
             await followups.schedule(message, followupConfig);
           }
         }
@@ -139,6 +141,7 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
             && currentFollowup.instance === config.data.EVOLUTION_INSTANCE_NAME
             && await ativacaoValida(client, job.conversation, current.data.AI_ACTIVATION_TRIGGER)
             && !await pausaManualAtiva(client, job.conversation)
+            && (Object.keys(substituicoes).length > 0 || !await atendimentoHumanoAtivo(db(), instancia, job.number))
             && await client.get(agentKeys.lock) === token && await client.xlen(streamKey) === 0;
         },
         send: (number, text) => dependencies.send(config.data, number, text),

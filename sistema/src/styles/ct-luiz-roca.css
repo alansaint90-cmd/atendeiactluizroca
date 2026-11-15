@@ -86,3 +86,5 @@ td > small { display: block; margin-top: 5px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
 
 .ct-auth-panel input { --surface: #eaf0fd; }
+.sidebar .marca-nome { font-size:24px; }
+@media(max-width:560px) { .ct-auth-panel .marca.large .marca-nome { font-size:clamp(21px,5.1vw,30px); } }

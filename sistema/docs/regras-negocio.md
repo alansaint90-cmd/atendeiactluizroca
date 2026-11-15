@@ -1,5 +1,15 @@
 # Regras do protótipo
 
+## Atende Aí Gym — caixa de entrada atualizada em 14/11/2026
+
+O nome do sistema é Atende Aí Gym. O CT Luiz Roca permanece como unidade e contexto de atendimento. A interface de conversas foi trazida de `atendefarma 2`, preservando busca sem acentos por nome/telefone/canal, fotos com fallback, seleção, prévias, histórico com datas, rolagem respeitando a leitura anterior, navegação móvel e atualização a cada dez segundos. O bloco “Dados reais do WhatsApp…” e a linha “Atualizado em” foram removidos das páginas operacionais.
+
+As actions `assumirAtendimento`, `enviarMensagemManual` e `validarCanalAtendimento` exigem sessão de operador ou superior; o repositório relê papel e atividade. Envio requer titularidade da conversa assumida e instância configurada; pode funcionar com IA desligada. A tabela aditiva `atendeia_atendimento_envios` reserva uma chave única antes da Evolution e registra resultado confirmado ou incerto, sem repetição automática. Não armazena binário na auditoria. Enquanto a conversa estiver assumida, respostas de IA e follow-ups ficam pausados até devolução explícita.
+
+O compositor permite texto, emoji, imagem com legenda, áudio anexado ou gravado, vídeo e PDF/DOCX. Arquivos são validados por assinatura, MIME e até 2 MB; gravações pedem permissão, param em até 60 segundos e têm prévia antes do envio. `microphone=(self)` permite solicitar acesso ao microfone somente no próprio site, dependendo da autorização do navegador. Não há envio automático de anexos.
+
+`atendeia_contacts.foto_url` recebe fotos HTTPS dos eventos CONTACTS_UPSERT/CONTACTS_UPDATE apenas para contatos já associados ao chip autenticado. A sincronização do webhook inclui esses eventos. Foto ausente/inválida usa iniciais. A prévia local compartilha a nova interface, mas apenas simula mensagens; não chama a Evolution nem armazena arquivos. Os fluxos de estoque, pedidos, pagamentos e atendimento farmacêutico não foram importados.
+
 ## CT Luiz Roca — regras vigentes neste checkout
 
 O produto é Atende Aí para o Centro de Treinamento Luiz Roca. As seções de clínica e TMF abaixo ficam como histórico da base. O atendimento atual segue o prompt oficial em `src/lib/ct/prompt.ts`, com foco em novos alunos e aulas experimentais. O modelo de chatbot novo já inclui esse prompt; registros existentes não são sobrescritos.

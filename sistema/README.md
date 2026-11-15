@@ -1,4 +1,4 @@
-# Atende Aí — CT Luiz Roca
+# Atende Aí Gym — CT Luiz Roca
 
 Este checkout foi adaptado para o Centro de Treinamento Luiz Roca. Para testar todos os módulos sem integrações, execute `node scripts/previa-design-local.mjs` e abra `http://127.0.0.1:8000/entrar`. No ambiente local, o botão Entrar leva a `/previa-design` sem enviar credenciais. As telas usam dados locais persistidos no navegador, sem envios reais, cobranças ou credenciais de teste.
 

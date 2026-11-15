@@ -75,7 +75,7 @@ export function FormularioLogin({ primeiroAcesso = false, previaLocal = false }:
   }
 
   return <section className="form-card">
-    <h1>{primeiroAcesso ? "Primeiro acesso" : "Entrar no Atende Aí"}</h1>
+    <h1>{primeiroAcesso ? "Primeiro acesso" : "Entrar no Atende Aí Gym"}</h1>
     <p>{primeiroAcesso ? "Use o código fornecido pelo administrador para definir sua senha. O convite expira em 15 minutos." : "Acesse com seu e-mail e senha."}</p>
     {erro && <p role="alert">{erro}</p>}
     <form onSubmit={e => { e.preventDefault(); void entrar(); }}>

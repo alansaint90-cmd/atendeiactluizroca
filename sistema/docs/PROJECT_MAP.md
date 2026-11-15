@@ -6,12 +6,12 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 178 |
-| Tabelas (Drizzle) | 35 |
-| Server Actions (arquivos) | 13 |
+| Arquivos TS/TSX | 191 |
+| Tabelas (Drizzle) | 36 |
+| Server Actions (arquivos) | 14 |
 | Rotas de API | 6 |
 | Paginas | 6 |
-| Componentes | 29 |
+| Componentes | 34 |
 
 ## Arvore (profundidade 3)
 
@@ -57,6 +57,12 @@ components/
   consultas/
     paciente-form.tsx
     page.tsx
+  conversas/
+    anexo-manual.tsx
+    atendimento.tsx
+    avatar.tsx
+    caixa-entrada.tsx
+    menu-compositor.tsx
   ct/
     automacoes-locais.tsx
     cadastros-locais.tsx
@@ -86,6 +92,7 @@ components/
 lib/
   actions/
     agendamentos.ts
+    atendimento.ts
     aulas.ts
     chatbots.ts
     consultas.ts
@@ -115,6 +122,11 @@ lib/
     redis.ts
     store.ts
     worker.ts
+  atendimento/
+    atendimento.ts
+    canal-manual.ts
+    comum.ts
+    midia-manual.ts
   audit/
     registrar.ts
   aulas/
@@ -197,6 +209,8 @@ lib/
     atribuir-ia.ts
     consultas.ts
     evento.ts
+    fotos.ts
+    limites.ts
     painel.ts
     receber.ts
     transferir.ts
@@ -219,6 +233,7 @@ styles/
   automation.css
   base.css
   conta-menu.css
+  conversas.css
   ct-luiz-roca.css
   design-juliana.css
   features.css
@@ -244,6 +259,9 @@ instrumentation.ts
 
 ### `atendeia_agenda_horarios_reservas` — src/lib/db/schema/agenda-consultas.ts
 `id`, `horarioId`, `identidade`, `nomeCompleto`, `cep`, `bairro`, `status`, `modified_by`
+
+### `atendeia_atendimento_envios` — src/lib/db/schema/atendimento.ts
+`id`, `conversaId`, `chave`, `modified_by`
 
 ### `auditoria` — src/lib/db/schema/auditoria.ts
 `id`, `user_id`, `acao`, `tabela`, `registro_id`, `detalhes`, `dados_anteriores`, `dados_novos`, `created_at`
@@ -352,6 +370,7 @@ _(colunas nao detectadas)_
 ## Server Actions
 
 - `src/lib/actions/agendamentos.ts`: `carregarAgendamentos()`, `gravarAgendamento()`, `cancelarEnvioAgendado()`
+- `src/lib/actions/atendimento.ts`: `validarCanalAtendimento()`, `assumirAtendimento()`, `enviarMensagemManual()`
 - `src/lib/actions/aulas.ts`: `carregarAgendaAulas()`, `cadastrarAula()`, `confirmarAula()`, `cancelarAula()`
 - `src/lib/actions/chatbots.ts`: `carregarChatbots()`, `salvarChatbot()`
 - `src/lib/actions/consultas.ts`: `carregarResumoAgenda()`, `carregarAgendaConsultas()`, `confirmarConsulta()`, `cancelarConsultaAgendada()`

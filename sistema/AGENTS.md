@@ -1,5 +1,11 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Atualização vigente — Atende Aí Gym — 14/11/2026
+
+O nome do sistema é Atende Aí Gym, com CT Luiz Roca como unidade. A caixa de entrada compartilhada de `atendefarma 2` foi adaptada para `src/components/conversas/` e `src/lib/atendimento/`, sem regras de farmácia. Usa fotos reais ou iniciais, busca, histórico, compositor com mídia e atualização periódica. As páginas operacionais não exibem o aviso de dados demonstrativos nem a linha de atualização removidos pelo usuário.
+
+Envio manual exige sessão de operador ou superior, papel relido no banco e conversa assumida pelo próprio ator. Reserva a chave de envio antes da chamada externa; resultado incerto não é reenviado. Auditoria e alterações de estado são transacionais. Enquanto `human_takeover` estiver ativo, respostas automáticas e follow-ups ficam pausados naquela conversa/instância. Fotos só atualizam contatos já vinculados à instância autenticada. Mídia exige assinatura, tipo e tamanho válidos, com limite de 2 MB. A gravação de áudio pede permissão e oferece prévia antes do envio. Não copiar credenciais, dados, catálogo ou pedidos da farmácia.
+
 ## Adaptação vigente — 11/11/2026
 
 Este checkout atende o Centro de Treinamento Luiz Roca. A agenda médica herdada é referência legada e não deve ser montada no painel nem habilitada no agente. As regras específicas de clínica e TMF abaixo documentam o histórico da base; não são regras de atendimento do CT. Preserve as regras técnicas, autenticação, RBAC e auditoria.

@@ -1,4 +1,4 @@
-# Atende Aí — CT Luiz Roca
+# Atende Aí Gym — CT Luiz Roca
 
 Projeto de atendimento do Centro de Treinamento Luiz Roca, academia de artes marciais, com foco em contatos vindos de tráfego e agendamento de aulas experimentais.
 

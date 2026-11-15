@@ -2,7 +2,7 @@ import type { Chatbot } from "./schema";
 import { PROMPT_CT_LUIZ_ROCA } from "../ct/prompt";
 
 export const chatbotExample: Chatbot = {
-  id: "ct-luiz-roca", identifier: "CT Luiz Roca — Novos alunos", persona: "Atende Aí", gender: "Neutro",
+  id: "ct-luiz-roca", identifier: "CT Luiz Roca — Novos alunos", persona: "Atende Aí Gym", gender: "Neutro",
   personalities: ["Amigável", "Direto ao ponto", "Profissional"],
   mission: "Acolher novos alunos do CT Luiz Roca, esclarecer dúvidas e conduzir à marcação de aulas experimentais.",
   context: PROMPT_CT_LUIZ_ROCA, agendaConsultas: false,

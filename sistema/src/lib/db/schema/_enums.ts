@@ -9,6 +9,7 @@ export type Papel = (typeof PAPEIS)[number];
 export const STATUS_OPORTUNIDADE = ["aberta", "ganha", "perdida"] as const;
 export const STATUS_CONSULTA = ["confirmada", "cancelada"] as const;
 export const STATUS_AULA = ["confirmada", "cancelada"] as const;
+export const STATUS_ENVIO_ATENDIMENTO = ["enviando", "enviado", "incerto"] as const;
 
 /** Monta o CHECK de uma coluna enum a partir da lista (sem repetir os valores). */
 export const listaSql = (valores: readonly string[]) =>
