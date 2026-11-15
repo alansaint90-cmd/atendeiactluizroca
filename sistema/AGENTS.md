@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Recepção da Luísa — 15/11/2026
+
+Novo contato com saudação recebe somente: “Boas-vindas ao CT Luis Roca. Eu sou Luísa. Como posso te ajudar?”. Oferta de experimental e pergunta de nome vêm depois da resposta, uma pergunta por vez. Contatos com histórico ou reserva não recebem a abertura novamente. O histórico restaurado do banco exclui o evento atual para não confundir a primeira mensagem com conversa anterior. Preservar demais configurações do chatbot salvo e registrar revisão e auditoria ao aplicar a recepção na instância do CT.
+
 ## Agenda integrada e continuidade — 15/11/2026
 
 O CT confirmou aulas semanais de 60 minutos, sem limite de alunos. Migração 0017 cadastra 36 horários únicos do quadro (unifica entradas repetidas geral/kids) e mantém somente Taekwondo no sábado. Capacidade NULL significa sem limite, não zero. Reservas semanais guardam data/hora da ocorrência, validam dia e horário e preservam as reservas pontuais antigas. A ferramenta consulta datas reais, prepara conferência e só grava após confirmação explícita. Responsável é obrigatório para menor; 3 anos e menores em turmas gerais sem faixa definida dependem da equipe. Não afirmar agendamento por texto livre.

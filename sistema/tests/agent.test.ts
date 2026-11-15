@@ -408,3 +408,13 @@ test("blocos confirmados são registrados e falha em uma parte não repete as an
   assert.equal(await processMessage(message,config,f.port),"incerta");
   assert.equal(envios,2);assert.deepEqual(registrados,["bloco-1"]);
 });
+
+test("recepção da Luísa é um único balão e não se repete na conversa", async()=>{
+  const f=fixture();const abertura="Boas-vindas ao CT Luis Roca. Eu sou Luísa. Como posso te ajudar?";
+  const configuracao={...config,openingMessages:[abertura]};
+  assert.equal(await processMessage({...message,text:"Oi"},configuracao,f.port),"enviada");
+  assert.deepEqual(f.sentTexts,[abertura]);assert.equal(f.generations(),0);
+  f.nextMessage();f.port.generate=async()=>"Vamos continuar. Qual é a sua dúvida?";
+  await processMessage({...message,identity:"outro-oi",text:"Oi"},configuracao,f.port);
+  assert.equal(f.sentTexts.filter(t=>t===abertura).length,1);
+});

@@ -89,6 +89,7 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
         if (estadoLote(message.identity, lote?.atual ?? null, config.data.delay ?? 15) === "aguardar") return false;
         if (lote?.fragmentos.length) message = { ...message, text: lote.texto };
         const mensagem = message;
+        const eventoAtual = z.object({ key: z.object({ id: z.string() }) }).safeParse(parsed.success ? parsed.data.data : null);
         if (!await pausaManualAtiva(client, mensagem.conversation)
           && deveAguardarResposta(Math.max(15, config.data.delay ?? 15), message.timestamp)) return false;
         const store = messageStore(client, token, message);
@@ -100,7 +101,7 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
         };
         result = await pausaManualAtiva(client, mensagem.conversation) || await humanoAtivo(mensagem.number) ? "pausa_manual" : await processMessage(message, config.data, {
           ...store,
-          history: async () => { const historico = await store.history(); return historico.length || Object.keys(substituicoes).length ? historico : historicoDoContato(db(), instancia, mensagem.number); },
+          history: async () => { const historico = await store.history(); return historico.length || Object.keys(substituicoes).length ? historico : historicoDoContato(db(), instancia, mensagem.number, eventoAtual.success ? eventoAtual.data.key.id : undefined); },
           aulaExperimental: Object.keys(substituicoes).length ? undefined : agendaAulasDoAgente(db(), client, token, mensagem.conversation, mensagem.number, atendimentoAtivo),
           contextoPersistido: Object.keys(substituicoes).length ? undefined : () => contextoDoContato(db(), instancia, mensagem.number),
           generate: dependencies.generate, send: dependencies.send, transcribe: transcribeAudio,

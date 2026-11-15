@@ -373,6 +373,10 @@ function analyzeFile(file) {
     findings.push({ level: "error", id: "ct-reserva-confirmacao", file: rel, line: 1,
       msg: "A reserva pelo agente exige confirmação explícita e a transação validada da agenda." });
   }
+  if (rel === "src/lib/operacao/memoria.ts" && !content.includes("m.provider_message_id<>")) {
+    findings.push({ level: "error", id: "historico-evento-atual", file: rel, line: 1,
+      msg: "A restauração do histórico deve excluir o evento atual para preservar a recepção inicial." });
+  }
   if (rel === "src/lib/operacao/atribuir-ia.ts" && !/await receberOperacao\(/.test(content)) {
     findings.push({ level: "error", id: "historico-resposta-ia", file: rel, line: 1,
       msg: "O envio confirmado da IA deve persistir a resposta sem depender do eco da Evolution." });

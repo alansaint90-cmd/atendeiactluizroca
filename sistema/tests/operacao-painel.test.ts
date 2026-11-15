@@ -123,6 +123,9 @@ test("respostas da IA aparecem na caixa de entrada sem eco e não duplicam com e
   try {
     await applyMigrations(banco);
     await receberOperacao(banco, evento("ctluizroca", "pergunta", false, "5571999999999"));
+    const { historicoDoContato } = await import("../src/lib/operacao/memoria");
+    assert.deepEqual(await historicoDoContato(banco, "ctluizroca", "5571999999999", "pergunta"), []);
+    assert.equal((await historicoDoContato(banco, "ctluizroca", "5571999999999")).length, 1);
     await registrarEnvioIa(banco, "ctluizroca", "resposta-confirmada", { numero: "5571999999999", texto: "Temos Taekwondo, Muay Thai e Jiu-Jitsu." });
     const { consultarOperacao } = await import("../src/lib/operacao/consultas");
     let caixa = await consultarOperacao(banco);
