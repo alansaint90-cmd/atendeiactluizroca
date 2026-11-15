@@ -9,7 +9,7 @@ function memoryStorage(value: string | null = null) {
   return { getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => { data.set(key, value); } };
 }
 test("modelo inicial usa o prompt oficial do CT Luiz Roca", () => {
-  assert.match(chatbotExample.context, /CT Luiz Roca/);
+  assert.match(chatbotExample.context, /CT Luís Roca/);
   assert.equal(loadChatbots(memoryStorage()).bots[0].context, chatbotExample.context);
 });
 test("preserva prompt editado ao salvar e recarregar dados anteriores", () => {

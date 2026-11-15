@@ -365,6 +365,10 @@ function analyzeFile(file) {
     }
   }
 
+  if (rel === "src/lib/ct/prompt.ts" && (!content.includes("31/12/2026") || !content.includes("31/03/2027") || !content.includes("grade regular não comprova vaga") || !content.includes("custo ou gratuidade ainda não foi informado"))) {
+    findings.push({ level: "error", id: "prompt-ct-condicoes", file: rel, line: 1,
+      msg: "O prompt do CT exige validade comercial explícita e distinção entre grade, vaga e custo da experimental." });
+  }
   if (rel === "src/lib/chatbots/defaults.ts" && !/context\s*:\s*(?:["']{2}|PROMPT_CT_LUIZ_ROCA)/.test(content)) {
     findings.push({ level: "error", id: "prompt-legado", file: rel, line: 1,
       msg: "O modelo inicial deve usar contexto vazio ou o prompt oficial PROMPT_CT_LUIZ_ROCA." });

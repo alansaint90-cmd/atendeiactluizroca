@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Base comercial e horários — 14/11/2026
+
+O prompt oficial usa a grafia CT Luís Roca, endereço e grade fornecidos pelo CT. Taekwondo desde 3 anos; turma de 3 anos depende da equipe, pois a arte começa em 4+. Jiu-Jitsu desde 10; Muay Thai para adolescentes/adultos sem idade mínima numérica. Grade não representa disponibilidade nem reserva. Mensalidades até 31/12/2026: adulto R$ 199 e kids R$ 220, preservadas para essas matrículas até 31/03/2027 inclusive. Novos alunos desde 01/01/2027: R$ 250. Categoria dos adolescentes, custo da experimental e reajuste dos antigos após março não foram definidos. Não sobrescrever chatbots salvos automaticamente; aplicar o contexto na instância correta pelo painel.
+
 ## Atualização vigente — Atende Aí Gym — 14/11/2026
 
 O nome do sistema é Atende Aí Gym, com CT Luiz Roca como unidade. A caixa de entrada compartilhada de `atendefarma 2` foi adaptada para `src/components/conversas/` e `src/lib/atendimento/`, sem regras de farmácia. Usa fotos reais ou iniciais, busca, histórico, compositor com mídia e atualização periódica. As páginas operacionais não exibem o aviso de dados demonstrativos nem a linha de atualização removidos pelo usuário.
