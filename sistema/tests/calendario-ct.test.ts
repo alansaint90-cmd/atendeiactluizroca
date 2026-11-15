@@ -1,0 +1,61 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { PGlite } from "@electric-sql/pglite";
+import { drizzle } from "drizzle-orm/pglite";
+import type Redis from "ioredis";
+import { applyMigrations } from "../src/lib/db/migrate";
+import { consultarAulas } from "../src/lib/aulas/repository";
+import { agendaAulasDoAgente } from "../src/lib/aulas/agente";
+import { dataLocalCt, interpretarDataCt, contextoCalendarioCt } from "../src/lib/aulas/calendario";
+const domingo=Date.parse("2026-11-15T12:00:00-03:00");
+test("15/11/2026: amanhã é segunda 16 e próxima terça é 17",()=>{
+  assert.deepEqual(interpretarDataCt("Quero agendar para amanhã",domingo),{tipo:"data",data:"2026-11-16"});
+  assert.deepEqual(interpretarDataCt("Quero próxima terça",domingo),{tipo:"data",data:"2026-11-17"});
+  assert.deepEqual(interpretarDataCt("terça-feira que vem",domingo),{tipo:"data",data:"2026-11-17"});
+  assert.deepEqual(interpretarDataCt("depois de amanhã",domingo),{tipo:"data",data:"2026-11-17"});
+  assert.deepEqual(interpretarDataCt("17/11",domingo),{tipo:"data",data:"2026-11-17"});
+  assert.deepEqual(interpretarDataCt("2026-11-17",domingo),{tipo:"data",data:"2026-11-17"});
+  assert.match(contextoCalendarioCt(domingo),/hoje é domingo, 15\/11\/2026/);
+  assert.match(contextoCalendarioCt(domingo),/Amanhã é segunda-feira, 16\/11\/2026/);
+});
+test("calendário respeita Bahia, virada de mês, ano e dia da semana atual",()=>{
+  assert.equal(dataLocalCt(Date.parse("2026-11-16T02:59:00Z")),"2026-11-15");
+  assert.equal(dataLocalCt(Date.parse("2026-11-16T03:01:00Z")),"2026-11-16");
+  assert.deepEqual(interpretarDataCt("próxima terça",Date.parse("2026-11-17T10:00:00-03:00")),{tipo:"data",data:"2026-11-24"});
+  assert.deepEqual(interpretarDataCt("amanhã",Date.parse("2026-12-31T23:00:00-03:00")),{tipo:"data",data:"2027-01-01"});
+  assert.deepEqual(interpretarDataCt("amanhã",Date.parse("2028-02-28T10:00:00-03:00")),{tipo:"data",data:"2028-02-29"});
+  assert.equal(interpretarDataCt("amanhã ou próxima terça",domingo)?.tipo,"ambigua");
+  assert.equal(interpretarDataCt("31/02/2027",domingo)?.tipo,"invalida");
+  assert.equal(interpretarDataCt("2026-11-14",domingo)?.tipo,"invalida");
+  assert.equal(interpretarDataCt("segunda opção",domingo),null);
+});
+test("agenda filtra a data real, preserva a escolha após meia-noite e não troca por outra semana",async t=>{
+  let agora=domingo;t.mock.method(Date,"now",()=>agora);
+  const cliente=new PGlite(),banco=drizzle(cliente), dados=new Map<string,string>();
+  const redis={get:async(chave:string)=>dados.get(chave)??null,eval:async(_s:string,_n:number,_lock:string,chave:string,_token:string,valor:string)=>{dados.set(chave,valor);return 1;}} as unknown as Redis;
+  try{
+    await applyMigrations(banco);
+    const gradeAntes=JSON.stringify((await consultarAulas(banco)).aulas);
+    const atender=agendaAulasDoAgente(banco,redis,"lease","calendario-teste","5571999999999",async()=>true);
+    assert.equal(await atender("Que dia é hoje?"),null);
+    assert.equal(dados.size,0,"perguntar a data atual não escolhe o dia da aula");
+    const semAula=await atender("Quero Muay Thai hoje",{acao:"consultar",modalidade:"Muay Thai",idade:25});
+    assert.match(semAula!,/domingo, 15\/11\/2026/);assert.match(semAula!,/Não alterei a data/);
+    await atender("Quero amanhã",{acao:"consultar",modalidade:"Muay Thai",idade:25,referenciaData:"próxima terça"});
+    let cadastro=JSON.parse(dados.get("atendeia:{evolution}:cadastro-aula:calendario-teste")!);
+    assert.equal(cadastro.opcoes.length,2);assert.equal(cadastro.dataSolicitada,"2026-11-16");
+    assert.ok(cadastro.opcoes.every((a:{inicio:string})=>dataLocalCt(Date.parse(a.inicio))==="2026-11-16"));
+    agora=Date.parse("2026-11-16T00:10:00-03:00");
+    const conferir=await atender("Aluno de Teste, tenho 25 anos",{acao:"preparar",opcao:1,nome:"Aluno de Teste",idade:25,responsavel:""});
+    assert.match(conferir!,/segunda-feira, 16\/11\/2026/);
+    const reservado=await atender("confirmo");assert.match(reservado!,/agendada no sistema/);
+    assert.equal((await consultarAulas(banco)).reservas[0].inicio?.slice(0,10),"2026-11-16");
+    const terca=await atender("Quero próxima terça",{acao:"consultar",modalidade:"Muay Thai",idade:25});
+    assert.match(terca!,/terça-feira, 17\/11\/2026/);
+    cadastro=JSON.parse(dados.get("atendeia:{evolution}:cadastro-aula:calendario-teste")!);
+    assert.ok(cadastro.opcoes.every((a:{inicio:string})=>dataLocalCt(Date.parse(a.inicio))==="2026-11-17"));
+    const sexta=await atender("sexta-feira",{acao:"consultar",modalidade:"Muay Thai",idade:25});
+    assert.match(sexta!,/sexta-feira, 20\/11\/2026/);assert.match(sexta!,/Não encontrei uma aula compatível/);
+    assert.equal(JSON.stringify((await consultarAulas(banco)).aulas),gradeAntes);
+  }finally{await cliente.close();t.mock.restoreAll();}
+});

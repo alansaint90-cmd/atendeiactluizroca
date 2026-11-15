@@ -6,7 +6,7 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 198 |
+| Arquivos TS/TSX | 199 |
 | Tabelas (Drizzle) | 36 |
 | Server Actions (arquivos) | 14 |
 | Rotas de API | 6 |
@@ -134,6 +134,7 @@ lib/
   aulas/
     agente-schema.ts
     agente.ts
+    calendario.ts
     oferta-experimental.ts
     recorrencia.ts
     repository.ts

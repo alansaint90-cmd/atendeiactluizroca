@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Calendário interno — 15/11/2026
+
+`src/lib/aulas/calendario.ts` é a referência do relógio e datas locais America/Bahia. Não fixar hoje no prompt. O agente resolve amanhã, depois de amanhã e a primeira ocorrência futura do dia da semana (próxima terça, quando hoje é terça, é daqui a sete dias), além de datas numéricas. Referências conflitantes ou inválidas pedem esclarecimento. A consulta guarda a data absoluta escolhida para não deslocá-la em mensagens posteriores, filtra a agenda nessa data e revalida na conferência e confirmação. Sem aula compatível, explicar a ausência sem escolher outra data. A conferência exibe dia da semana e data completa; não criar tela de calendário nem modificar a grade.
+
 ## Experimentais apresentadas em pares — 15/11/2026
 
 Todas as aulas cadastradas podem receber experimental, respeitando idade e disponibilidade. Não restringir a oferta por modalidade ou pelo antigo recorte de dias/horários. A ferramenta retorna até duas opções por consulta, com uma à tarde quando houver turma compatível, e guarda as turmas mostradas. Pedidos de alternativas retornam outras duas sem repetir as anteriores. Não alterar aulas ou reservas existentes; a seleção é apenas apresentação gradual da grade.
