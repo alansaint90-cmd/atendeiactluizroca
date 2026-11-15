@@ -418,3 +418,16 @@ test("recepção da Luísa é um único balão e não se repete na conversa", as
   await processMessage({...message,identity:"outro-oi",text:"Oi"},configuracao,f.port);
   assert.equal(f.sentTexts.filter(t=>t===abertura).length,1);
 });
+
+test("experimental confirmada envia três balões com registro individual", async () => {
+  const f = fixture(); const registrados: string[] = [];
+  f.port.aulaExperimental = async () => "Aula experimental agendada no sistema!\n\nAluno de Teste · Muay Thai\n16/11/2026 às 15:45\n\nSegue o link do endereço para você chegar no dia:\nhttps://www.google.com/maps/search/?api=1&query=CT\n\nPosso te ajudar em algo mais?";
+  f.port.registrarParte = async (_id, texto) => { registrados.push(texto); };
+  assert.equal(await processMessage({...message,text:"sim"}, {...config,agendaAulas:true}, f.port),"enviada");
+  assert.equal(f.sends(),3); assert.deepEqual(registrados,f.sentTexts);
+  assert.match(f.sentTexts[0],/Aluno de Teste/); assert.match(f.sentTexts[1],/Segue o link/);
+  assert.equal(f.sentTexts[2],"Posso te ajudar em algo mais?");
+  assert.equal(f.generations(),0);
+  await processMessage({...message,text:"sim"}, {...config,agendaAulas:true}, f.port);
+  assert.equal(f.sends(),3,"evento repetido não reenvia os balões");
+});

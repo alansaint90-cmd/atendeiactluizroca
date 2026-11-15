@@ -13,3 +13,10 @@ export function dividirResposta(texto: string, limite = 450): string[] {
   if (restante) partes.push(restante);
   return partes;
 }
+
+/** Preserva os três balões da confirmação da experimental. */
+export function mensagensDaAula(texto: string): string[] {
+  if (!texto.startsWith("Aula experimental agendada no sistema!")) return dividirResposta(texto);
+  const [titulo, dados, ...demais] = texto.split("\n\n");
+  return [titulo + "\n\n" + dados, ...demais].flatMap(parte => dividirResposta(parte));
+}

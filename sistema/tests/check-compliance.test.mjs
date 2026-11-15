@@ -176,6 +176,7 @@ try {
     ["agendamento CT sem confirmação reprova", reprova("aulas/agente.ts", "ct-reserva-confirmacao")],
     ["histórico sem excluir evento atual reprova", reprova("operacao/memoria.ts", "historico-evento-atual")],
     ["oferta experimental sem seleção gradual reprova", reprova("aulas/agente.ts", "oferta-experimental-ct")],
+    ["confirmação natural do CT ausente reprova", reprova("aulas/agente.ts", "confirmacao-natural-ct")],
     ["agenda sem calendário e filtro de data reprova", reprova("aulas/agente.ts", "calendario-aulas-ct")],
     ["modelo inicial com roteiro comercial reprova", reprova("chatbots/defaults.ts", "prompt-legado")],
     ["importação automática do navegador reprova", reprova("chatbots/page.tsx", "prompt-legado")],

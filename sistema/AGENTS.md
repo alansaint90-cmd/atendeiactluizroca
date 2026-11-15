@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Confirmação natural da experimental — 15/11/2026
+
+A conferência termina apenas com “Os dados estão corretos?”. Sim confirma a reserva; não pergunta o que alterar, sem gravar e sem aceitar nova confirmação até reconferir os dados. Após sucesso real, não mostrar protocolo: enviar três balões separados (agendamento com nome/modalidade/data, link do endereço, “Posso te ajudar em algo mais?”). Aguardar resposta: sim pergunta como ajudar; não despede lembrando a aula e a data verificadas. Dúvidas específicas são respondidas antes de encerrar.
+
 ## Calendário interno — 15/11/2026
 
 `src/lib/aulas/calendario.ts` é a referência do relógio e datas locais America/Bahia. Não fixar hoje no prompt. O agente resolve amanhã, depois de amanhã e a primeira ocorrência futura do dia da semana (próxima terça, quando hoje é terça, é daqui a sete dias), além de datas numéricas. Referências conflitantes ou inválidas pedem esclarecimento. A consulta guarda a data absoluta escolhida para não deslocá-la em mensagens posteriores, filtra a agenda nessa data e revalida na conferência e confirmação. Sem aula compatível, explicar a ausência sem escolher outra data. A conferência exibe dia da semana e data completa; não criar tela de calendário nem modificar a grade.

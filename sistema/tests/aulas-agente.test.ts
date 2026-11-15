@@ -9,7 +9,7 @@ import { agendaAulasDoAgente, reservasDoContato } from "../src/lib/aulas/agente"
 import { consultarAulas, reservarAula } from "../src/lib/aulas/repository";
 import { ocorrenciasAula } from "../src/lib/aulas/recorrencia";
 import { systemUserId } from "../src/lib/db/bootstrap";
-import { dividirResposta } from "../src/lib/agent/blocos";
+import { dividirResposta, mensagensDaAula } from "../src/lib/agent/blocos";
 import { contextoDoContato } from "../src/lib/operacao/memoria";
 
 function redisCadastro() {
@@ -44,18 +44,24 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     const lista = await conversar("Quero Muay Thai",{acao:"consultar",modalidade:"Muay Thai",idade:25});
     assert.match(lista!, /1\. Muay Thai/);
     const conferencia = await conversar("Meu nome é Aluno de Teste, tenho 25 anos",{acao:"preparar",opcao:1,nome:"Aluno de Teste",idade:25,responsavel:""});
-    assert.match(conferencia!, /Responda “confirmo”/);
+    assert.match(conferencia!, /Os dados estão corretos\?$/);
     assert.equal((await consultarAulas(banco)).reservas.length,0);
     await conversar("Qual roupa devo levar?");
     assert.equal((await consultarAulas(banco)).reservas.length,0,"pergunta não autoriza reserva");
     const recusado=agendaAulasDoAgente(banco,redisCadastro(),"lease","conversa-recusada","5571777777777",async()=>true);
     await recusado("Muay",{acao:"consultar",modalidade:"muay",idade:25});
     await recusado("Outro Aluno",{acao:"preparar",opcao:1,nome:"Outro Aluno",idade:25,responsavel:""});
-    assert.match((await recusado("não obrigado"))!,/Conferência cancelada/);
-    assert.equal(await recusado("confirmo"),null);
+    assert.match((await recusado("não obrigado"))!,/O que você gostaria de alterar/);
+    assert.match((await recusado("sim"))!,/alterar/);
     assert.equal((await consultarAulas(banco)).reservas.length,0);
-    const confirmacao = await conversar("confirmo");
+    const confirmacao = await conversar("sim");
     assert.match(confirmacao!, /agendada no sistema/);
+    assert.doesNotMatch(confirmacao!, /Protocolo/);
+    const partes = mensagensDaAula(confirmacao!);
+    assert.equal(partes.length,3);
+    assert.match(partes[0],/Aluno de Teste/); assert.ok(partes[1].includes("https://www.google.com/maps"));
+    assert.equal(partes[2],"Posso te ajudar em algo mais?");
+    assert.equal(await conversar("sim"),"Claro! Como posso te ajudar?");
     assert.equal((await consultarAulas(banco)).reservas.length,1);
     await conversar("confirmo");
     assert.equal((await consultarAulas(banco)).reservas.length,1,"confirmação repetida não duplica");
@@ -75,10 +81,13 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     assert.match((await antigo("oi"))!,/Jiu-Jitsu/);
     assert.match((await antigo("Tem jiu?",{acao:"consultar",modalidade:"Jiu-Jitsu",idade:25}))!,/1\. Jiu-Jitsu/);
     const pendente={opcoes:[{aulaId:jiu.id,inicio:dataJiu,modalidade:jiu.modalidade,turma:jiu.turma}],reserva:{aulaId:jiu.id,inicio:dataJiu,aluno:{...alunoJiu,nome:"Outro Interessado",telefone:"+5571555555555"},solicitacaoId:randomUUID(),conferido:true}};
-    const redisAntigo={get:async()=>JSON.stringify(pendente),eval:async()=>1} as unknown as Redis;
+    const redisAntigo=redisCadastro();
+    await redisAntigo.eval("",2,"", "atendeia:{evolution}:cadastro-aula:pendente", "lease", JSON.stringify(pendente));
     const confirmarAntigo=agendaAulasDoAgente(banco,redisAntigo,"lease","pendente","5571555555555",async()=>true);
     assert.match((await confirmarAntigo("confirmo"))!,/agendada no sistema/);
     assert.equal((await reservasDoContato(banco,"5571555555555")).length,1);
+    const despedida = await confirmarAntigo("não");
+    assert.match(despedida!, /Aguardo você na aula de Jiu-Jitsu/);
     assert.equal((await reservasDoContato(banco,"5571666666666")).length,1,"preserva a reserva antiga de Jiu-Jitsu");
     const menor=agendaAulasDoAgente(banco,redisCadastro(),"lease","conversa-b","5571888888888",async()=>true);
     await menor("Taekwondo para 3 anos",{acao:"consultar",modalidade:"Taekwondo",idade:3});

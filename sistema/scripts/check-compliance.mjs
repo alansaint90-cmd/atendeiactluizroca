@@ -377,6 +377,9 @@ function analyzeFile(file) {
     findings.push({ level: "error", id: "oferta-experimental-ct", file: rel, line: 1,
       msg: "A oferta deve apresentar horários em pares e preservar as opções já exibidas." });
   }
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("O que você gostaria de alterar?") || !content.includes("aguardandoAjuda") || content.includes("Protocolo:"))) {
+    findings.push({ level: "error", id: "confirmacao-natural-ct", file: rel, line: 1, msg: "Preservar confirmação natural, correção e retorno sem protocolo." });
+  }
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("interpretarDataCt(texto)") || !content.includes("dataLocalCt(Date.parse(inicio)) === data"))) {
     findings.push({ level: "error", id: "calendario-aulas-ct", file: rel, line: 1,
       msg: "A agenda deve resolver referências temporais e filtrar somente a data solicitada." });

@@ -1,5 +1,5 @@
 import type { AcaoAulas } from "../aulas/agente-schema";
-import { dividirResposta } from "./blocos";
+import { dividirResposta, mensagensDaAula } from "./blocos";
 import type { AgentConfig } from "./config";
 import type { IncomingMessage } from "./message";
 import { digest } from "./message";
@@ -94,7 +94,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       else if (typeof gerada !== "string" && "aula" in gerada) {
         const resposta = await port.aulaExperimental?.(transcript ?? message.text, gerada.aula);
         if (!resposta) throw new ProviderError("agenda_aulas_indisponivel");
-        reply = resposta; partes = dividirResposta(reply);
+        reply = resposta; partes = mensagensDaAula(reply);
       } else if (typeof gerada !== "string" && "agendar" in gerada) {
         if (!config.agendaConsultas || !port.cadastroConsulta) throw new ProviderError("agenda_indisponivel");
         const inicio = await port.cadastroConsulta(transcript ?? message.text, true);
@@ -107,7 +107,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
           || "Vou encaminhar seu atendimento para nossa equipe.";
       } else reply = partes ? gerada : removerRotuloDaPersona(respostaComNome(gerada, nome), persona);
       if (consulta) partes = mensagensDaConsulta(reply);
-      if (respostaAula) partes = dividirResposta(reply);
+      if (respostaAula) partes = mensagensDaAula(reply);
     }
     catch (error) {
       const code = error instanceof ProviderError ? error.code : "geracao_falhou";
