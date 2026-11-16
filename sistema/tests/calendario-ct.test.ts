@@ -48,7 +48,7 @@ test("agenda filtra a data real, preserva a escolha após meia-noite e não troc
     agora=Date.parse("2026-11-16T00:10:00-03:00");
     const conferir=await atender("Aluno de Teste, tenho 25 anos",{acao:"preparar",opcao:1,nome:"Aluno de Teste",idade:25,responsavel:""});
     assert.match(conferir!,/segunda-feira, 16\/11\/2026/);
-    const reservado=await atender("confirmo");assert.match(reservado!,/agendada no sistema/);
+    const reservado=await atender("confirmo");assert.match(reservado!,/está agendada/);
     assert.equal((await consultarAulas(banco)).reservas[0].inicio?.slice(0,10),"2026-11-16");
     const terca=await atender("Quero próxima terça",{acao:"consultar",modalidade:"Muay Thai",idade:25});
     assert.match(terca!,/terça-feira, 17\/11\/2026/);

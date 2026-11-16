@@ -180,6 +180,7 @@ try {
     ["base confirmada do CT ausente reprova", reprova("chatbots/prompt-servidor.ts", "conhecimento-ct")],
     ["prioridade infantil ausente reprova", reprova("aulas/agente.ts", "prioridade-infantil-ct")],
     ["turno solicitado ausente reprova", reprova("aulas/agente.ts", "turno-experimental-ct")],
+    ["alternativas e encerramento natural ausentes reprovam", reprova("aulas/agente.ts", "alternativas-naturais-ct")],
     ["agenda sem calendário e filtro de data reprova", reprova("aulas/agente.ts", "calendario-aulas-ct")],
     ["modelo inicial com roteiro comercial reprova", reprova("chatbots/defaults.ts", "prompt-legado")],
     ["importação automática do navegador reprova", reprova("chatbots/page.tsx", "prompt-legado")],

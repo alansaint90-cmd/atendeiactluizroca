@@ -22,17 +22,18 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
     if (!await enabled()) return null;
     const raw = await client.get(chave), cadastro: Cadastro = raw ? JSON.parse(raw) as Cadastro : { opcoes: [] };
     try {
+      const pediuAlternativas = /(?:outr[oa]s?|mais)\s+(?:hor[aá]rios?|op[cç][aã]o|op[cç][oõ]es|alternativas?)|n[aã]o (?:posso|consigo|d[aá]|serve)|dif[ií]cil/iu.test(texto);
       const turnoAtual = interpretarTurno(texto);
       if (turnoAtual === "ambiguo") return "Você prefere de manhã, à tarde ou à noite?";
       if (!acao && turnoAtual !== undefined) { cadastro.turnoSolicitado = turnoAtual; await salvar(cadastro); }
-      if (!acao && turnoAtual !== undefined && cadastro.consulta && !cadastro.confirmada && !/remarc|cancel/iu.test(texto)) return atender(texto, {acao:"consultar",modalidade:cadastro.consulta.modalidade,idade:cadastro.consulta.idade});
+      if (!acao && turnoAtual !== undefined && cadastro.consulta && !cadastro.confirmada && !/remarc|cancel/iu.test(texto)) return atender(texto, {acao:"consultar",modalidade:cadastro.consulta.modalidade,idade:cadastro.consulta.idade,maisOpcoes:pediuAlternativas});
       const perguntaCalendario = /(?:que|qual)\s+(?:dia|data)|qual\s+(?:é|e)\s+(?:o dia|a data)/iu.test(texto) && !/agendar|marcar|aula|experimental|treinar|treino|hor[aá]rio/iu.test(texto);
       const dataAtual = perguntaCalendario ? null : interpretarDataCt(texto);
       if (dataAtual?.tipo === "ambigua") return `Você mencionou mais de uma data: ${dataAtual.datas.map(rotuloDataCt).join(" ou ")}. Qual delas você prefere?`;
       if (dataAtual?.tipo === "invalida") return dataAtual.mensagem;
       if (!acao && /(?:outr[oa]s? (?:datas?|dias?)|qualquer dia|sem prefer[eê]ncia de data)/iu.test(texto)) { cadastro.dataSolicitada = null; await salvar(cadastro); }
       if (!acao && dataAtual?.tipo === "data") { cadastro.dataSolicitada = dataAtual.data; await salvar(cadastro); }
-      if (!acao && dataAtual?.tipo === "data" && cadastro.consulta && !cadastro.confirmada && !/remarc|cancel/iu.test(texto) && /amanh[aã]|hoje|pr[oó]xim|feira|\bna (?:segunda|ter[cç]a|quarta|quinta|sexta)|\d{1,2}[\/-]\d{1,2}/iu.test(texto)) return atender(texto,{acao:"consultar",modalidade:cadastro.consulta.modalidade,idade:cadastro.consulta.idade,referenciaData:texto.slice(0,160)});
+      if (!acao && dataAtual?.tipo === "data" && cadastro.consulta && !cadastro.confirmada && !/remarc|cancel/iu.test(texto) && /amanh[aã]|hoje|pr[oó]xim|feira|\bna (?:segunda|ter[cç]a|quarta|quinta|sexta)|\d{1,2}[\/-]\d{1,2}/iu.test(texto)) return atender(texto,{acao:"consultar",modalidade:cadastro.consulta.modalidade,idade:cadastro.consulta.idade,referenciaData:texto.slice(0,160),maisOpcoes:pediuAlternativas});
       if (!acao && cadastro.aguardandoAjuda && cadastro.confirmada) {
         await salvar({ ...cadastro, aguardandoAjuda: false });
         if (/^(?:n[aã]o(?:,? obrigad[oa])?|nada(?: mais)?|s[oó] isso)[.!\s]*$/iu.test(texto.trim())) {
@@ -51,12 +52,12 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         if (cadastro.dataSolicitada && dataLocalCt(Date.parse(cadastro.reserva.inicio)) !== cadastro.dataSolicitada) return `Você pediu ${rotuloDataCt(cadastro.dataSolicitada)}, mas a conferência anterior era de outra data. Precisamos consultar e conferir a data correta antes de reservar.`;
         if (!correspondeTurno(cadastro.reserva.inicio, cadastro.turnoSolicitado)) return "Precisamos consultar e conferir uma aula no turno que você pediu antes de confirmar.";
         const resultado = await reservarAula(banco, cadastro.reserva, systemUserId);
-        await salvar({ ...cadastro, confirmada: resultado.id, aguardandoAjuda: true });
+        await salvar({ ...cadastro, confirmada: resultado.id, aguardandoAjuda: false });
         const a = cadastro.opcoes.find(o => o.aulaId === cadastro.reserva?.aulaId && o.inicio === cadastro.reserva?.inicio);
-        return `Aula experimental agendada no sistema!\n\n${cadastro.reserva.aluno.nome} · ${a?.modalidade ?? "Aula"}\n${formatarOcorrenciaCt(cadastro.reserva.inicio)} (Brasília)\n\nSegue o link do endereço para você chegar no dia:\nhttps://www.google.com/maps/search/?api=1&query=Rua+Maria+dos+Reis+Silva+16+Buraquinho+Lauro+de+Freitas+Bahia\n\nPosso te ajudar em algo mais?`;
+        return `Sua experimental de ${a?.modalidade ?? "artes marciais"} está agendada para ${formatarOcorrenciaCt(cadastro.reserva.inicio)}! Venha com roupa leve e traga uma garrafinha de água. Vamos te receber bem. Até lá!`;
       }
       if (!acao) {
-        if (cadastro.consulta && !cadastro.reserva && /(?:outros?|mais)\s+hor[aá]rios|outras?\s+op[cç][oõ]es|n[aã]o (?:posso|consigo|d[aá]|serve)|dif[ií]cil/iu.test(texto)) return atender(texto, { acao: "consultar", modalidade: cadastro.consulta.modalidade, idade: cadastro.consulta.idade, maisOpcoes: true });
+        if (cadastro.consulta && !cadastro.confirmada && pediuAlternativas) return atender(texto, { acao: "consultar", modalidade: cadastro.consulta.modalidade, idade: cadastro.consulta.idade, maisOpcoes: true });
         if (cadastro.reserva && !cadastro.confirmada && /^(?:n[aã]o(?:,? (?:obrigad[oa]|quero(?: mais)?))?|cancelar|cancela|desisto)[.!\s]*$/iu.test(texto.trim())) {
           await salvar({ opcoes: cadastro.opcoes, consulta: cadastro.consulta, turnoSolicitado: cadastro.turnoSolicitado, dataSolicitada: cadastro.dataSolicitada });
           return "Conferência cancelada. Nenhuma reserva foi feita. Se quiser outra data, podemos consultar a agenda.";
@@ -70,23 +71,24 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       }
       const dados = acaoAulasSchema.parse(acao);
       if (dados.acao === "consultar") {
+        const maisOpcoes = dados.maisOpcoes || pediuAlternativas;
         const agenda = await consultarAulas(banco);
         const normalizar = (v: string) => { const nome = v.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("pt-BR").replace(/[^a-z]/g, ""); return ({ jiu: "jiujitsu", muay: "muaythai", tae: "taekwondo" } as Record<string,string>)[nome] ?? nome; };
-        const modalidade = dados.maisOpcoes ? dados.modalidade ?? cadastro.consulta?.modalidade ?? null : dados.modalidade;
-        const idade = dados.maisOpcoes ? dados.idade ?? cadastro.consulta?.idade ?? null : dados.idade;
+        const modalidade = maisOpcoes ? dados.modalidade ?? cadastro.consulta?.modalidade ?? null : dados.modalidade;
+        const idade = maisOpcoes ? dados.idade ?? cadastro.consulta?.idade ?? null : dados.idade;
         const referencia = dataAtual ?? (!cadastro.dataSolicitada && dados.referenciaData ? interpretarDataCt(dados.referenciaData) : null);
         if (referencia?.tipo === "ambigua") return `Qual destas datas você prefere: ${referencia.datas.map(rotuloDataCt).join(" ou ")}?`;
         if (referencia?.tipo === "invalida") return referencia.mensagem;
         const data = referencia?.tipo === "data" ? referencia.data : cadastro.dataSolicitada ?? null;
         if (data && data < dataLocalCt()) return "A data que estávamos consultando já passou. Qual data futura você prefere?";
         const turno = turnoAtual !== undefined ? turnoAtual : cadastro.turnoSolicitado ?? dados.turno ?? null;
-        const mostradas = dados.maisOpcoes && turno === (cadastro.consulta?.turno ?? null) && data === (cadastro.consulta?.data ?? null) && normalizar(modalidade ?? "") === normalizar(cadastro.consulta?.modalidade ?? "") && idade === cadastro.consulta?.idade ? cadastro.consulta.mostradas : [];
+        const mostradas = maisOpcoes && turno === (cadastro.consulta?.turno ?? null) && data === (cadastro.consulta?.data ?? null) && normalizar(modalidade ?? "") === normalizar(cadastro.consulta?.modalidade ?? "") && idade === cadastro.consulta?.idade ? cadastro.consulta.mostradas : [];
         const aulas = agenda.aulas.filter(a => !modalidade || normalizar(a.modalidade) === normalizar(modalidade));
         const elegivel = (a: Aula) => idade == null || idade >= a.idadeMinima && idade <= a.idadeMaxima && !(idade >= 18 && a.turma.startsWith("Kids")) && !(idade < 18 && a.turma === "Geral") && !(idade === 3 && a.modalidade === "Taekwondo");
         const candidatas = aulas.filter(elegivel).flatMap(a => ocorrenciasAula(a).filter(inicio => (!data || dataLocalCt(Date.parse(inicio)) === data) && correspondeTurno(inicio, turno) && (a.capacidade === null || agenda.reservas.filter(r => r.aulaId === a.id && r.status === "confirmada" && (!r.inicio || Date.parse(r.inicio) === Date.parse(inicio))).length < a.capacidade)).map(inicio => ({ aulaId: a.id, inicio, modalidade: a.modalidade, turma: a.turma })));
         const opcoes = selecionarExperimentais(priorizarInfantil(candidatas, idade, modalidade, mostradas), mostradas);
         await salvar({ opcoes, turnoSolicitado: turno, dataSolicitada: data, consulta: { modalidade, idade, turno, data, mostradas: [...mostradas, ...opcoes.map(a => a.aulaId)] } });
-        return opcoes.length ? `${dados.maisOpcoes ? "Também temos estas opções" : opcoes.length === 1 ? "Tenho esta opção para você" : "Tenho estas duas opções para você"} (horário de Brasília):\n\n${opcoes.map((a,i) => `${i+1}. ${a.modalidade} · ${a.turma} · ${formatarOcorrenciaCt(a.inicio)}`).join("\n")}\n\nQual opção você prefere?` : turno ? `Não encontrei outra aula compatível ${data ? `em ${rotuloDataCt(data)}, ` : ""}no turno da ${turno === "manha" ? "manhã" : turno}. Outro turno funciona para você?` : data ? `Não encontrei uma aula compatível para ${rotuloDataCt(data)}. Não alterei a data nem fiz reserva. Quer consultar outra data?` : "Não encontrei outras opções compatíveis com os dados informados. Qual dia ou período funciona melhor para você? Nenhuma reserva foi feita.";
+        return opcoes.length ? `${maisOpcoes ? "Também temos estas opções" : opcoes.length === 1 ? "Tenho esta opção para você" : "Tenho estas duas opções para você"} (horário de Brasília):\n\n${opcoes.map((a,i) => `${i+1}. ${a.modalidade} · ${a.turma} · ${formatarOcorrenciaCt(a.inicio)}`).join("\n")}\n\nQual opção você prefere?` : turno ? `Não encontrei outra aula compatível ${data ? `em ${rotuloDataCt(data)}, ` : ""}no turno da ${turno === "manha" ? "manhã" : turno}. Outro turno funciona para você?` : data ? `Não encontrei uma aula compatível para ${rotuloDataCt(data)}. Não alterei a data nem fiz reserva. Quer consultar outra data?` : "Não encontrei outras opções compatíveis com os dados informados. Qual dia ou período funciona melhor para você? Nenhuma reserva foi feita.";
       }
       const opcao = cadastro.opcoes[dados.opcao - 1];
       if (!opcao) return "Precisamos consultar as datas da agenda novamente antes de reservar.";

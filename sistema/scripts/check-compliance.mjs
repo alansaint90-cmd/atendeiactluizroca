@@ -386,6 +386,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("priorizarInfantil(candidatas")) {
     findings.push({ level: "error", id: "prioridade-infantil-ct", file: rel, line: 1, msg: "Preservar prioridade de Taekwondo para menores de 12 sem restringir pedidos explícitos." });
   }
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("pediuAlternativas") || !content.includes("garrafinha de água"))) {
+    findings.push({ level: "error", id: "alternativas-naturais-ct", file: rel, line: 1, msg: "Preservar consulta de alternativas e confirmação natural." });
+  }
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("correspondeTurno(inicio, turno)")) {
     findings.push({ level: "error", id: "turno-experimental-ct", file: rel, line: 1, msg: "Filtrar as opções pelo turno solicitado." });
   }
