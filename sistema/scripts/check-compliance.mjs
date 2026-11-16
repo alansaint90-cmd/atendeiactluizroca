@@ -380,6 +380,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("O que você gostaria de alterar?") || !content.includes("aguardandoAjuda") || content.includes("Protocolo:"))) {
     findings.push({ level: "error", id: "confirmacao-natural-ct", file: rel, line: 1, msg: "Preservar confirmação natural, correção e retorno sem protocolo." });
   }
+  if (rel === "src/lib/chatbots/prompt-servidor.ts" && !content.includes("CONHECIMENTO_CT")) {
+    findings.push({ level: "error", id: "conhecimento-ct", file: rel, line: 1, msg: "Incorporar informações gerais confirmadas do CT sem substituir a grade." });
+  }
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("interpretarDataCt(texto)") || !content.includes("dataLocalCt(Date.parse(inicio)) === data"))) {
     findings.push({ level: "error", id: "calendario-aulas-ct", file: rel, line: 1,
       msg: "A agenda deve resolver referências temporais e filtrar somente a data solicitada." });

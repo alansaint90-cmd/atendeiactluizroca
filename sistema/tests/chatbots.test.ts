@@ -46,3 +46,15 @@ test("reporta falha de gravação sem alegar sucesso", () => {
   const storage = { getItem: () => null, setItem: () => { throw new Error("QuotaExceeded"); } };
   assert.throws(() => saveChatbots(storage, [chatbotExample], null), /Não foi possível salvar/);
 });
+
+import { montarInstrucoesDoAgente } from "../src/lib/chatbots/prompt-servidor";
+import { CONHECIMENTO_CT } from "../src/lib/ct/conhecimento";
+test("informações gerais entram no chatbot CT já salvo sem sobrescrever seu contexto", () => {
+  const salvo = {...chatbotExample, context:"Instruções personalizadas do CT Luís Roca", flows:[]};
+  const antes=JSON.stringify(salvo); const prompt=montarInstrucoesDoAgente(salvo);
+  assert.ok(prompt.includes(CONHECIMENTO_CT)); assert.match(prompt,/Instruções personalizadas/);
+  assert.equal(JSON.stringify(salvo),antes);
+  for (const trecho of ["R$ 35,00", "avaliação", "crédito", "Pix", "anuidade", "Wellhub", "TotalPass", "42709-430", "pendentes de validação"]) assert.ok(prompt.toLowerCase().includes(trecho.toLowerCase()),trecho);
+  assert.equal(montarInstrucoesDoAgente(null),"");
+  assert.ok(!montarInstrucoesDoAgente({...salvo,identifier:"Outro negócio",context:"Outro contexto"}).includes(CONHECIMENTO_CT));
+});

@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Base de conhecimento — 16/11/2026
+
+Informações gerais dos prints de 16/11/2026 estão em src/lib/ct/conhecimento.ts e no prompt oficial: avaliação física em todos os planos; débito/crédito, Pix e dinheiro; sem matrícula ou anuidade; diária R$ 35 (não confundir com experimental); Gympass/Wellhub e TotalPass P2; estacionamento e endereço com CEP 42709-430. A montagem do prompt incorpora a base aos chatbots do CT já salvos sem sobrescrevê-los. O CT pediu manter divergências de grade e idade pendentes: kids segunda/quarta 9h versus 10h, horários gerais/adultos, Jiu-Jitsu desde 13 versus 10 e turma feminina. Não alterar aulas, reservas ou elegibilidade; consultar a agenda e oferecer apenas duas opções, sem afirmar vaga por FAQ. Recepção atual preservada.
+
 ## Confirmação natural da experimental — 15/11/2026
 
 A conferência termina apenas com “Os dados estão corretos?”. Sim confirma a reserva; não pergunta o que alterar, sem gravar e sem aceitar nova confirmação até reconferir os dados. Após sucesso real, não mostrar protocolo: enviar três balões separados (agendamento com nome/modalidade/data, link do endereço, “Posso te ajudar em algo mais?”). Aguardar resposta: sim pergunta como ajudar; não despede lembrando a aula e a data verificadas. Dúvidas específicas são respondidas antes de encerrar.

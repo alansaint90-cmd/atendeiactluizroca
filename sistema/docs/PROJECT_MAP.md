@@ -6,7 +6,7 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 199 |
+| Arquivos TS/TSX | 200 |
 | Tabelas (Drizzle) | 36 |
 | Server Actions (arquivos) | 14 |
 | Rotas de API | 6 |
@@ -184,6 +184,7 @@ lib/
     oportunidades.ts
     validacao.ts
   ct/
+    conhecimento.ts
     local.ts
     prompt.ts
     relogio.ts
