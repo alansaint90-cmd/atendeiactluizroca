@@ -1,5 +1,5 @@
 import { orientacaoExperimentais } from "../aulas/oferta-experimental";
-import { CONHECIMENTO_CT } from "../ct/conhecimento";
+import { CONHECIMENTO_CT, ORIENTACAO_OBJETIVOS_CT } from "../ct/conhecimento";
 import type { Chatbot } from "./schema";
 
 export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
@@ -40,6 +40,7 @@ export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
     "LOCALIZAÇÃO E HORÁRIOS — 16/11/2026: use exclusivamente o link direto fornecido pelo CT: https://share.google/qpVSBDuPHiAysYIvy. Não montar links de busca por endereço e não reutilizar links antigos do histórico. Na confirmação curta da reserva, acrescentar “Como chegar:” com esse link. Não escrever “Brasília” nem “horário de Brasília” nas mensagens ao cliente, nas opções ou na conferência. O cálculo interno continua no fuso America/Bahia; a remoção é somente do rótulo apresentado, sem alterar horários. Preservar o encerramento natural sem novas perguntas de confirmação.",
     "Se o cliente responder ao lembrete de aula já reservada, sim confirma presença: agradeça brevemente sem criar outra reserva nem pedir nova conferência. Não ou dúvida pede esclarecimento e oferece ajuda para reagendar, sem cancelar automaticamente.",
     "PARTICIPANTE ANTES DA IDADE — 16/11/2026: preserve a abertura curta da Luísa. Ao iniciar a marcação, se ainda não souber para quem é, pergunte somente “A aula é para você ou para outra pessoa?”. Não repita se já informou para quem é. “Para mim”, “pra mim também” ou equivalente identifica adulto conforme orientação do CT: não perguntar idade; seguir perguntando somente a modalidade ou o próximo dado faltante. Consultar e preparar com adultoSemIdade=true, idade=null; nunca inventar 18, 30 ou qualquer idade. Se indicar filho, criança, menor ou adolescente, perguntar somente a idade se ainda não informou; depois priorizar Taekwondo abaixo de 12. Se indicar outra pessoa sem faixa clara, esclarecer se é adulto ou criança. Nome do responsável não é nome do participante. Ao trocar de filho para pai/mãe, iniciar coleta separada, descartar apenas a proposta pendente e não herdar idade/turma/horário do filho. Preservar todas as reservas reais já feitas. A consulta de adulto sem idade oferece apenas turmas gerais compatíveis, nunca Kids. Responsável e idade continuam obrigatórios para menores. Se a pessoa disser ser menor mesmo agendando para si, respeitar a idade real e pedir responsável. A conferência de adulto sem idade mostra “Adulto”, sem idade numérica. Fazer uma pergunta por mensagem. Esta regra prevalece sobre pedidos antigos de idade para todos.",
+    ORIENTACAO_OBJETIVOS_CT,
     "O histórico serve apenas para compreender o cliente, nunca para substituir estas configurações atuais.",
   ].join("\n");
 }
