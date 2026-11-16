@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, uuid, text, integer, check, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, integer, boolean, check, uniqueIndex } from "drizzle-orm/pg-core";
 import { users } from "../schema";
 import { colunasAuditoria, instante } from "./_compartilhado";
 import { STATUS_AULA, listaSql } from "./_enums";
@@ -13,9 +13,9 @@ export const aulas = pgTable("atendeia_aulas", {
 
 export const aulasReservas = pgTable("atendeia_aulas_reservas", {
   id: uuid("id").primaryKey().defaultRandom(), aulaId: uuid("aula_id").notNull().references(() => aulas.id, { onDelete: "restrict", onUpdate: "restrict" }),
-  solicitacaoId: uuid("solicitacao_id").notNull(), inicio: instante("inicio"), nome: text("nome").notNull(), idade: integer("idade").notNull(),
+  solicitacaoId: uuid("solicitacao_id").notNull(), inicio: instante("inicio"), nome: text("nome").notNull(), idade: integer("idade"), adultoSemIdade: boolean("adulto_sem_idade").notNull().default(false),
   telefone: text("telefone").notNull(), responsavel: text("responsavel").notNull(), status: text("status").notNull().default("confirmada"), ...colunasAuditoria,
   modified_by: uuid("modified_by").notNull().references(() => users.id, { onDelete: "restrict", onUpdate: "restrict" }),
 }, t => [uniqueIndex("atendeia_aulas_reservas_solicitacao").on(t.solicitacaoId),
   check("atendeia_aulas_reservas_status", sql`${t.status} IN (${sql.raw(listaSql(STATUS_AULA))})`),
-  check("atendeia_aulas_reservas_aluno", sql`${t.idade} BETWEEN 0 AND 120 AND (${t.idade}>=18 OR length(trim(${t.responsavel}))>2) AND ${t.telefone} ~ '^[+][1-9][0-9]{6,14}$'`)]);
+  check("atendeia_aulas_reservas_aluno", sql`((${t.adultoSemIdade}=true AND ${t.idade} IS NULL) OR (${t.adultoSemIdade}=false AND ${t.idade} IS NOT NULL AND ${t.idade} BETWEEN 0 AND 120 AND (${t.idade}>=18 OR length(trim(${t.responsavel}))>2))) AND ${t.telefone} ~ '^[+][1-9][0-9]{6,14}$'`)]);

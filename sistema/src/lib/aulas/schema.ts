@@ -9,9 +9,9 @@ export const aulaSchema = z.strictObject({
 }).refine(a => a.idadeMaxima >= a.idadeMinima, { message: "A idade máxima deve ser igual ou maior que a mínima.", path: ["idadeMaxima"] });
 export const alunoSchema = z.strictObject({
   nome: texto.regex(/^\p{L}[\p{L}'’.-]*(?:\s+[\p{L}'’.-]+)+$/u, "Informe nome e sobrenome do aluno."),
-  idade: z.number().int().min(0).max(120), telefone: z.string().trim().regex(/^\+[1-9]\d{6,14}$/, "Use telefone com DDI e DDD, como +5571999999999."),
+  idade: z.number().int().min(0).max(120).nullable(), adultoSemIdade: z.boolean().optional(), telefone: z.string().trim().regex(/^\+[1-9]\d{6,14}$/, "Use telefone com DDI e DDD, como +5571999999999."),
   responsavel: z.string().trim().max(150),
-}).refine(a => a.idade >= 18 || a.responsavel.trim().split(/\s+/).length >= 2, { message: "Informe nome e sobrenome do responsável pelo menor.", path: ["responsavel"] });
+}).refine(a => a.idade === null ? a.adultoSemIdade === true : !a.adultoSemIdade, {message:"Identifique o participante adulto ou informe a idade da criança.",path:["idade"]}).refine(a => a.idade === null || a.idade >= 18 || a.responsavel.trim().split(/\s+/).length >= 2, { message: "Informe nome e sobrenome do responsável pelo menor.", path: ["responsavel"] });
 export const reservaAulaSchema = z.strictObject({ aulaId: z.uuid(), aluno: alunoSchema, solicitacaoId: z.uuid(), conferido: z.literal(true), inicio: z.iso.datetime({ offset: true }).optional() });
 export const alvoAulaSchema = z.strictObject({ id: z.uuid(), atualizadoEm: z.iso.datetime({ offset: true }) });
 export type AulaDados = z.infer<typeof aulaSchema>;
@@ -23,7 +23,12 @@ export const formatarAula = (inicio: string) => new Date(inicio).toLocaleString(
 
 export function validarVaga(aula: Aula, aluno: AlunoDados, reservas: ReservaAula[], agora = Date.now()) {
   if (Date.parse(aula.inicio) <= agora) throw new Error("Esta aula já começou. Escolha uma data futura.");
-  if (aluno.idade < aula.idadeMinima || aluno.idade > aula.idadeMaxima) throw new Error("A idade do aluno não corresponde à faixa etária desta turma.");
+  if (!faixaCompativel(aula, aluno.idade, aluno.adultoSemIdade)) throw new Error("A idade do aluno não corresponde à faixa etária desta turma.");
   if (aula.capacidade !== null && reservas.filter(r => r.aulaId === aula.id && r.status === "confirmada").length >= aula.capacidade) throw new Error("Esta turma está lotada. Escolha outra aula.");
   if (reservas.some(r => r.aulaId === aula.id && r.status === "confirmada" && r.telefone === aluno.telefone && r.nome.toLocaleLowerCase("pt-BR") === aluno.nome.toLocaleLowerCase("pt-BR"))) throw new Error("Este aluno já tem uma reserva confirmada nesta aula.");
+}
+
+/** Adulto sem idade numérica só entra em turma geral sem limite adulto específico. */
+export function faixaCompativel(aula: Aula, idade: number | null, adultoSemIdade = false) {
+  return idade === null ? adultoSemIdade && !/^kids/iu.test(aula.turma) && aula.idadeMinima <= 18 && aula.idadeMaxima === 120 : idade >= aula.idadeMinima && idade <= aula.idadeMaxima;
 }

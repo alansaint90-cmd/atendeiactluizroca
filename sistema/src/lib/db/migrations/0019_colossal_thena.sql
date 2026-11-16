@@ -1,0 +1,4 @@
+ALTER TABLE "atendeia_aulas_reservas" DROP CONSTRAINT "atendeia_aulas_reservas_aluno";--> statement-breakpoint
+ALTER TABLE "atendeia_aulas_reservas" ALTER COLUMN "idade" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "atendeia_aulas_reservas" ADD COLUMN "adulto_sem_idade" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "atendeia_aulas_reservas" ADD CONSTRAINT "atendeia_aulas_reservas_aluno" CHECK ((("atendeia_aulas_reservas"."adulto_sem_idade"=true AND "atendeia_aulas_reservas"."idade" IS NULL) OR ("atendeia_aulas_reservas"."adulto_sem_idade"=false AND "atendeia_aulas_reservas"."idade" IS NOT NULL AND "atendeia_aulas_reservas"."idade" BETWEEN 0 AND 120 AND ("atendeia_aulas_reservas"."idade">=18 OR length(trim("atendeia_aulas_reservas"."responsavel"))>2))) AND "atendeia_aulas_reservas"."telefone" ~ '^[+][1-9][0-9]{6,14}$');

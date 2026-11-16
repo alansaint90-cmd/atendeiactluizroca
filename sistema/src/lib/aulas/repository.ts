@@ -7,7 +7,7 @@ import { ErroDeNegocio } from "../acao";
 import { aulaSchema, reservaAulaSchema, alvoAulaSchema, validarVaga, type Aula, type ReservaAula } from "./schema";
 
 const camposAula = sql`id,modalidade,turma,professor,inicio,duracao,capacidade,dia_semana AS "diaSemana",idade_minima AS "idadeMinima",idade_maxima AS "idadeMaxima",updated_at AS "atualizadoEm"`;
-const camposReserva = sql`id,aula_id AS "aulaId",solicitacao_id AS "solicitacaoId",inicio,nome,idade,telefone,responsavel,status,updated_at AS "atualizadoEm"`;
+const camposReserva = sql`id,aula_id AS "aulaId",solicitacao_id AS "solicitacaoId",inicio,nome,idade,adulto_sem_idade AS "adultoSemIdade",telefone,responsavel,status,updated_at AS "atualizadoEm"`;
 const normalizar = <T extends { atualizadoEm: string }>(r: T): T => ({ ...r, atualizadoEm: new Date(r.atualizadoEm).toISOString() });
 async function auditar(tx: TransacaoSql, id: string, acao: string, autor: string) {
   await tx.execute(sql`INSERT INTO atendeia_audit_logs(action,entity_type,entity_id,changed_fields,modified_by) VALUES(${acao},'aula',${id},'[]'::jsonb,${autor})`);
@@ -44,7 +44,7 @@ export async function reservarAula(banco: BancoSql, entrada: unknown, autor: str
     const reservas = linhas<ReservaAula>(await tx.execute(sql`SELECT ${camposReserva} FROM atendeia_aulas_reservas WHERE aula_id=${r.aulaId} AND ${vivos(aulasReservas)}`));
     try { validarVaga({ ...aula, inicio }, r.aluno, reservas.filter(item => !item.inicio || Date.parse(item.inicio) === Date.parse(inicio))); } catch (erro) { throw new ErroDeNegocio(erro instanceof Error ? erro.message : "Reserva indisponível."); }
     const id = randomUUID(), p = r.aluno;
-    await tx.execute(sql`INSERT INTO atendeia_aulas_reservas(id,aula_id,solicitacao_id,nome,idade,telefone,responsavel,inicio,modified_by) VALUES(${id},${r.aulaId},${r.solicitacaoId},${p.nome},${p.idade},${p.telefone},${p.responsavel},${inicio}::timestamptz,${autor})`);
+    await tx.execute(sql`INSERT INTO atendeia_aulas_reservas(id,aula_id,solicitacao_id,nome,idade,adulto_sem_idade,telefone,responsavel,inicio,modified_by) VALUES(${id},${r.aulaId},${r.solicitacaoId},${p.nome},${p.idade},${p.adultoSemIdade ?? false},${p.telefone},${p.responsavel},${inicio}::timestamptz,${autor})`);
     await auditar(tx, id, "aula_reservada", autor); return { id };
   });
 }

@@ -134,6 +134,13 @@
       "when": 1794839081303,
       "tag": "0018_greedy_anthem",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794839730434,
+      "tag": "0019_colossal_thena",
+      "breakpoints": true
     }
   ]
 }
