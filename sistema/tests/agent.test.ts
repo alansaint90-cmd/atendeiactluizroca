@@ -431,3 +431,10 @@ test("experimental confirmada envia três balões com registro individual", asyn
   await processMessage({...message,text:"sim"}, {...config,agendaAulas:true}, f.port);
   assert.equal(f.sends(),3,"evento repetido não reenvia os balões");
 });
+
+ test("agenda de aulas não acrescenta segunda pergunta de nome", async () => {
+  const f=fixture(); f.port.generate=async()=>"Para seu filho, temos Taekwondo! Prefere à tarde ou à noite?";
+  await processMessage({...message,text:"É para meu filho de 8 anos"},{...config,agendaAulas:true},f.port);
+  assert.equal(f.sentTexts.length,1); assert.doesNotMatch(f.sentTexts[0],/qual é o seu nome/);
+  assert.equal((f.sentTexts[0].match(/\?/g) ?? []).length,1);
+});

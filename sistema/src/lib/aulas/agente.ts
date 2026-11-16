@@ -1,5 +1,5 @@
 import { interpretarDataCt, dataLocalCt, rotuloDataCt, formatarOcorrenciaCt } from "./calendario";
-import { selecionarExperimentais } from "./oferta-experimental";
+import { selecionarExperimentais, priorizarInfantil } from "./oferta-experimental";
 import { ZodError } from "zod";
 import { randomUUID } from "node:crypto";
 import type Redis from "ioredis";
@@ -77,7 +77,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         const aulas = agenda.aulas.filter(a => !modalidade || normalizar(a.modalidade) === normalizar(modalidade));
         const elegivel = (a: Aula) => idade == null || idade >= a.idadeMinima && idade <= a.idadeMaxima && !(idade >= 18 && a.turma.startsWith("Kids")) && !(idade < 18 && a.turma === "Geral") && !(idade === 3 && a.modalidade === "Taekwondo");
         const candidatas = aulas.filter(elegivel).flatMap(a => ocorrenciasAula(a).filter(inicio => (!data || dataLocalCt(Date.parse(inicio)) === data) && (a.capacidade === null || agenda.reservas.filter(r => r.aulaId === a.id && r.status === "confirmada" && (!r.inicio || Date.parse(r.inicio) === Date.parse(inicio))).length < a.capacidade)).map(inicio => ({ aulaId: a.id, inicio, modalidade: a.modalidade, turma: a.turma })));
-        const opcoes = selecionarExperimentais(candidatas, mostradas);
+        const opcoes = selecionarExperimentais(priorizarInfantil(candidatas, idade, modalidade, mostradas), mostradas);
         await salvar({ opcoes, dataSolicitada: data, consulta: { modalidade, idade, data, mostradas: [...mostradas, ...opcoes.map(a => a.aulaId)] } });
         return opcoes.length ? `${dados.maisOpcoes ? "Também temos estas opções" : opcoes.length === 1 ? "Tenho esta opção para você" : "Tenho estas duas opções para você"} (horário de Brasília):\n\n${opcoes.map((a,i) => `${i+1}. ${a.modalidade} · ${a.turma} · ${formatarOcorrenciaCt(a.inicio)}`).join("\n")}\n\nQual opção você prefere? A reserva só é concluída após conferir os dados e você confirmar.` : data ? `Não encontrei uma aula compatível para ${rotuloDataCt(data)}. Não alterei a data nem fiz reserva. Quer consultar outra data?` : "Não encontrei outras opções compatíveis com os dados informados. Qual dia ou período funciona melhor para você? Nenhuma reserva foi feita.";
       }

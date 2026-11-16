@@ -28,16 +28,17 @@ export function extrairNomeInformado(texto: string, historico: Turn[]): string |
   return nomeValido(resposta);
 }
 
-export function instrucoesComNome(instrucoes: string, nome: string | null, primeiroContato: boolean) {
+export function instrucoesComNome(instrucoes: string, nome: string | null, primeiroContato: boolean, perguntarNome = true) {
   if (nome) return `${instrucoes}\n\nNome confirmado pelo próprio cliente: ${nome}. Use o primeiro nome naturalmente nesta resposta. Substitua qualquer marcador de nome pelo nome confirmado.`;
+  if (!perguntarNome) return `${instrucoes}\n\nNome ainda não confirmado: responda à dúvida atual e faça somente uma pergunta. Peça o nome em uma etapa própria, sem acrescentar outra pergunta ou bloquear informações. Nunca envie marcadores de modelo ao cliente.`;
   return `${instrucoes}\n\n${primeiroContato ? "Na primeira resposta, apresente-se e pergunte o nome do cliente antes de avançar na conversa." : "O nome do cliente ainda não foi confirmado; pergunte como ele prefere ser chamado."} Nunca envie marcadores de modelo ao cliente.`;
 }
 
-export function respostaComNome(resposta: string, nome: string | null): string {
+export function respostaComNome(resposta: string, nome: string | null, perguntarNome = true): string {
   if (!nome) {
     const limpa = resposta.split("\n").filter(linha => !/\[(?:NOME|NOME DO CLIENTE)\]|\{NOME\}/iu.test(linha)).join("\n").trim();
     const texto = limpa || "Olá! 😊 Seja bem-vindo(a).";
-    return perguntaNome.test(texto) ? texto : `${texto}\n\nAh, antes de começarmos, qual é o seu nome?`;
+    return !perguntarNome || perguntaNome.test(texto) ? texto : `${texto}\n\nAh, antes de começarmos, qual é o seu nome?`;
   }
   const tratamento = nome.split(" ")[0];
   const preenchida = resposta.replace(marcadorNome, tratamento).trim();

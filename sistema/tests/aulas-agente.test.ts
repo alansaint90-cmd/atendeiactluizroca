@@ -102,3 +102,14 @@ test("duas opções incluem tarde e as alternativas não repetem turmas", async(
   const outras=selecionarExperimentais(opcoes,primeiras.map(a=>a.aulaId));assert.equal(outras.length,2);assert.ok(outras.every(a=>!primeiras.some(b=>a.aulaId===b.aulaId)));
   assert.equal(selecionarExperimentais([],[]).length,0);
 });
+
+ test("prioridade infantil respeita limite de 12, pedido explícito e alternativas", async () => {
+  const {priorizarInfantil} = await import("../src/lib/aulas/oferta-experimental");
+  const opcoes=[{aulaId:"jiu",modalidade:"Jiu-Jitsu"},{aulaId:"tae",modalidade:"Taekwondo"}];
+  assert.deepEqual(priorizarInfantil(opcoes,8,null,[]),[opcoes[1]]);
+  assert.deepEqual(priorizarInfantil(opcoes,11,null,[]),[opcoes[1]]);
+  assert.deepEqual(priorizarInfantil(opcoes,12,null,[]),opcoes);
+  assert.deepEqual(priorizarInfantil(opcoes,null,null,[]),opcoes);
+  assert.deepEqual(priorizarInfantil(opcoes,10,"Jiu-Jitsu",[]),opcoes);
+  assert.deepEqual(priorizarInfantil(opcoes,10,null,["tae"]),opcoes);
+});

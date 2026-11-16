@@ -78,7 +78,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       const nome = informado ?? (mesmoNome(salvo, persona) && !confirmadoNoHistorico ? null : salvo);
       if (informado && port.rememberName) await port.rememberName(informado);
       const memoria = await port.contextoPersistido?.() ?? "";
-      const instrucoes = `${memoria}\n${instrucoesComNome(config.AI_SYSTEM_PROMPT, nome, historico.length === 0)}\nResponda primeiro à pergunta atual do cliente, de forma direta e objetiva. Não condicione informações sobre valor, pagamento, endereço da clínica, atendimento ou disponibilidade ao preenchimento do cadastro. Depois de esclarecer a dúvida, retome o fluxo na etapa em que parou, perguntando apenas o próximo dado pendente, sem reiniciar a conversa nem pedir novamente dados já informados. Se o cliente não quiser continuar, respeite a decisão. Não repita perguntas de cadastro no lugar da resposta solicitada. Não use o nome da assistente como rótulo ou prefixo das mensagens. Preserve a apresentação natural no início da conversa.`;
+      const instrucoes = `${memoria}\n${instrucoesComNome(config.AI_SYSTEM_PROMPT, nome, historico.length === 0, !config.agendaAulas)}\nResponda primeiro à pergunta atual do cliente, de forma direta e objetiva. Não condicione informações sobre valor, pagamento, endereço da clínica, atendimento ou disponibilidade ao preenchimento do cadastro. Depois de esclarecer a dúvida, retome o fluxo na etapa em que parou, perguntando apenas o próximo dado pendente, sem reiniciar a conversa nem pedir novamente dados já informados. Se o cliente não quiser continuar, respeite a decisão. Não repita perguntas de cadastro no lugar da resposta solicitada. Não use o nome da assistente como rótulo ou prefixo das mensagens. Preserve a apresentação natural no início da conversa.`;
       // Preservar o histórico armazenado, mas não ensinar novamente uma persona ou roteiro antigo.
       const contextoAtual = persona ? historico.filter(turno => turno.role === "user" || turno.revisao === revisao) : historico;
       const saudacao = /^(?:oi+|ol[aá]+|bom dia|boa tarde|boa noite)[\s!.😊👋]*$/iu.test((transcript ?? message.text).trim());
@@ -105,7 +105,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
         transferencia = true;
         reply = config.atendimento.transferNotice.replace(/\[(?:NOME|NOME DO CLIENTE)\]|\{NOME\}/giu, nome?.split(" ")[0] ?? "").trim()
           || "Vou encaminhar seu atendimento para nossa equipe.";
-      } else reply = partes ? gerada : removerRotuloDaPersona(respostaComNome(gerada, nome), persona);
+      } else reply = partes ? gerada : removerRotuloDaPersona(respostaComNome(gerada, nome, !config.agendaAulas), persona);
       if (consulta) partes = mensagensDaConsulta(reply);
       if (respostaAula) partes = mensagensDaAula(reply);
     }
@@ -119,7 +119,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
   }
   if (!await port.enabled()) return "pausada";
   if (!state.partes && !state.transferencia && /\[(?:NOME|NOME DO CLIENTE)\]|\{NOME\}/iu.test(state.reply!)) {
-    state = { ...state, reply: respostaComNome(state.reply!, await port.contactName?.() ?? null) };
+    state = { ...state, reply: respostaComNome(state.reply!, await port.contactName?.() ?? null, !config.agendaAulas) };
     await port.write(state);
   }
   const semRotulo = state.transferencia || state.partes || state.consulta ? state.reply! : removerRotuloDaPersona(state.reply!, personaDoAgente(config.AI_SYSTEM_PROMPT));

@@ -11,3 +11,10 @@ export function selecionarExperimentais<T extends { aulaId: string; inicio: stri
   const segunda = restantes.find(a=>!tarde(a)) ?? restantes.find(a=>hora(a)!==hora(primeira)) ?? restantes[0];
   return segunda ? [primeira,segunda] : [primeira];
 }
+
+/** Prioridade de apresentação; pedidos explícitos e demais turmas continuam disponíveis. */
+export function priorizarInfantil<T extends { modalidade: string; aulaId: string }>(opcoes: T[], idade: number | null, modalidade: string | null, mostradas: string[]): T[] {
+  if (idade === null || idade >= 12 || modalidade?.trim()) return opcoes;
+  const taekwondo = opcoes.filter(a => a.modalidade === "Taekwondo" && !mostradas.includes(a.aulaId));
+  return taekwondo.length ? taekwondo : opcoes;
+}

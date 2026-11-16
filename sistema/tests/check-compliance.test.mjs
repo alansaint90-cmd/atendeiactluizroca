@@ -178,6 +178,7 @@ try {
     ["oferta experimental sem seleção gradual reprova", reprova("aulas/agente.ts", "oferta-experimental-ct")],
     ["confirmação natural do CT ausente reprova", reprova("aulas/agente.ts", "confirmacao-natural-ct")],
     ["base confirmada do CT ausente reprova", reprova("chatbots/prompt-servidor.ts", "conhecimento-ct")],
+    ["prioridade infantil ausente reprova", reprova("aulas/agente.ts", "prioridade-infantil-ct")],
     ["agenda sem calendário e filtro de data reprova", reprova("aulas/agente.ts", "calendario-aulas-ct")],
     ["modelo inicial com roteiro comercial reprova", reprova("chatbots/defaults.ts", "prompt-legado")],
     ["importação automática do navegador reprova", reprova("chatbots/page.tsx", "prompt-legado")],

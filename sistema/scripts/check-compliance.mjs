@@ -383,6 +383,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/chatbots/prompt-servidor.ts" && !content.includes("CONHECIMENTO_CT")) {
     findings.push({ level: "error", id: "conhecimento-ct", file: rel, line: 1, msg: "Incorporar informações gerais confirmadas do CT sem substituir a grade." });
   }
+  if (rel === "src/lib/aulas/agente.ts" && !content.includes("priorizarInfantil(candidatas")) {
+    findings.push({ level: "error", id: "prioridade-infantil-ct", file: rel, line: 1, msg: "Preservar prioridade de Taekwondo para menores de 12 sem restringir pedidos explícitos." });
+  }
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("interpretarDataCt(texto)") || !content.includes("dataLocalCt(Date.parse(inicio)) === data"))) {
     findings.push({ level: "error", id: "calendario-aulas-ct", file: rel, line: 1,
       msg: "A agenda deve resolver referências temporais e filtrar somente a data solicitada." });
