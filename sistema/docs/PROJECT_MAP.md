@@ -6,7 +6,7 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 200 |
+| Arquivos TS/TSX | 201 |
 | Tabelas (Drizzle) | 36 |
 | Server Actions (arquivos) | 14 |
 | Rotas de API | 6 |
@@ -139,6 +139,7 @@ lib/
     recorrencia.ts
     repository.ts
     schema.ts
+    turno.ts
   auth/
     acesso-http.ts
     contexto.ts
