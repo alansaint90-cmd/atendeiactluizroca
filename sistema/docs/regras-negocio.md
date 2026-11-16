@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Lembrete automático da experimental — 16/11/2026
+
+Lembrete automático da experimental: a rotina existente de Mensagens agendadas programa uma única mensagem por reserva confirmada, no chip ctluizroca, para exatamente 24 horas antes da ocorrência real. Texto curto: “Opa, [primeiro nome]! Passando para lembrar da aula experimental de [modalidade] amanhã, às [horário]. Tá confirmado?”. Para menores, cumprimentar o responsável e citar o aluno. Não reprogramar após cancelamento manual ou envio incerto. Cancelamento/alteração da reserva, telefone ou data inválida impedem envio; revalidar antes da chamada. Não mandar atrasado no dia da aula e não criar lembrete retroativo para reserva feita com menos de 24h. Pausa humana impede seleção até liberação; se expirar o dia anterior, cancelar. Índice único por reserva evita duplicidade entre ciclos e réplicas. Envio confirmado aparece no histórico como automático com ID real e auditoria, na mesma transação do status. Resposta “sim” ao lembrete é confirmação de presença, não nova reserva; “não” pede se deseja ajuda para reagendar, sem cancelar automaticamente. Reservas futuras já existentes com mais de 24h recebem o lembrete após publicação; aulas e reservas não são modificadas.
+
 ## Link direto e rótulos de horário — 16/11/2026
 
 LOCALIZAÇÃO E HORÁRIOS — 16/11/2026: use exclusivamente o link direto fornecido pelo CT: https://share.google/qpVSBDuPHiAysYIvy. Não montar links de busca por endereço e não reutilizar links antigos do histórico. Na confirmação curta da reserva, acrescentar “Como chegar:” com esse link. Não escrever “Brasília” nem “horário de Brasília” nas mensagens ao cliente, nas opções ou na conferência. O cálculo interno continua no fuso America/Bahia; a remoção é somente do rótulo apresentado, sem alterar horários. Preservar o encerramento natural sem novas perguntas de confirmação.

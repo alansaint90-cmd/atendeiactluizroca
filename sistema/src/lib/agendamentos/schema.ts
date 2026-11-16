@@ -11,7 +11,7 @@ export const identidadeAgendamento = z.strictObject({ id: z.uuid(), version: z.n
 export const statusAgendamento = { pendente: "Pendente", enviando: "Enviando", enviado: "Enviado", cancelado: "Cancelado", incerto: "Envio incerto", erro: "Erro" } as const;
 export type DadosAgendamento = z.infer<typeof agendamentoSchema>;
 export interface Agendamento extends DadosAgendamento {
-  version: number; status: keyof typeof statusAgendamento; codigoErro: string | null; enviadoEm: string | null;
+  reservaAulaId?: string | null; version: number; status: keyof typeof statusAgendamento; codigoErro: string | null; enviadoEm: string | null;
 }
 export function validarData(iso: string, agora = Date.now()) {
   const horario = Date.parse(iso);

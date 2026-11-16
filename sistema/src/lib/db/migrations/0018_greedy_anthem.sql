@@ -1,0 +1,3 @@
+ALTER TABLE "atendeia_agendamentos" ADD COLUMN "reserva_aula_id" uuid;--> statement-breakpoint
+ALTER TABLE "atendeia_agendamentos" ADD CONSTRAINT "atendeia_agendamentos_reserva_aula_id_atendeia_aulas_reservas_id_fk" FOREIGN KEY ("reserva_aula_id") REFERENCES "public"."atendeia_aulas_reservas"("id") ON DELETE restrict ON UPDATE restrict;--> statement-breakpoint
+CREATE UNIQUE INDEX "atendeia_agendamentos_reserva_aula" ON "atendeia_agendamentos" USING btree ("reserva_aula_id");

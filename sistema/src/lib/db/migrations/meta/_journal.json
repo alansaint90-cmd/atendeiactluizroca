@@ -127,6 +127,13 @@
       "when": 1794711657402,
       "tag": "0017_red_radioactive_man",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794839081303,
+      "tag": "0018_greedy_anthem",
+      "breakpoints": true
     }
   ]
 }

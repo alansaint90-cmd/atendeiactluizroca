@@ -392,6 +392,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("LINK_LOCALIZACAO_CT") || content.includes("Brasília"))) {
     findings.push({ level: "error", id: "localizacao-direta-ct", file: rel, line: 1, msg: "Usar link direto do CT e omitir o rótulo de fuso nas mensagens." });
   }
+  if (rel === "src/lib/agendamentos/worker.ts" && (!content.includes("sincronizarLembretesAulas") || !content.includes("revalidarLembreteAula"))) {
+    findings.push({ level: "error", id: "lembrete-aula-validado", file: rel, line: 1, msg: "Programar e revalidar lembretes vinculados à reserva antes do envio." });
+  }
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("correspondeTurno(inicio, turno)")) {
     findings.push({ level: "error", id: "turno-experimental-ct", file: rel, line: 1, msg: "Filtrar as opções pelo turno solicitado." });
   }

@@ -1,3 +1,4 @@
+import { sincronizarLembretesAulas, revalidarLembreteAula } from "../aulas/lembretes";
 import { db } from "../db/client";
 import { ensureDatabase } from "../db/migrate";
 import { effectiveSettings } from "../settings/repository";
@@ -9,6 +10,7 @@ import { reservarAgendamento, concluirAgendamento, type BancoAgendamentos } from
 const configuracaoEnvio = settingsSchema.pick({ EVOLUTION_API_URL: true, EVOLUTION_API_KEY: true, EVOLUTION_INSTANCE_NAME: true }).required();
 export async function processarAgendamento(banco: BancoAgendamentos, configuracoes: () => Promise<IntegrationSettings>, enviar = sendReply) {
   const settings = await configuracoes();
+  if (settings.EVOLUTION_INSTANCE_NAME) await sincronizarLembretesAulas(banco, settings.EVOLUTION_INSTANCE_NAME);
   // Um envio por chip a cada ciclo evita que a fila principal impeça os demais.
   for (const instancia of instanciasConfiguradas(settings)) {
     await processarChip(banco, settings, instancia, configuracoes, enviar);
@@ -23,6 +25,9 @@ async function processarChip(banco: BancoAgendamentos, settings: IntegrationSett
   const atual = configuracaoEnvio.safeParse(settingsDaInstancia(await configuracoes(), instancia));
   if (!atual.success || JSON.stringify(atual.data) !== JSON.stringify(inicial.data)) {
     await concluirAgendamento(banco, item, "erro", "configuracao_alterada", null); return;
+  }
+  if (item.reservaAulaId && !await revalidarLembreteAula(banco, item.id)) {
+    await concluirAgendamento(banco, item, "erro", "lembrete_aula_indisponivel", null); return;
   }
   let provedor: string;
   try { provedor = await enviar(atual.data, item.telefone.slice(1), item.mensagem); }

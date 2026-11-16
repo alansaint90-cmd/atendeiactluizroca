@@ -1,3 +1,5 @@
+import { condicaoLembreteAula } from "../aulas/lembretes";
+import { registrarEnvioIa } from "../operacao/atribuir-ia";
 import { sql, type SQL } from "drizzle-orm";
 import { ErroDeNegocio } from "../acao";
 import { systemUserId } from "../db/bootstrap";
@@ -6,7 +8,7 @@ import { agendamentoSchema, identidadeAgendamento, validarData, type Agendamento
 interface Transacao { execute(query: SQL): PromiseLike<unknown> }
 export interface BancoAgendamentos extends Transacao { transaction<T>(work: (tx: Transacao) => Promise<T>): Promise<T> }
 function linhas<T>(result: unknown): T[] { return (Array.isArray(result) ? result : (result as { rows: T[] }).rows) as T[]; }
-const campos = sql`id,telefone,instancia,mensagem,agendado_para AS "agendadoPara",status,version,codigo_erro AS "codigoErro",enviado_em AS "enviadoEm"`;
+const campos = sql`id,reserva_aula_id AS "reservaAulaId",telefone,instancia,mensagem,agendado_para AS "agendadoPara",status,version,codigo_erro AS "codigoErro",enviado_em AS "enviadoEm"`;
 function normalizar(item: Agendamento): Agendamento {
   return { ...item, agendadoPara: new Date(item.agendadoPara).toISOString(), enviadoEm: item.enviadoEm ? new Date(item.enviadoEm).toISOString() : null };
 }
@@ -56,7 +58,7 @@ export async function reservarAgendamento(banco: BancoAgendamentos, instancia: s
     for (const item of antigos) await auditar(tx, item.id, "agendamento_incerto");
     const [item] = linhas<Agendamento>(await tx.execute(sql`UPDATE atendeia_agendamentos SET status='enviando',iniciado_em=now(),
       version=version+1,updated_at=now(),modified_by=${systemUserId} WHERE id=(SELECT id FROM atendeia_agendamentos
-        WHERE is_deleted=false AND status='pendente' AND instancia=${instancia} AND agendado_para<=now()
+        WHERE is_deleted=false AND status='pendente' AND instancia=${instancia} AND agendado_para<=now() AND ${condicaoLembreteAula}
         ORDER BY agendado_para,id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING ${campos}`));
     if (!item) return null;
     await auditar(tx, item.id, "agendamento_iniciado"); return normalizar(item);
@@ -69,5 +71,6 @@ export async function concluirAgendamento(banco: BancoAgendamentos, item: Agenda
       WHERE id=${item.id} AND version=${item.version} AND status='enviando' AND is_deleted=false RETURNING id`));
     if (!updated.length) throw new Error("Reserva de agendamento indisponível.");
     await auditar(tx, item.id, `agendamento_${status}`);
+    if (item.reservaAulaId && status === "enviado" && provedor) await registrarEnvioIa({execute:q=>tx.execute(q),transaction:trabalho=>trabalho(tx)}, item.instancia, provedor, {numero:item.telefone.slice(1),texto:item.mensagem});
   });
 }
