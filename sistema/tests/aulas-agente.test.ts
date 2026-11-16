@@ -60,8 +60,10 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     const conversar = agendaAulasDoAgente(banco,redisCadastro(),"lease","conversa-a","5571999999999",async()=>true);
     const lista = await conversar("Quero Muay Thai",{acao:"consultar",modalidade:"Muay Thai",idade:25});
     assert.match(lista!, /1\. Muay Thai/);
+    assert.doesNotMatch(lista!,/Brasília/);
     const conferencia = await conversar("Meu nome é Aluno de Teste, tenho 25 anos",{acao:"preparar",opcao:1,nome:"Aluno de Teste",idade:25,responsavel:""});
     assert.match(conferencia!, /Os dados estão corretos\?$/);
+    assert.doesNotMatch(conferencia!,/Brasília/);
     assert.equal((await consultarAulas(banco)).reservas.length,0);
     await conversar("Qual roupa devo levar?");
     assert.equal((await consultarAulas(banco)).reservas.length,0,"pergunta não autoriza reserva");
@@ -77,7 +79,8 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     const partes = mensagensDaAula(confirmacao!);
     assert.equal(partes.length,1);
     assert.match(partes[0],/roupa leve/); assert.match(partes[0],/garrafinha de água/);
-    assert.doesNotMatch(confirmacao!,/Posso te ajudar|https:|Os dados estão corretos/);
+    assert.doesNotMatch(confirmacao!,/Posso te ajudar|Brasília|Os dados estão corretos|google.com\/maps\/search/);
+    assert.ok(confirmacao!.includes("https://share.google/qpVSBDuPHiAysYIvy"));
     assert.equal(await conversar("sim"),null);
     assert.equal((await consultarAulas(banco)).reservas.length,1);
     await conversar("confirmo");

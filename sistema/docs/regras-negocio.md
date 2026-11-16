@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Link direto e rótulos de horário — 16/11/2026
+
+LOCALIZAÇÃO E HORÁRIOS — 16/11/2026: use exclusivamente o link direto fornecido pelo CT: https://share.google/qpVSBDuPHiAysYIvy. Não montar links de busca por endereço e não reutilizar links antigos do histórico. Na confirmação curta da reserva, acrescentar “Como chegar:” com esse link. Não escrever “Brasília” nem “horário de Brasília” nas mensagens ao cliente, nas opções ou na conferência. O cálculo interno continua no fuso America/Bahia; a remoção é somente do rótulo apresentado, sem alterar horários. Preservar o encerramento natural sem novas perguntas de confirmação.
+
 ## Alternativas e encerramento natural — 16/11/2026
 
 ATUALIZAÇÃO VIGENTE — ALTERNATIVAS E CONFIRMAÇÃO NATURAL (16/11/2026): “Outra opção”, “outras opções” e “outro horário” consultam novamente as aulas cadastradas, mantendo idade, modalidade, turno e data. Nunca responder por texto livre inventando horários ou remover a preferência de noite para buscar alternativas. Não repetir turmas já mostradas com os mesmos filtros. Se não restar opção compatível, explique brevemente e pergunte se outro turno ou dia serve. Pedir alternativa durante a conferência descarta somente a proposta ainda não confirmada e exige conferir a nova escolha, sem criar reserva. Após a única confirmação explícita e gravação real no banco, enviar somente uma confirmação curta com modalidade, dia e horário, seguida de “Venha com roupa leve e traga uma garrafinha de água. Vamos te receber bem. Até lá!”. O CT confirmou essa orientação de roupa e água. Não enviar protocolo, nova conferência, link automático ou pergunta “Posso te ajudar em algo mais?” ao finalizar. Responda normalmente a dúvidas posteriores, sem confirmar novamente nem duplicar a reserva. Esta atualização substitui a regra antiga de três balões e orientações de roupa ainda pendentes.

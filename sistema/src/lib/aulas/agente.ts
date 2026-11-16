@@ -1,3 +1,4 @@
+import { LINK_LOCALIZACAO_CT } from "../ct/conhecimento";
 import { interpretarTurno, correspondeTurno, type TurnoAula } from "./turno";
 import { interpretarDataCt, dataLocalCt, rotuloDataCt, formatarOcorrenciaCt } from "./calendario";
 import { selecionarExperimentais, priorizarInfantil } from "./oferta-experimental";
@@ -54,7 +55,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         const resultado = await reservarAula(banco, cadastro.reserva, systemUserId);
         await salvar({ ...cadastro, confirmada: resultado.id, aguardandoAjuda: false });
         const a = cadastro.opcoes.find(o => o.aulaId === cadastro.reserva?.aulaId && o.inicio === cadastro.reserva?.inicio);
-        return `Sua experimental de ${a?.modalidade ?? "artes marciais"} está agendada para ${formatarOcorrenciaCt(cadastro.reserva.inicio)}! Venha com roupa leve e traga uma garrafinha de água. Vamos te receber bem. Até lá!`;
+        return `Sua experimental de ${a?.modalidade ?? "artes marciais"} está agendada para ${formatarOcorrenciaCt(cadastro.reserva.inicio)}! Venha com roupa leve e traga uma garrafinha de água. Vamos te receber bem. Até lá!\n\nComo chegar: ${LINK_LOCALIZACAO_CT}`;
       }
       if (!acao) {
         if (cadastro.consulta && !cadastro.confirmada && pediuAlternativas) return atender(texto, { acao: "consultar", modalidade: cadastro.consulta.modalidade, idade: cadastro.consulta.idade, maisOpcoes: true });
@@ -88,7 +89,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         const candidatas = aulas.filter(elegivel).flatMap(a => ocorrenciasAula(a).filter(inicio => (!data || dataLocalCt(Date.parse(inicio)) === data) && correspondeTurno(inicio, turno) && (a.capacidade === null || agenda.reservas.filter(r => r.aulaId === a.id && r.status === "confirmada" && (!r.inicio || Date.parse(r.inicio) === Date.parse(inicio))).length < a.capacidade)).map(inicio => ({ aulaId: a.id, inicio, modalidade: a.modalidade, turma: a.turma })));
         const opcoes = selecionarExperimentais(priorizarInfantil(candidatas, idade, modalidade, mostradas), mostradas);
         await salvar({ opcoes, turnoSolicitado: turno, dataSolicitada: data, consulta: { modalidade, idade, turno, data, mostradas: [...mostradas, ...opcoes.map(a => a.aulaId)] } });
-        return opcoes.length ? `${maisOpcoes ? "Também temos estas opções" : opcoes.length === 1 ? "Tenho esta opção para você" : "Tenho estas duas opções para você"} (horário de Brasília):\n\n${opcoes.map((a,i) => `${i+1}. ${a.modalidade} · ${a.turma} · ${formatarOcorrenciaCt(a.inicio)}`).join("\n")}\n\nQual opção você prefere?` : turno ? `Não encontrei outra aula compatível ${data ? `em ${rotuloDataCt(data)}, ` : ""}no turno da ${turno === "manha" ? "manhã" : turno}. Outro turno funciona para você?` : data ? `Não encontrei uma aula compatível para ${rotuloDataCt(data)}. Não alterei a data nem fiz reserva. Quer consultar outra data?` : "Não encontrei outras opções compatíveis com os dados informados. Qual dia ou período funciona melhor para você? Nenhuma reserva foi feita.";
+        return opcoes.length ? `${maisOpcoes ? "Também temos estas opções" : opcoes.length === 1 ? "Tenho esta opção para você" : "Tenho estas duas opções para você"}:\n\n${opcoes.map((a,i) => `${i+1}. ${a.modalidade} · ${a.turma} · ${formatarOcorrenciaCt(a.inicio)}`).join("\n")}\n\nQual opção você prefere?` : turno ? `Não encontrei outra aula compatível ${data ? `em ${rotuloDataCt(data)}, ` : ""}no turno da ${turno === "manha" ? "manhã" : turno}. Outro turno funciona para você?` : data ? `Não encontrei uma aula compatível para ${rotuloDataCt(data)}. Não alterei a data nem fiz reserva. Quer consultar outra data?` : "Não encontrei outras opções compatíveis com os dados informados. Qual dia ou período funciona melhor para você? Nenhuma reserva foi feita.";
       }
       const opcao = cadastro.opcoes[dados.opcao - 1];
       if (!opcao) return "Precisamos consultar as datas da agenda novamente antes de reservar.";
@@ -98,7 +99,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       const agenda = await consultarAulas(banco), aula = agenda.aulas.find(a => a.id === opcao.aulaId);
       if (!aula || !ocorrenciasAula(aula).includes(opcao.inicio) || aluno.idade < aula.idadeMinima || aluno.idade > aula.idadeMaxima || aluno.idade >= 18 && aula.turma.startsWith("Kids") || aluno.idade < 18 && aula.turma === "Geral" || aluno.idade === 3 && aula.modalidade === "Taekwondo") return "Esta opção precisa de conferência da equipe para a idade informada. Nenhuma reserva foi feita.";
       await salvar({ ...cadastro, aguardandoAlteracao: false, aguardandoAjuda: false, reserva: { aulaId: opcao.aulaId, inicio: opcao.inicio, aluno, solicitacaoId: randomUUID(), conferido: true } });
-      return `Confira sua aula experimental:\n\n${aluno.nome}, ${aluno.idade} anos\n${opcao.modalidade} · ${opcao.turma}\n${formatarOcorrenciaCt(opcao.inicio)} (Brasília)${aluno.responsavel ? `\nResponsável: ${aluno.responsavel}` : ""}\n\nOs dados estão corretos?`;
+      return `Confira sua aula experimental:\n\n${aluno.nome}, ${aluno.idade} anos\n${opcao.modalidade} · ${opcao.turma}\n${formatarOcorrenciaCt(opcao.inicio)}${aluno.responsavel ? `\nResponsável: ${aluno.responsavel}` : ""}\n\nOs dados estão corretos?`;
     } catch (erro) {
       if (erro instanceof ZodError) return `Para continuar, preciso conferir os dados: ${erro.issues[0]?.message ?? "informe os dados completos do participante"}. Nenhuma reserva foi feita.`;
       if (erro instanceof ErroDeNegocio) return `${erro.message} Nenhuma nova reserva foi confirmada.`;

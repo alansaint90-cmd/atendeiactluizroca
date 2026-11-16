@@ -389,6 +389,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("pediuAlternativas") || !content.includes("garrafinha de água"))) {
     findings.push({ level: "error", id: "alternativas-naturais-ct", file: rel, line: 1, msg: "Preservar consulta de alternativas e confirmação natural." });
   }
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("LINK_LOCALIZACAO_CT") || content.includes("Brasília"))) {
+    findings.push({ level: "error", id: "localizacao-direta-ct", file: rel, line: 1, msg: "Usar link direto do CT e omitir o rótulo de fuso nas mensagens." });
+  }
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("correspondeTurno(inicio, turno)")) {
     findings.push({ level: "error", id: "turno-experimental-ct", file: rel, line: 1, msg: "Filtrar as opções pelo turno solicitado." });
   }
