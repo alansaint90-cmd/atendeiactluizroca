@@ -20,3 +20,5 @@ A interface em `src/components/campanhas/page.tsx` oferece busca, seleção indi
 Testes em `tests/campanhas.test.ts` verificam migração, contatos sem histórico, isolamento de chip, adulteração de destinatários, cancelamento, queda durante envio, entrega incerta, formatos e contrato de envio. `tests/campanhas-page.test.tsx` verifica seleção e confirmação sem iniciar a campanha implicitamente. Nenhum teste envia mensagens a contatos reais.
 
 Actions: `carregarCampanhas` carrega campanhas e base elegível; `gravarCampanha` salva rascunho; `iniciarCampanha` confirma o início; `cancelarCampanha` cancela pendências; `detalharCampanha` lista resultados por contato.
+
+Em checkout limpo, `pnpm typecheck` gera os tipos do Next.js antes de executar TypeScript. A validação do GitHub executa a suíte com Redis descartável e a compilação, sem implantação.
