@@ -13,7 +13,7 @@ import "@/styles/design-juliana.css";
 import "@/styles/ct-luiz-roca.css";
 import "@/styles/conversas.css";
 
-export const metadata: Metadata = { title: "Atende Aí Gym | CT Luiz Roca", description: "Atendimento de novos alunos e agendamento de aulas experimentais do Centro de Treinamento Luiz Roca." };
+export const metadata: Metadata = { title: "Atende Aí | CT Luiz Roca", description: "Atendimento de novos alunos e agendamento de aulas experimentais do Centro de Treinamento Luiz Roca." };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="pt-BR"><body>{children}</body></html>;
 }

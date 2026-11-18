@@ -2,7 +2,7 @@
 
 ## Identidade visual do acesso — 18/11/2026
 
-Login e primeiro acesso usam somente a marca Atende Aí, com título da aba correspondente, degradê roxo e imagem FXP da referência fornecida pelo usuário. O recorte é visual em CSS, preservando o arquivo recebido. Layout em duas colunas no computador e compacto no celular; rótulos, foco visível, autenticação e proteção dos campos permanecem no formulário existente. Marca Gym e CT continuam nas demais telas.
+Login e primeiro acesso usam somente a marca Atende Aí, com título da aba correspondente, degradê roxo e imagem FXP da referência fornecida pelo usuário. O recorte é visual em CSS, preservando o arquivo recebido. Layout em duas colunas no computador e compacto no celular; rótulos, foco visível, autenticação e proteção dos campos permanecem no formulário existente. No painel, manter o robô vetorial ao lado de Atende Aí, sem Gym, e CT Luiz Roca logo abaixo com espaçamento compacto.
 
 ## Confirmação e acompanhamento da experimental — 18/11/2026
 
