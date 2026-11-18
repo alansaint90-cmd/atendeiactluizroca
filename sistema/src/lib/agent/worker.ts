@@ -1,3 +1,4 @@
+import {selecionarFluxo,fluxoContinuaAtivo} from "../fluxos/repository";
 import { agendaAulasDoAgente } from "../aulas/agente";
 import { contextoDoContato, historicoDoContato } from "../operacao/memoria";
 import { lerLote, concluirLote, estadoLote } from "./lote";
@@ -101,6 +102,8 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
         };
         result = await pausaManualAtiva(client, mensagem.conversation) || await humanoAtivo(mensagem.number) ? "pausa_manual" : await processMessage(message, config.data, {
           ...store,
+          fluxoEntrada: Object.keys(substituicoes).length ? undefined : texto=>selecionarFluxo(db(),instancia,texto),
+          fluxoValido: Object.keys(substituicoes).length ? undefined : alvo=>fluxoContinuaAtivo(db(),instancia,alvo),
           history: async () => { const historico = await store.history(); return historico.length || Object.keys(substituicoes).length ? historico : historicoDoContato(db(), instancia, mensagem.number, eventoAtual.success ? eventoAtual.data.key.id : undefined); },
           aulaExperimental: Object.keys(substituicoes).length ? undefined : agendaAulasDoAgente(db(), client, token, mensagem.conversation, mensagem.number, atendimentoAtivo),
           contextoPersistido: Object.keys(substituicoes).length ? undefined : () => contextoDoContato(db(), instancia, mensagem.number),

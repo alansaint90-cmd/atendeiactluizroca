@@ -438,3 +438,23 @@ test("experimental confirmada envia quatro balões com registro individual", asy
   assert.equal(f.sentTexts.length,1); assert.doesNotMatch(f.sentTexts[0],/qual é o seu nome/);
   assert.equal((f.sentTexts[0].match(/\?/g) ?? []).length,1);
 });
+
+test("fluxo de anúncio usa balões e diário, sem reiniciar quem já tem contexto",async()=>{
+ const f=fixture();let entradas=0;
+ f.port.fluxoEntrada=async()=>{entradas++;return{id:"fluxo-anuncio",versao:0,mensagens:["Olá! Eu sou Luísa.","A aula é para você ou para outra pessoa?"]};};
+ f.port.fluxoValido=async()=>true;
+ const anuncio={...message,text:"Gostaria de mais informações"};
+ assert.equal(await processMessage(anuncio,{...config,agendaAulas:true},f.port),"enviada");
+ assert.equal(f.sends(),2);assert.equal(f.generations(),0);assert.equal(f.state()?.fluxo?.id,"fluxo-anuncio");
+ await processMessage(anuncio,{...config,agendaAulas:true},f.port);assert.equal(f.sends(),2);
+ f.nextMessage();await processMessage({...anuncio,identity:"outro-evento"},{...config,agendaAulas:true},f.port);assert.equal(entradas,1);assert.equal(f.generations(),1);
+ const reserva=fixture();reserva.port.contextoPersistido=async()=>"RESERVAS CONFIRMADAS NO BANCO: participante de teste";reserva.port.fluxoEntrada=async()=>{throw Error('não deve reiniciar');};
+ assert.equal(await processMessage(anuncio,{...config,agendaAulas:true},reserva.port),"enviada");assert.equal(reserva.generations(),1);
+});
+test("desativar fluxo antes de enviar ou entre balões impede as próximas saídas",async()=>{
+ for(const permitido of [0,1]){
+  const f=fixture();f.port.fluxoEntrada=async()=>({id:"fluxo",versao:0,mensagens:["Boas-vindas!","Para quem é a aula?"]});f.port.fluxoValido=async()=>f.sends()<permitido;
+  assert.equal(await processMessage({...message,text:"Gostaria de mais informações"},config,f.port),"falhou");assert.equal(f.sends(),permitido);
+  assert.equal(f.state()?.code,"fluxo_alterado");
+ }
+});

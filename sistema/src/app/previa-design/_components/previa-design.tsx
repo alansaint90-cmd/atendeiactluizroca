@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { PainelShell } from "@/components/painel-shell";
 import { AgendaAulasPainel } from "@/components/aulas/agenda";
 import { CadastrosLocais } from "@/components/ct/cadastros-locais";
+import {FluxosPage} from "@/components/fluxos/page";
 import { AutomacoesLocais } from "@/components/ct/automacoes-locais";
 import { DashboardLocal } from "@/components/ct/dashboard-local";
 import { InboxLocal } from "@/components/ct/inbox-local";
@@ -31,7 +32,8 @@ export function PreviaDesign() {
       {estado && <>{rota === "dashboard" && <DashboardLocal estado={estado} navegar={navegar} />}
         {rota === "consultas" && <AgendaAulasPainel dados={estado} local porta={{ criar: async a => { salvar({ ...estado, aulas: [...estado.aulas, { ...a, id: crypto.randomUUID(), atualizadoEm: new Date().toISOString() }] }); }, reservar: async r => salvar({ ...estado, ...reservarLocal(estado, r) }), cancelar: async r => { const alvo = estado.reservas.find(i => i.id === r.id); if (!alvo || alvo.atualizadoEm !== r.atualizadoEm || alvo.status !== "confirmada") throw new Error("Reserva alterada. Reabra a agenda."); salvar({ ...estado, reservas: estado.reservas.map(i => i.id === r.id ? { ...i, status: "cancelada", atualizadoEm: new Date().toISOString() } : i) }); } }} />}
         {cadastros.includes(rota) && <CadastrosLocais key={rota} tipo={rota as RegistroLocal["tipo"]} estado={estado} salvar={salvar} />}
-        {["chatbot", "flows", "followups", "settings"].includes(rota) && <AutomacoesLocais key={rota} rota={rota} estado={estado} salvar={salvar} />}
+        {rota === "flows" && <FluxosPage previa/>}
+        {["chatbot", "followups", "settings"].includes(rota) && <AutomacoesLocais key={rota} rota={rota} estado={estado} salvar={salvar} />}
         {rota === "inbox" && <InboxLocal estado={estado} salvar={salvar} aoContatos={() => navegar("contacts")} />}
       </>}
     </main>

@@ -1,3 +1,4 @@
+import type { EntradaFluxo } from "../fluxos/schema";
 import type { AcaoAulas } from "../aulas/agente-schema";
 import { dividirResposta, mensagensDaAula } from "./blocos";
 import type { AgentConfig } from "./config";
@@ -9,8 +10,10 @@ import { deveConsultarAgenda } from "../consultas/intencao";
 import { correspondeAoGatilho } from "./ativacao";
 import { mensagensDaConsulta } from "../consultas/fluxo";
 
-export interface DeliveryState { status: "gerando" | "gerada" | "enviando" | "enviada" | "incerta" | "falhou"; attempts: number; reply?: string; partes?: string[]; providerIds?: string[]; transcript?: string; code?: string; configHash?: string; providerId?: string; transferencia?: boolean; consulta?: boolean }
+export interface DeliveryState { fluxo?: {id:string;versao:number}; status: "gerando" | "gerada" | "enviando" | "enviada" | "incerta" | "falhou"; attempts: number; reply?: string; partes?: string[]; providerIds?: string[]; transcript?: string; code?: string; configHash?: string; providerId?: string; transferencia?: boolean; consulta?: boolean }
 export interface ProcessingPort {
+  fluxoEntrada?(texto:string):Promise<EntradaFluxo|null>;
+  fluxoValido?(alvo:{id:string;versao:number}):Promise<boolean>;
   read(): Promise<DeliveryState | null>;
   write(state: DeliveryState): Promise<void>;
   history(): Promise<Turn[]>;
@@ -58,6 +61,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
     let reply: string;
     let transferencia = false;
     let consulta = false;
+    let fluxo: {id:string;versao:number}|undefined;
     let partes: string[] | undefined;
     try {
       if (message.audio && !transcript) {
@@ -84,6 +88,10 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       const saudacao = /^(?:oi+|ol[aá]+|bom dia|boa tarde|boa noite)[\s!.😊👋]*$/iu.test((transcript ?? message.text).trim());
       if (!historico.length && !message.midia && ((!nome && saudacao) || Boolean(config.AI_ACTIVATION_TRIGGER && correspondeAoGatilho(message, config.AI_ACTIVATION_TRIGGER))) && config.openingMessages?.length) partes = config.openingMessages;
       const respostaAula = config.agendaAulas ? await port.aulaExperimental?.(transcript ?? message.text) : null;
+      if (!respostaAula && !historico.length && !message.midia && !/RESERVAS CONFIRMADAS NO BANCO/.test(memoria)) {
+        const entrada = await port.fluxoEntrada?.(transcript ?? message.text);
+        if(entrada){fluxo={id:entrada.id,versao:entrada.versao};partes=entrada.mensagens;}
+      }
       let cadastro = respostaAula ?? (!partes && config.agendaConsultas && port.cadastroConsulta ? await port.cadastroConsulta(transcript ?? message.text, false) : null);
       if (!partes && !cadastro && config.agendaConsultas && port.cadastroConsulta && deveConsultarAgenda(transcript ?? message.text, historico)) {
         cadastro = await port.cadastroConsulta(transcript ?? message.text, true);
@@ -114,7 +122,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       await port.write({ status: attempts >= 3 ? "falhou" : "gerando", attempts, code, configHash, transcript });
       return attempts >= 3 ? "falhou" : "repetir";
     }
-    state = { status: "gerada", attempts, reply, partes, configHash, transcript, transferencia, consulta };
+    state = { status: "gerada", attempts, reply, partes, configHash, transcript, transferencia, consulta, fluxo };
     await port.write(state);
   }
   if (!await port.enabled()) return "pausada";
@@ -131,6 +139,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
   if (!state.partes) { state = { ...state, partes }; await port.write(state); }
   for (let indice = state.providerIds?.length ?? 0; indice < partes.length; indice++) {
     if (!await port.enabled()) return "pausada";
+    if(state.fluxo && !await port.fluxoValido?.(state.fluxo)){await port.write({...state,status:"falhou",code:"fluxo_alterado"});return "falhou";}
     await port.write({ ...state, status: "enviando" });
     // Reserva antes de cada saída; entrega incerta nunca é repetida.
     if (state.transferencia) await port.transferir!(config.atendimento!.destination);

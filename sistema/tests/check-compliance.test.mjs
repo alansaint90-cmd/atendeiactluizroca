@@ -201,6 +201,7 @@ try {
     ["worker sem respeitar conversa assumida reprova", reprova("agent/worker.ts", "pausa-atendimento")],
     ["worker sem pausa manual reprova", reprova("agent/worker.ts", "pausa-manual")],
     ["follow-up sem etapas e revalidação reprova", reprova("aulas/lembretes.ts", "followups-aula-etapas")],
+    ["fluxo sem guardas de contexto e versão reprova", reprova("agent/processor.ts", "fluxo-entrada-seguro")],
     ["worker sem seleção da instância reprova", reprova("agent/worker.ts", "isolamento-instancias")],
     ["configuração sem terceiro chip reprova", reprova("evolution/instancias.ts", "isolamento-instancias")],
     ["agendamento sem revalidar chip reprova", reprova("agendamentos/worker.ts", "isolamento-instancias")],

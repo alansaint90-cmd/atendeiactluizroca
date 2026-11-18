@@ -6,12 +6,12 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 209 |
+| Arquivos TS/TSX | 213 |
 | Tabelas (Drizzle) | 36 |
-| Server Actions (arquivos) | 14 |
+| Server Actions (arquivos) | 15 |
 | Rotas de API | 6 |
 | Paginas | 6 |
-| Componentes | 34 |
+| Componentes | 35 |
 
 ## Arvore (profundidade 3)
 
@@ -70,6 +70,9 @@ components/
     cadastros-locais.tsx
     dashboard-local.tsx
     inbox-local.tsx
+  fluxos/
+    fluxos.css
+    page.tsx
   followups/
     page.tsx
   operacao/
@@ -99,6 +102,7 @@ lib/
     chatbots.ts
     consultas.ts
     crm.ts
+    fluxos.ts
     followups.ts
     operacao.ts
     painel.ts
@@ -217,6 +221,9 @@ lib/
     queue.ts
     schema.ts
     webhook.ts
+  fluxos/
+    repository.ts
+    schema.ts
   followups/
     aulas-ct.ts
     processor.ts
@@ -394,6 +401,7 @@ _(colunas nao detectadas)_
 - `src/lib/actions/chatbots.ts`: `carregarChatbots()`, `salvarChatbot()`
 - `src/lib/actions/consultas.ts`: `carregarResumoAgenda()`, `carregarAgendaConsultas()`, `confirmarConsulta()`, `cancelarConsultaAgendada()`
 - `src/lib/actions/crm.ts`: `carregarCrm()`, `adicionarFunil()`, `adicionarMotivo()`, `modificarMotivo()`, `salvarAcessosFunis()`, `adicionarOportunidade()`, `fecharNegocio()`, `moverNegocio()`
+- `src/lib/actions/fluxos.ts`: `carregarFluxos()`, `salvarFluxo()`
 - `src/lib/actions/followups.ts`: `carregarFollowups()`, `salvarFollowups()`
 - `src/lib/actions/operacao.ts`: `carregarOperacao()`
 - `src/lib/actions/painel.ts`: `carregarPainel()`

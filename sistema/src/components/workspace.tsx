@@ -1,4 +1,5 @@
 "use client";
+import {FluxosPage} from "./fluxos/page";
 import { useState } from "react";
 import { PainelShell } from "./painel-shell";
 import { nav } from "@/lib/demo/data";
@@ -22,6 +23,7 @@ export function Workspace({ papel, nome, email, foto, rotaInicial = "dashboard" 
         {/* Keep form drafts mounted across navigation, but hide inactive sections. */}
         {gestor && <><div hidden={route !== "chatbot"} className="page-stack"><ChatbotsPage ativo={route === "chatbot"} /></div>
         <div hidden={route !== "followups"}><FollowupsPage ativo={route === "followups"} /></div>
+        <div hidden={route !== "flows"}><FluxosPage ativo={route === "flows"}/></div>
         <div hidden={route !== "tags"}><TagsPage ativo={route === "tags"} /></div>
         <div hidden={route !== "agendamentos"}><AgendamentosPage ativoNaTela={route === "agendamentos"} /></div>
         <div hidden={route !== "consultas"}><AulasPage ativoNaTela={route === "consultas"} /></div></>}
@@ -29,7 +31,7 @@ export function Workspace({ papel, nome, email, foto, rotaInicial = "dashboard" 
         {papel === "super_admin" && route === "settings" && <Settings />}
         {route === "plans" && <AssinaturaPage />}
         <div hidden={!["dashboard", "contacts", "inbox"].includes(route)}><OperacaoPage rota={route} podeVerAgenda={gestor} aoVerAgenda={() => setRoute("consultas")} /></div>
-        {!["dashboard", "contacts", "inbox", "team", "plans"].includes(route) && demoViews[route] && <div className="page-stack demo-view" dangerouslySetInnerHTML={{ __html: demoViews[route]() }} />}
+        {!["dashboard", "contacts", "inbox", "team", "plans", "flows"].includes(route) && demoViews[route] && <div className="page-stack demo-view" dangerouslySetInnerHTML={{ __html: demoViews[route]() }} />}
       </main>
   </PainelShell>;
 }
