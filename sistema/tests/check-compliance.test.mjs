@@ -186,6 +186,7 @@ try {
     ["lembrete sem revalidação reprova", reprova("agendamentos/worker.ts", "lembrete-aula-validado")],
     ["participante sem validação reprova", reprova("aulas/agente.ts", "participante-aula-ct")],
     ["recomendação por objetivo ausente reprova", reprova("aulas/agente.ts", "objetivo-experimental-ct")],
+    ["horários sem apresentação contextual reprovam", reprova("aulas/agente.ts", "horarios-naturais-ct")],
     ["agenda sem calendário e filtro de data reprova", reprova("aulas/agente.ts", "calendario-aulas-ct")],
     ["modelo inicial com roteiro comercial reprova", reprova("chatbots/defaults.ts", "prompt-legado")],
     ["importação automática do navegador reprova", reprova("chatbots/page.tsx", "prompt-legado")],

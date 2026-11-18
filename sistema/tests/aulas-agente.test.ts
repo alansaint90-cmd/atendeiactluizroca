@@ -45,8 +45,11 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     assert.ok(estado.opcoes.every(o=>correspondeTurno(o.inicio,"noite")));
     await porTurno("Prefiro de manhã"); estado=await lerTurno(); assert.equal(estado.turnoSolicitado,"manha");
     assert.ok(estado.opcoes.length>0 && estado.opcoes.every(o=>correspondeTurno(o.inicio,"manha")));
+    const natural=await porTurno("Tem pela manhã?",{acao:"consultar",modalidade:"Muay Thai",idade:25});
+    assert.match(natural!,/^Temos sim! Pela manhã:/);
+    assert.match(natural!,/Qual fica melhor pra você\?/);
     const vazio=await porTurno("Quero Jiu-Jitsu de manhã",{acao:"consultar",modalidade:"Jiu-Jitsu",idade:25});
-    assert.match(vazio!,/Outro turno funciona/); assert.equal((await lerTurno()).opcoes.length,0);
+    assert.match(vazio!,/Outro turno funciona/); assert.doesNotMatch(vazio!,/Temos sim/); assert.equal((await lerTurno()).opcoes.length,0);
     await porTurno("Qualquer turno"); estado=await lerTurno(); assert.equal(estado.turnoSolicitado,null); assert.ok(estado.opcoes.length>0);
     const cacheOpcoes=redisCadastro(), alternativas=agendaAulasDoAgente(banco,cacheOpcoes,"lease","alternativas","5571444444444",async()=>true);
     await alternativas("Muay Thai",{acao:"consultar",modalidade:"Muay Thai",idade:25});
