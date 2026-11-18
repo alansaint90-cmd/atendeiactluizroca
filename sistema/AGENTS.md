@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Identidade visual do acesso — 18/11/2026
+
+Login e primeiro acesso usam somente a marca Atende Aí, com título da aba correspondente, degradê roxo e imagem FXP da referência fornecida pelo usuário. O recorte é visual em CSS, preservando o arquivo recebido. Layout em duas colunas no computador e compacto no celular; rótulos, foco visível, autenticação e proteção dos campos permanecem no formulário existente. Marca Gym e CT continuam nas demais telas.
+
 ## Confirmação e acompanhamento da experimental — 18/11/2026
 
 CONFIRMAÇÃO E FOLLOW-UPS DA AULA — 18/11/2026: gênero não integra o nome. Em áudio ou texto como “homem Benjamin Silva de Santana”, registre somente Benjamin Silva de Santana; não acrescente Homem, Mulher, Masculino ou Feminino. A conferência mantém nome, Adulto ou idade, modalidade, turma, data e horário completos e termina com “Os dados estão corretos?”. Após gravar, enviar quatro balões: confirmação curta com modalidade, dia da semana e hora, sem data numérica; roupa leve e garrafinha de água, dizendo que estamos esperando; localização com 👇 e link oficial; “Até lá!”. Não pedir outra confirmação. Follow-up 1 automático uma hora antes do início, saudação conforme turno e primeiro nome do lead/responsável, perguntando se está tudo certo para hoje. Follow-up 2 uma hora após o término, perguntando como foi a experiência e se gostou; não iniciar venda ou matrícula automaticamente. O terceiro fica desligado. Substitui o lembrete de 24 horas. Usar reservas reais e preservar cancelamentos, pausa humana, diário por envio e não repetição de entrega incerta.

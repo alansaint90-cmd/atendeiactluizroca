@@ -6,7 +6,7 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 208 |
+| Arquivos TS/TSX | 209 |
 | Tabelas (Drizzle) | 36 |
 | Server Actions (arquivos) | 14 |
 | Rotas de API | 6 |
@@ -28,8 +28,10 @@ app/
     loading.tsx
     page.tsx
   entrar/
+    _assets/
     _components/
     primeiro-acesso/
+    login.css
     page.tsx
   perfil/
     _components/
