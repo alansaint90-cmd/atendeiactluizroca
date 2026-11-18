@@ -404,6 +404,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("aberturaHorarios(") || content.includes("Tenho estas duas opções para você"))) {
     findings.push({ level: "error", id: "horarios-naturais-ct", file: rel, line: 1, msg: "Adaptar a apresentação dos horários à pergunta e à disponibilidade real." });
   }
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("escolherHorario(") || !content.includes("opcaoEscolhida"))) {
+    findings.push({ level: "error", id: "escolha-horario-ct", file: rel, line: 1, msg: "Reconhecer e preservar a escolha de horário antes de pedir dados." });
+  }
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("correspondeTurno(inicio, turno)")) {
     findings.push({ level: "error", id: "turno-experimental-ct", file: rel, line: 1, msg: "Filtrar as opções pelo turno solicitado." });
   }
