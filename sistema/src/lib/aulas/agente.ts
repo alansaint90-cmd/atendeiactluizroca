@@ -86,7 +86,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
             await salvar({...cadastro,opcaoEscolhida:escolha});
             const horario=new Date(opcao.inicio).toLocaleTimeString("pt-BR",{timeZone:"America/Bahia",hour:"2-digit",minute:"2-digit"});
             const pedirIdade=!cadastro.adultoSemIdade && cadastro.consulta?.idade == null;
-            return `Boa! Vamos de ${horario}.\n\nAgora me conta: qual é o nome completo do participante${pedirIdade ? " e a idade" : ""}? É pra preparar a experimental de ${opcao.modalidade} para ${formatarOcorrenciaCt(opcao.inicio)}.`;
+            return `Boa! Vamos de ${horario}.\n\nPara prepararmos a aula de ${opcao.modalidade}, qual é o nome completo do participante${pedirIdade ? " e a idade" : ""}?`;
           }
         }
         if (cadastro.consulta && !cadastro.confirmada && pediuAlternativas) return atender(texto, { acao: "consultar", modalidade: cadastro.consulta.modalidade, idade: cadastro.consulta.idade, maisOpcoes: true });
