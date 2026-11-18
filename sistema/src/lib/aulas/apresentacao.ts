@@ -10,3 +10,12 @@ export function aberturaHorarios(texto: string, quantidade: number, turno: Turno
   if (perguntaDisponibilidade) return "Temos sim! Dá uma olhada:";
   return quantidade === 1 ? "Você pode vir neste horário:" : "Você pode vir nestes horários:";
 }
+
+/** Não confunde ausência de turma com horários já apresentados. */
+export function semHorarios(modalidade:string|null,turno:TurnoAula|null,data:string|null,jaApresentados:boolean) {
+ const aula=modalidade ? ` de ${modalidade}` : "";
+ const periodo=turno ? {manha:"pela manhã",tarde:"à tarde",noite:"à noite"}[turno] : "";
+ const recorte=[periodo,data ? `${data.startsWith("sábado") || data.startsWith("domingo") ? "no" : "na"} ${data}` : ""].filter(Boolean).join(" ");
+ if(jaApresentados) return `Poxa, esses são os horários${aula} que temos${recorte ? ` ${recorte}` : ""}. Você teria interesse em outro ${turno ? "período" : "dia ou horário"}?`;
+ return `Poxa, infelizmente ainda não temos turma${aula} disponível${recorte ? ` ${recorte}` : ""}. Você teria interesse em ${turno ? "outro horário" : "outro dia ou horário"}?`;
+}

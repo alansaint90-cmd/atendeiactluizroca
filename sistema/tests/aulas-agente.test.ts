@@ -49,7 +49,7 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     assert.match(natural!,/^Temos sim! Pela manhã:/);
     assert.match(natural!,/Qual fica melhor pra você\?/);
     const vazio=await porTurno("Quero Jiu-Jitsu de manhã",{acao:"consultar",modalidade:"Jiu-Jitsu",idade:25});
-    assert.match(vazio!,/Outro turno funciona/); assert.doesNotMatch(vazio!,/Temos sim/); assert.equal((await lerTurno()).opcoes.length,0);
+    assert.match(vazio!,/Você teria interesse em outro horário/); assert.doesNotMatch(vazio!,/Temos sim/); assert.equal((await lerTurno()).opcoes.length,0);
     await porTurno("Qualquer turno"); estado=await lerTurno(); assert.equal(estado.turnoSolicitado,null); assert.ok(estado.opcoes.length>0);
     const cacheOpcoes=redisCadastro(), alternativas=agendaAulasDoAgente(banco,cacheOpcoes,"lease","alternativas","5571444444444",async()=>true);
     await alternativas("Muay Thai",{acao:"consultar",modalidade:"Muay Thai",idade:25});
@@ -116,7 +116,7 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     assert.equal((await reservasDoContato(banco,"5571666666666")).length,1,"preserva a reserva antiga de Jiu-Jitsu");
     const menor=agendaAulasDoAgente(banco,redisCadastro(),"lease","conversa-b","5571888888888",async()=>true);
     await menor("Taekwondo para 3 anos",{acao:"consultar",modalidade:"Taekwondo",idade:3});
-    assert.match((await menor("Taekwondo para 3 anos",{acao:"consultar",modalidade:"Taekwondo",idade:3}))!, /Nenhuma reserva foi feita|nenhuma reserva foi feita/);
+    assert.match((await menor("Taekwondo para 3 anos",{acao:"consultar",modalidade:"Taekwondo",idade:3}))!, /Poxa, infelizmente ainda não temos turma/);
   } finally { await cliente.close(); }
 });
 
