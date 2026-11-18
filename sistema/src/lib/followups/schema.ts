@@ -3,7 +3,7 @@ import { z } from "zod";
 const stepSchema = z.strictObject({ enabled: z.boolean(), text: z.string().trim().max(3000),
   delay: z.number().int().min(1).max(10080), unit: z.enum(["minutes", "hours", "days"]) });
 export const followupSchema = z.strictObject({
-  revision: z.uuid().optional(),
+  revision: z.uuid().optional(), mode: z.enum(["inatividade", "aulas"]).optional(),
   enabled: z.boolean(), instance: z.string().trim().max(100), target: z.literal("ai"),
   startHour: z.number().int().min(0).max(23), endHour: z.number().int().min(1).max(24),
   timezone: z.enum(["America/Sao_Paulo", "America/Manaus", "America/Recife", "America/Rio_Branco"]),
@@ -18,7 +18,7 @@ export const followupSchema = z.strictObject({
   });
 });
 export type FollowupConfig = z.infer<typeof followupSchema>;
-export const defaultFollowup: FollowupConfig = { enabled: false, instance: "", target: "ai", startHour: 8, endHour: 20,
+export const defaultFollowup: FollowupConfig = { mode: "inatividade", enabled: false, instance: "", target: "ai", startHour: 8, endHour: 20,
   timezone: "America/Sao_Paulo", days: [1, 2, 3, 4, 5, 6, 0], steps: [
     { enabled: false, text: "Olá, estou à disposição para continuarmos seu atendimento. Quando precisar, é só chamar.", delay: 1, unit: "hours" },
     { enabled: false, text: "", delay: 1, unit: "days" }, { enabled: false, text: "", delay: 3, unit: "days" },

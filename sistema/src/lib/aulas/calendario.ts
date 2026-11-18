@@ -43,3 +43,10 @@ export function interpretarDataCt(texto:string, agora=Date.now()): DataInterpret
 }
 
 export function formatarOcorrenciaCt(inicio:string) { return `${rotuloDataCt(dataLocalCt(Date.parse(inicio)))} às ${new Date(inicio).toLocaleTimeString("pt-BR",{timeZone:fusoCt,hour:"2-digit",minute:"2-digit"})}`; }
+
+export function formatarDiaHoraCt(inicio:string) {
+  const data=new Date(inicio);
+  const dia=new Intl.DateTimeFormat("pt-BR",{timeZone:fusoCt,weekday:"long"}).format(data);
+  const hora=new Intl.DateTimeFormat("pt-BR",{timeZone:fusoCt,hour:"numeric",minute:"2-digit",hourCycle:"h23"}).format(data).replace(":00","");
+  return `${dia}, às ${hora}h`;
+}

@@ -55,7 +55,7 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     await alternativas("Muay Thai",{acao:"consultar",modalidade:"Muay Thai",idade:25});
     const primeiraLista=JSON.parse((await cacheOpcoes.get("atendeia:{evolution}:cadastro-aula:alternativas"))!);
     assert.equal(primeiraLista.opcoes.length,2);
-    await alternativas("Aluno de Teste",{acao:"preparar",opcao:1,nome:"Aluno de Teste",idade:25,responsavel:""});
+    await alternativas("Aluno de Teste",{acao:"preparar",opcao:1,nome:"Homem Aluno de Teste",idade:25,responsavel:""});
     await alternativas("Outra opção");
     const segundaLista=JSON.parse((await cacheOpcoes.get("atendeia:{evolution}:cadastro-aula:alternativas"))!);
     assert.equal(segundaLista.opcoes.length,2);
@@ -66,7 +66,7 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     assert.doesNotMatch(lista!,/Brasília/);
     const conferencia = await conversar("Meu nome é Aluno de Teste, tenho 25 anos",{acao:"preparar",opcao:1,nome:"Aluno de Teste",idade:25,responsavel:""});
     assert.match(conferencia!, /Os dados estão corretos\?$/);
-    assert.doesNotMatch(conferencia!,/Brasília/);
+    assert.doesNotMatch(conferencia!,/Brasília|Homem/);
     assert.equal((await consultarAulas(banco)).reservas.length,0);
     await conversar("Qual roupa devo levar?");
     assert.equal((await consultarAulas(banco)).reservas.length,0,"pergunta não autoriza reserva");
@@ -80,8 +80,11 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     assert.match(confirmacao!, /está agendada/);
     assert.doesNotMatch(confirmacao!, /Protocolo/);
     const partes = mensagensDaAula(confirmacao!);
-    assert.equal(partes.length,1);
-    assert.match(partes[0],/roupa leve/); assert.match(partes[0],/garrafinha de água/);
+    assert.equal(partes.length,4);
+    assert.doesNotMatch(partes[0],/\d{2}\/\d{2}\/\d{4}/);
+    assert.match(partes[2],/👇.*localização/);
+    assert.equal(partes[3],"Até lá!");
+    assert.match(partes[1],/roupa leve/); assert.match(partes[1],/garrafinha de água/);
     assert.doesNotMatch(confirmacao!,/Posso te ajudar|Brasília|Os dados estão corretos|google.com\/maps\/search/);
     assert.ok(confirmacao!.includes("https://share.google/qpVSBDuPHiAysYIvy"));
     assert.equal(await conversar("sim"),null);

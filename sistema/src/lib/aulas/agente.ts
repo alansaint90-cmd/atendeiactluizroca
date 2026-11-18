@@ -1,10 +1,11 @@
+import { limparNomeParticipante } from "./nome-participante";
 import { escolherHorario } from "./escolha";
 import { aberturaHorarios } from "./apresentacao";
 import { identificarObjetivo, recomendarObjetivo, modalidadeMencionada, type ObjetivoAula } from "./objetivo";
 import { identificarParticipante } from "./participante";
 import { LINK_LOCALIZACAO_CT } from "../ct/conhecimento";
 import { interpretarTurno, correspondeTurno, type TurnoAula } from "./turno";
-import { interpretarDataCt, dataLocalCt, rotuloDataCt, formatarOcorrenciaCt } from "./calendario";
+import { interpretarDataCt, dataLocalCt, rotuloDataCt, formatarOcorrenciaCt, formatarDiaHoraCt } from "./calendario";
 import { selecionarExperimentais, priorizarInfantil } from "./oferta-experimental";
 import { ZodError } from "zod";
 import { randomUUID } from "node:crypto";
@@ -74,7 +75,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         const resultado = await reservarAula(banco, cadastro.reserva, systemUserId);
         await salvar({ ...cadastro, confirmada: resultado.id, aguardandoAjuda: false });
         const a = cadastro.opcoes.find(o => o.aulaId === cadastro.reserva?.aulaId && o.inicio === cadastro.reserva?.inicio);
-        return `Sua experimental de ${a?.modalidade ?? "artes marciais"} está agendada para ${formatarOcorrenciaCt(cadastro.reserva.inicio)}! Venha com roupa leve e traga uma garrafinha de água. Vamos te receber bem. Até lá!\n\nComo chegar: ${LINK_LOCALIZACAO_CT}`;
+        return `Sua experimental de ${a?.modalidade ?? "artes marciais"} está agendada para ${formatarDiaHoraCt(cadastro.reserva.inicio)}!\n\nVenha com roupa leve e traga uma garrafinha de água. Estamos esperando por você!\n\n👇 Tô deixando aqui a localização, caso você precise:\n${LINK_LOCALIZACAO_CT}\n\nAté lá!`;
       }
       if (!acao) {
         if (!cadastro.reserva && !cadastro.confirmada && !pediuAlternativas && cadastro.opcoes.length) {
@@ -135,7 +136,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       if (!correspondeTurno(opcao.inicio, cadastro.turnoSolicitado)) return "Precisamos consultar uma aula no turno que você pediu antes de conferir os dados.";
       const idadeAluno = cadastro.adultoSemIdade ? null : dados.idade;
       const adultoSemIdade = idadeAluno === null && (cadastro.adultoSemIdade || cadastro.participante !== "crianca" && dados.adultoSemIdade === true);
-      const aluno = alunoSchema.parse({ nome: dados.nome, idade: idadeAluno, adultoSemIdade, telefone: `+${numero}`, responsavel: adultoSemIdade ? "" : dados.responsavel });
+      const aluno = alunoSchema.parse({ nome: limparNomeParticipante(dados.nome), idade: idadeAluno, adultoSemIdade, telefone: `+${numero}`, responsavel: adultoSemIdade ? "" : dados.responsavel });
       const agenda = await consultarAulas(banco), aula = agenda.aulas.find(a => a.id === opcao.aulaId);
       if (!aula || !ocorrenciasAula(aula).includes(opcao.inicio) || !faixaCompativel(aula, aluno.idade, aluno.adultoSemIdade) || aluno.idade !== null && aluno.idade >= 18 && aula.turma.startsWith("Kids") || aluno.idade !== null && aluno.idade < 18 && aula.turma === "Geral" || aluno.idade === 3 && aula.modalidade === "Taekwondo") return "Esta opção precisa de conferência da equipe para a idade informada. Nenhuma reserva foi feita.";
       await salvar({ ...cadastro, aguardandoAlteracao: false, aguardandoAjuda: false, reserva: { aulaId: opcao.aulaId, inicio: opcao.inicio, aluno, solicitacaoId: randomUUID(), conferido: true } });

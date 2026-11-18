@@ -14,7 +14,7 @@ export interface FollowupPort {
   delivered(id: string, text: string): Promise<void>;
 }
 export function configuracaoPermiteFollowup(job: FollowupJob, config: FollowupConfig) {
-  return config.enabled && job.revision === config.revision && (!job.instance || job.instance === config.instance);
+  return config.mode !== "aulas" && config.enabled && job.revision === config.revision && (!job.instance || job.instance === config.instance);
 }
 export async function processFollowup(job: FollowupJob, config: FollowupConfig, port: FollowupPort, now = Date.now()) {
   if (!configuracaoPermiteFollowup(job, config)) { await port.finish("cancelado"); return; }

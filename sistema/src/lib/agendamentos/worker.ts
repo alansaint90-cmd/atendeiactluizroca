@@ -3,14 +3,14 @@ import { db } from "../db/client";
 import { ensureDatabase } from "../db/migrate";
 import { effectiveSettings } from "../settings/repository";
 import { settingsSchema, type IntegrationSettings } from "../settings/schema";
-import { instanciasConfiguradas, settingsDaInstancia } from "../evolution/instancias";
+import { followupDaInstancia, instanciasConfiguradas, settingsDaInstancia } from "../evolution/instancias";
 import { sendReply, ProviderError } from "../agent/providers";
 import { reservarAgendamento, concluirAgendamento, type BancoAgendamentos } from "./repository";
 
 const configuracaoEnvio = settingsSchema.pick({ EVOLUTION_API_URL: true, EVOLUTION_API_KEY: true, EVOLUTION_INSTANCE_NAME: true }).required();
 export async function processarAgendamento(banco: BancoAgendamentos, configuracoes: () => Promise<IntegrationSettings>, enviar = sendReply) {
   const settings = await configuracoes();
-  if (settings.EVOLUTION_INSTANCE_NAME) await sincronizarLembretesAulas(banco, settings.EVOLUTION_INSTANCE_NAME);
+  for (const instancia of instanciasConfiguradas(settings)) await sincronizarLembretesAulas(banco, instancia, followupDaInstancia(settings,instancia));
   // Um envio por chip a cada ciclo evita que a fila principal impeça os demais.
   for (const instancia of instanciasConfiguradas(settings)) {
     await processarChip(banco, settings, instancia, configuracoes, enviar);
@@ -22,11 +22,12 @@ async function processarChip(banco: BancoAgendamentos, settings: IntegrationSett
   if (!inicial.success) return;
   const item = await reservarAgendamento(banco, inicial.data.EVOLUTION_INSTANCE_NAME);
   if (!item) return;
-  const atual = configuracaoEnvio.safeParse(settingsDaInstancia(await configuracoes(), instancia));
+  const settingsAtuais = await configuracoes();
+  const atual = configuracaoEnvio.safeParse(settingsDaInstancia(settingsAtuais, instancia));
   if (!atual.success || JSON.stringify(atual.data) !== JSON.stringify(inicial.data)) {
     await concluirAgendamento(banco, item, "erro", "configuracao_alterada", null); return;
   }
-  if (item.reservaAulaId && !await revalidarLembreteAula(banco, item.id)) {
+  if (item.reservaAulaId && !await revalidarLembreteAula(banco, item.id, followupDaInstancia(settingsAtuais,instancia))) {
     await concluirAgendamento(banco, item, "erro", "lembrete_aula_indisponivel", null); return;
   }
   let provedor: string;

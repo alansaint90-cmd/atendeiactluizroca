@@ -46,7 +46,7 @@ export function FollowupsPage({ ativo = true }: { ativo?: boolean }) {
     finally { setBusy(false); setConfirm(false); }
   }
   return <div className="page-stack">
-    <section className="page-head"><div><h1>Follow-ups automáticos</h1><p>Retome atendimentos quando o contato deixar de responder.</p></div></section>
+    <section className="page-head"><div><h1>Follow-ups automáticos</h1><p>Lembretes e acompanhamento das aulas experimentais.</p></div></section>
     {version === null && error && <p role="alert" className="error-message">{error} <button type="button" onClick={() => void load()}>Tentar novamente</button></p>}
     {version === null && !error && <p role="status">{busy ? "Carregando follow-ups…" : "Aguardando a consulta dos follow-ups."}</p>}
     {version !== null && <form className="panel form-panel followup-form" onSubmit={event => {
@@ -66,14 +66,14 @@ export function FollowupsPage({ ativo = true }: { ativo?: boolean }) {
         <label>Não enviar a partir das<input type="number" min={1} max={24} required value={config.endHour} onChange={event => change({ endHour: event.target.valueAsNumber })} /></label></div>
       <fieldset className="followup-days"><legend>Enviar nos dias</legend>{[1, 2, 3, 4, 5, 6, 0].map(day => <label key={day}>
         <input type="checkbox" checked={config.days.includes(day)} onChange={event => change({ days: event.target.checked ? [...config.days, day] : config.days.filter(item => item !== day) })} />{weekdays[day]}</label>)}</fieldset>
-      <p className="followup-note">Até 3 mensagens por ciclo de atendimento. Uma nova mensagem cancela a sequência pendente. Os intervalos contam a partir da última resposta automática ou do follow-up anterior.</p>
-      {config.steps.map((item, index) => <section className="followup-step" key={index}><h2>{index + 1}ª mensagem</h2>
-        <label className="feature-switch"><input type="checkbox" role="switch" aria-label={`Ativar ${index + 1}ª mensagem`} checked={item.enabled} onChange={event => step(index, { enabled: event.target.checked })} /><span>{item.enabled ? "Ligada" : "Desligada"}</span></label>
+      <p className="followup-note">{config.mode === "aulas" ? "A 1ª mensagem é enviada antes do início da aula; a 2ª, após o término. Os intervalos usam a reserva real, mesmo se o contato responder. Cancelamento da reserva ou pausa humana impede o envio. A 3ª mensagem permanece desativada." : "Até 3 mensagens por ciclo de atendimento. Uma nova mensagem cancela a sequência pendente. Os intervalos contam a partir da última resposta automática ou do follow-up anterior."}</p>
+      {config.steps.map((item, index) => <section className="followup-step" key={index}><h2>{index + 1}ª mensagem{config.mode === "aulas" ? index === 0 ? " · Antes da aula" : index === 1 ? " · Após o término da aula" : " · Não utilizada" : ""}</h2>
+        <label className="feature-switch"><input type="checkbox" role="switch" aria-label={`Ativar ${index + 1}ª mensagem`} disabled={config.mode === "aulas" && index === 2} checked={item.enabled} onChange={event => step(index, { enabled: event.target.checked })} /><span>{item.enabled ? "Ligada" : "Desligada"}</span></label>
         <label>Mensagem {index + 1}<textarea rows={3} maxLength={3000} required={item.enabled} value={item.text} onChange={event => step(index, { text: event.target.value })} /></label>
-        <div className="followup-grid"><label>Tempo da {index + 1}ª mensagem<input type="number" required min={1} max={10080} value={item.delay} onChange={event => step(index, { delay: event.target.valueAsNumber })} /></label>
+        <div className="followup-grid"><label>Intervalo da {index + 1}ª mensagem<input type="number" required min={1} max={10080} value={item.delay} onChange={event => step(index, { delay: event.target.valueAsNumber })} /></label>
           <label>Unidade da {index + 1}ª mensagem<select value={item.unit} onChange={event => step(index, { unit: event.target.value as typeof item.unit })}><option value="minutes">Minutos</option><option value="hours">Horas</option><option value="days">Dias</option></select></label></div>
       </section>)}
-      <p className="followup-note">É necessário manter o agente habilitado no servidor. Ativar não envia mensagens antigas: a sequência começa após uma nova resposta bem-sucedida do chatbot.</p>
+      <p className="followup-note">{config.mode === "aulas" ? "Use {nome} e {saudacao} no texto. A saudação considera manhã, tarde ou noite no horário do envio. Não envia etapas cujo horário já passou e não repete entregas incertas." : "É necessário manter o agente habilitado no servidor. Ativar não envia mensagens antigas: a sequência começa após uma nova resposta bem-sucedida do chatbot."}</p>
     </fieldset>
       <div className="followup-save-bar">
         <span role={error ? "alert" : "status"} className={error ? "error-message" : ""}>
@@ -84,7 +84,7 @@ export function FollowupsPage({ ativo = true }: { ativo?: boolean }) {
       </div>
     </form>}
     <ModalConfirmacaoBlock aberto={confirm} titulo="Salvar follow-ups automáticos" mensagem={config.enabled
-      ? "As mensagens configuradas poderão ser enviadas automaticamente pelo chip selecionado após novos atendimentos sem resposta, nos dias e horários definidos. Confirmar?"
+      ? config.mode === "aulas" ? "Salvar os acompanhamentos relativos ao início e ao término das aulas experimentais?" : "As mensagens configuradas poderão ser enviadas automaticamente pelo chip selecionado após novos atendimentos sem resposta, nos dias e horários definidos. Confirmar?"
       : "Salvar com follow-ups desligados? Sequências anteriores não serão retomadas ao reativar."}
       carregando={busy} onConfirmar={() => void save()} onCancelar={() => setConfirm(false)} />
   </div>;

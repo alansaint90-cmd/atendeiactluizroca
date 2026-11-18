@@ -48,7 +48,7 @@ export function followupStore(client: Redis, token: string) {
       await guarded("redis.call('SET', KEYS[2], '1', 'EX', ARGV[2])", [prefix + "outgoing:" + digest(`${instance}:${id}`)], [ttl]);
     },
     async schedule(message: IncomingMessage, config: FollowupConfig) {
-      if (!config.enabled || !config.revision) return;
+      if (config.mode === "aulas" || !config.enabled || !config.revision) return;
       const index = config.steps.findIndex(step => step.enabled);
       if (index < 0) return;
       const now = Date.now();

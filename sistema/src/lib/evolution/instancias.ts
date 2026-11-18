@@ -1,4 +1,5 @@
 import type { IntegrationSettings } from "../settings/schema";
+import { padraoAulasCt } from "../followups/aulas-ct";
 import { parseFollowup } from "../followups/schema";
 
 export const camposInstancias = [
@@ -19,7 +20,8 @@ export function campoFollowup(settings: Instancias, instancia: string) {
 
 export function followupDaInstancia(settings: IntegrationSettings, instancia: string) {
   const campo = campoFollowup(settings, instancia);
-  const config = parseFollowup(campo ? settings[campo] : undefined);
+  let config = parseFollowup(campo ? settings[campo] : undefined);
+  if (campo && instancia === "ctluizroca" && config.mode !== "aulas") config = padraoAulasCt(instancia);
   // Renomear um chip nunca reaproveita os envios habilitados do número anterior.
   if (!campo || (config.instance && config.instance !== instancia)) {
     return { ...parseFollowup(), instance: instancia };

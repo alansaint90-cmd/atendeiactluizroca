@@ -392,6 +392,7 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("LINK_LOCALIZACAO_CT") || content.includes("Brasília"))) {
     findings.push({ level: "error", id: "localizacao-direta-ct", file: rel, line: 1, msg: "Usar link direto do CT e omitir o rótulo de fuso nas mensagens." });
   }
+  if (rel === "src/lib/aulas/lembretes.ts" && (!content.includes("etapa_aula") || !content.includes("revalidarLembreteAula") || !content.includes("programacao(r,r.etapa,config)"))) findings.push({level:"error",id:"followups-aula-etapas",file:rel,line:1,msg:"Preservar etapas por reserva e revalidação da configuração antes do envio."});
   if (rel === "src/lib/agendamentos/worker.ts" && (!content.includes("sincronizarLembretesAulas") || !content.includes("revalidarLembreteAula"))) {
     findings.push({ level: "error", id: "lembrete-aula-validado", file: rel, line: 1, msg: "Programar e revalidar lembretes vinculados à reserva antes do envio." });
   }
@@ -486,7 +487,7 @@ function analyzeFile(file) {
     findings.push({ level: "error", id: "pausa-manual", file: rel, line: 1,
       msg: "O worker deve verificar a pausa por atendimento humano antes de responder." });
   }
-  if ((rel === "src/lib/agent/worker.ts" && (!/settingsDaInstancia\(settings, instancia\)/.test(content) || !/dependencies.chatbot\(instancia\)/.test(content))) || (rel === "src/lib/evolution/instancias.ts" && !/EVOLUTION_THIRD_INSTANCE_NAME[\s\S]*FOLLOW_UP_THIRD_CONFIG/.test(content)) || (rel === "src/lib/agendamentos/worker.ts" && !/settingsDaInstancia\(await configuracoes\(\), instancia\)/.test(content))) {
+  if ((rel === "src/lib/agent/worker.ts" && (!/settingsDaInstancia\(settings, instancia\)/.test(content) || !/dependencies.chatbot\(instancia\)/.test(content))) || (rel === "src/lib/evolution/instancias.ts" && !/EVOLUTION_THIRD_INSTANCE_NAME[\s\S]*FOLLOW_UP_THIRD_CONFIG/.test(content)) || (rel === "src/lib/agendamentos/worker.ts" && !(/settingsDaInstancia\(await configuracoes\(\), instancia\)/.test(content) || /const settingsAtuais = await configuracoes\(\);[\s\S]*settingsDaInstancia\(settingsAtuais, instancia\)/.test(content)))) {
     findings.push({ level: "error", id: "isolamento-instancias", file: rel, line: 1,
       msg: "Os três chips devem ter configuração própria e seleção da origem antes de responder, agendar ou enviar follow-ups." });
   }

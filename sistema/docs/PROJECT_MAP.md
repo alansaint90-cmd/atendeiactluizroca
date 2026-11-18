@@ -6,7 +6,7 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 206 |
+| Arquivos TS/TSX | 208 |
 | Tabelas (Drizzle) | 36 |
 | Server Actions (arquivos) | 14 |
 | Rotas de API | 6 |
@@ -138,6 +138,7 @@ lib/
     calendario.ts
     escolha.ts
     lembretes.ts
+    nome-participante.ts
     objetivo.ts
     oferta-experimental.ts
     participante.ts
@@ -215,6 +216,7 @@ lib/
     schema.ts
     webhook.ts
   followups/
+    aulas-ct.ts
     processor.ts
     queue.ts
     schedule.ts
@@ -324,7 +326,7 @@ instrumentation.ts
 `id`, `modified_by`
 
 ### `atendeia_agendamentos` — src/lib/db/schema.ts
-`id`, `reservaAulaId`, `agendadoPara`, `iniciadoEm`, `codigoErro`, `modified_by`
+`id`, `etapaAula`, `reservaAulaId`, `agendadoPara`, `iniciadoEm`, `codigoErro`, `modified_by`
 
 ### `atendeia_sessions` — src/lib/db/schema.ts
 `id`, `tokenHash`

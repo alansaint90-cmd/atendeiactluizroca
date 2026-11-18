@@ -16,7 +16,7 @@ export function dividirResposta(texto: string, limite = 450): string[] {
 
 /** Preserva os três balões da confirmação da experimental. */
 export function mensagensDaAula(texto: string): string[] {
-  if (/^Boa! Vamos de /u.test(texto)) return texto.split("\n\n").flatMap(parte=>dividirResposta(parte));
+  if (/^(?:Sua experimental de |Boa! Vamos de )/u.test(texto)) return texto.split("\n\n").flatMap(parte=>dividirResposta(parte));
   if (/^Para (?:seu objetivo|a criança), recomendo /u.test(texto)) {
     const [explicacao,...agenda] = texto.split("\n\n");
     return [explicacao,...dividirResposta(agenda.join("\n\n"))];
