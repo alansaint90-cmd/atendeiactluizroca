@@ -1,3 +1,4 @@
+import {executarCampanhas} from "../campanhas/worker";
 import { sincronizarLembretesAulas, revalidarLembreteAula } from "../aulas/lembretes";
 import { db } from "../db/client";
 import { ensureDatabase } from "../db/migrate";
@@ -42,4 +43,5 @@ export async function executarAgendamentos() {
   if (!process.env.DATABASE_URL) return;
   await ensureDatabase();
   await processarAgendamento(db(), effectiveSettings);
+  await executarCampanhas();
 }

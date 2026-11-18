@@ -6,12 +6,12 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 213 |
-| Tabelas (Drizzle) | 36 |
-| Server Actions (arquivos) | 15 |
+| Arquivos TS/TSX | 226 |
+| Tabelas (Drizzle) | 38 |
+| Server Actions (arquivos) | 17 |
 | Rotas de API | 6 |
 | Paginas | 6 |
-| Componentes | 35 |
+| Componentes | 38 |
 
 ## Arvore (profundidade 3)
 
@@ -46,6 +46,8 @@ app/
   page.tsx
 components/
   agendamentos/
+    editor-individual.tsx
+    menu-fila.tsx
     page.tsx
   assinatura/
     page.tsx
@@ -53,6 +55,8 @@ components/
     agenda.tsx
     page.tsx
     resumo.tsx
+  campanhas/
+    page.tsx
   chatbots/
     editor.tsx
     page.tsx
@@ -99,9 +103,11 @@ lib/
     agendamentos.ts
     atendimento.ts
     aulas.ts
+    campanhas.ts
     chatbots.ts
     consultas.ts
     crm.ts
+    fila-mensagens.ts
     fluxos.ts
     followups.ts
     operacao.ts
@@ -112,6 +118,9 @@ lib/
     tags.ts
     usuarios.ts
   agendamentos/
+    fila-followups.ts
+    fila-repository.ts
+    fila-schema.ts
     repository.ts
     schema.ts
     worker.ts
@@ -171,6 +180,11 @@ lib/
     trocar-senha.ts
     usuarios.ts
     validacao.ts
+  campanhas/
+    provider.ts
+    repository.ts
+    schema.ts
+    worker.ts
   chatbots/
     defaults.ts
     instancias.ts
@@ -258,6 +272,7 @@ lib/
 styles/
   automation.css
   base.css
+  campanhas.css
   conta-menu.css
   conversas.css
   ct-luiz-roca.css
@@ -291,6 +306,12 @@ instrumentation.ts
 
 ### `auditoria` — src/lib/db/schema/auditoria.ts
 `id`, `user_id`, `acao`, `tabela`, `registro_id`, `detalhes`, `dados_anteriores`, `dados_novos`, `created_at`
+
+### `atendeia_campanhas` — src/lib/db/schema/campanhas.ts
+`id`, `status`, `modified_by`
+
+### `atendeia_campanha_destinatarios` — src/lib/db/schema/campanhas.ts
+`id`, `contatoId`, `version`, `modified_by`
 
 ### `atendeia_funis` — src/lib/db/schema/crm.ts
 `id`, `modified_by`
@@ -398,9 +419,11 @@ _(colunas nao detectadas)_
 - `src/lib/actions/agendamentos.ts`: `carregarAgendamentos()`, `gravarAgendamento()`, `cancelarEnvioAgendado()`
 - `src/lib/actions/atendimento.ts`: `validarCanalAtendimento()`, `assumirAtendimento()`, `enviarMensagemManual()`
 - `src/lib/actions/aulas.ts`: `carregarAgendaAulas()`, `cadastrarAula()`, `confirmarAula()`, `cancelarAula()`
+- `src/lib/actions/campanhas.ts`: `carregarCampanhas()`, `gravarCampanha()`, `iniciarCampanha()`, `cancelarCampanha()`, `detalharCampanha()`
 - `src/lib/actions/chatbots.ts`: `carregarChatbots()`, `salvarChatbot()`
 - `src/lib/actions/consultas.ts`: `carregarResumoAgenda()`, `carregarAgendaConsultas()`, `confirmarConsulta()`, `cancelarConsultaAgendada()`
 - `src/lib/actions/crm.ts`: `carregarCrm()`, `adicionarFunil()`, `adicionarMotivo()`, `modificarMotivo()`, `salvarAcessosFunis()`, `adicionarOportunidade()`, `fecharNegocio()`, `moverNegocio()`
+- `src/lib/actions/fila-mensagens.ts`: `carregarFilaMensagens()`, `alterarFilaMensagens()`
 - `src/lib/actions/fluxos.ts`: `carregarFluxos()`, `salvarFluxo()`
 - `src/lib/actions/followups.ts`: `carregarFollowups()`, `salvarFollowups()`
 - `src/lib/actions/operacao.ts`: `carregarOperacao()`

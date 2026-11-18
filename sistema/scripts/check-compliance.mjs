@@ -394,6 +394,7 @@ function analyzeFile(file) {
   }
   if (rel === "src/lib/agent/processor.ts" && (!content.includes("fluxoValido") || !content.includes("!historico.length") || !content.includes("RESERVAS CONFIRMADAS NO BANCO"))) findings.push({level:"error",id:"fluxo-entrada-seguro",file:rel,line:1,msg:"Fluxo só acolhe novo contato e revalida versão antes de enviar."});
   if (rel === "src/lib/aulas/lembretes.ts" && (!content.includes("etapa_aula") || !content.includes("revalidarLembreteAula") || !content.includes("programacao(r,r.etapa,config)"))) findings.push({level:"error",id:"followups-aula-etapas",file:rel,line:1,msg:"Preservar etapas por reserva e revalidação da configuração antes do envio."});
+  if (rel === "src/lib/campanhas/repository.ts" && (!content.includes("m.direction='inbound'") || !content.includes("c.remote_jid=(substring(p.phone") || !content.includes("contatosElegiveis(banco,item.instancia)"))) findings.push({level:"error",id:"campanha-base-recebida",file:rel,line:1,msg:"Validar chip, telefone com mensagem recebida e revalidar antes de enviar."});
   if (rel === "src/lib/agendamentos/worker.ts" && (!content.includes("sincronizarLembretesAulas") || !content.includes("revalidarLembreteAula"))) {
     findings.push({ level: "error", id: "lembrete-aula-validado", file: rel, line: 1, msg: "Programar e revalidar lembretes vinculados à reserva antes do envio." });
   }

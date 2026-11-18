@@ -10,7 +10,7 @@
     "start": "next start --hostname 127.0.0.1 --port 8000",
     "typecheck": "tsc --noEmit",
     "test": "pnpm test:node && pnpm test:ui",
-    "test:node": "tsx --test tests/*.test.ts",
+    "test:node": "tsx --test --test-concurrency=1 tests/*.test.ts",
     "test:ui": "vitest run --config config/vitest.config.mts",
     "lint": "eslint .",
     "test:compliance": "node tests/check-compliance.test.mjs",

@@ -1,0 +1,44 @@
+name: Validacao do Atende Ai
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: validacao-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: sistema
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      TEST_REDIS_URL: redis://127.0.0.1:6379/15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+          package_json_file: sistema/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+          cache-dependency-path: sistema/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verificar
+      - run: pnpm build
+# Apenas valida. Nenhum deploy, SSH, acesso a dados reais ou credencial de produção.

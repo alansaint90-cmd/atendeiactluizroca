@@ -17,7 +17,8 @@ test("salvar prompt do SDR persiste, atualiza a versão e vincula o chatbot à i
     await applyMigrations(banco);
     await cliente.query("INSERT INTO atendeia_users(id,name,email,role,enabled,modified_by) VALUES ($1,'Gerente','gerente@exemplo.test','admin',true,$1)", [usuario]);
     await cliente.query("INSERT INTO atendeia_channels(name,instance_name,modified_by) VALUES ('Canal SDR','chip-sdr',$1)", [usuario]);
-    const inicial = { ...chatbotExample, context: "Instrução inicial do SDR" };
+    // Cenário legado sem abertura própria: a migração 0010 só preenche campo ausente.
+    const inicial = { ...chatbotExample, openingMessages: undefined, context: "Instrução inicial do SDR" };
     const criado = await salvarChatbotServidor(banco, { id: null, versao: null, configuracao: inicial, instancia: "chip-sdr", usuario });
     assert.equal((await chatbotDaInstancia(banco, "chip-sdr"))?.context, inicial.context);
     const revisado = { ...inicial, context: "Nova instrução do gerente para o SDR" };
