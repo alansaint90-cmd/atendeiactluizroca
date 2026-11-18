@@ -67,9 +67,11 @@ test("transferência pausa 30 minutos, cancela follow-up e não pausa o outro n�
     send: async (_config: unknown, _numero: string, texto: string) => { saidas.push(texto); return `envio-${sufixo}`; } };
   try {
     await enqueueEvolutionEventWithClient(client, evento(instancia, "1"));
+    const inicioCiclo = Date.now() + 16000;
     await runAgentTick(dependencias);
+    const fimCiclo = Date.now() + 16000;
     const prazo = Number(await client.get(pausaManualKey(mensagem.conversation)));
-    assert.ok(prazo > Date.now() + 29 * 60000 && prazo <= Date.now() + 30 * 60000);
+    assert.ok(prazo >= inicioCiclo + 30 * 60000 && prazo <= fimCiclo + 30 * 60000);
     assert.equal(await pausaManualAtiva(client, mensagem.conversation, prazo - 1), true);
     assert.equal(await pausaManualAtiva(client, mensagem.conversation, prazo), false);
     assert.equal(await pausaManualAtiva(client, outra.conversation), false);
@@ -102,7 +104,7 @@ test("Redis real: recuperação de pendentes, Lua atômico e exclusão de envio 
   const textosEnviados: string[] = [];
   const registros: string[] = [];
   const dependencies = { settings: async () => config,
-    chatbot: async () => ({ ...chatbotExample, delay: 0, context: "Atenda o cliente conforme este roteiro de teste." }),
+    chatbot: async () => ({ ...chatbotExample, openingMessages: [], delay: 0, context: "Atenda o cliente conforme este roteiro de teste." }),
     registrarEnvio: async (instancia: string, id: string) => { registros.push(`${instancia}:${id}`); },
     generate: async () => { generations++; return "Olá"; },
     send: async (_config: Pick<AgentConfig, "EVOLUTION_API_URL" | "EVOLUTION_API_KEY" | "EVOLUTION_INSTANCE_NAME">, _numero: string, texto: string) => {
