@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Benefícios independentes dos horários — 19/11/2026
+
+Explicar o benefício do objetivo antes dos horários, mesmo sem aula disponível. Emagrecimento prioriza Muay Thai, sem exclusividade; Jiu-Jitsu e Taekwondo também movimentam o corpo e podem contribuir para gasto de energia e condicionamento. Gastar energia é objetivo próprio; para criança, priorizar Taekwondo. Sem turma compatível da primeira indicação, oferecer uma modalidade alternativa elegível por vez, com até dois horários reais e sem mudar turno, data ou idade. Identificar claramente a alternativa; a escolha e a conferência continuam obrigatórias. Não tratar recomendação automática como preferência explícita do cliente. Guardar opções mostradas para não repetir, inclusive entre modalidades alternativas. Sem nenhuma turma, ainda explicar os benefícios e depois a indisponibilidade. Não prometer emagrecimento garantido nem alterar o cadastro das aulas. Esta orientação substitui a exclusividade do Muay Thai em regras anteriores.
+
 ## Conferência única antes da reserva — 19/11/2026
 
 A IA chama preparar_reserva_aula antes de pedir confirmação. Só a ferramenta, depois de salvar a proposta e validar a opção, apresenta os dados e pergunta uma vez “Os dados estão corretos?”. Conferência em texto livre do modelo não é enviada: o provedor solicita a ferramenta em uma única nova tentativa; se o modelo ignorá-la, falhar sem enviar a conferência prematura. O primeiro sim após a conferência oficial grava a reserva e retorna a confirmação final, sem outra pergunta de confirmação. Não transformar um sim sem proposta preparada em reserva nem inventar dados faltantes.

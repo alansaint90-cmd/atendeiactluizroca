@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Benefícios independentes dos horários — 19/11/2026
+
+Muay Thai é a primeira indicação para emagrecimento e condicionamento, mas não é exclusivo: Jiu-Jitsu e Taekwondo também envolvem movimento e gasto de energia, sem garantia de resultado. Gastar energia é reconhecido como objetivo, com prioridade de Taekwondo para crianças. Explicar benefícios mesmo quando não houver aula disponível; depois consultar e apresentar até dois horários reais de uma modalidade por vez. Se faltar turma compatível da primeira indicação, apresentar claramente outra modalidade elegível, mantendo data, turno, idade e disponibilidade. Não reservar automaticamente a alternativa. Diferenciar preferência literal do cliente da indicação automática e manter o histórico de opções já apresentadas ao pedir alternativas. Sem nenhuma opção, explicar os benefícios antes de informar a falta de horário. Preservar a grade e os dados existentes. Esta atualização substitui a regra antiga de recomendar somente Muay Thai.
+
 ## Conferência única antes da reserva — 19/11/2026
 
 Depois da escolha do horário e dos dados completos, o agente chama preparar_reserva_aula antes de perguntar se os dados estão corretos. A proposta precisa estar validada e salva no Redis antes dessa única pergunta. O provedor bloqueia conferências improvisadas em texto livre e solicita a ferramenta em uma tentativa adicional limitada; se ela não vier, não envia a pergunta prematura. O primeiro sim após a conferência oficial grava e confirma a reserva, sem repetir a coleta ou a confirmação. Preservar a validação do servidor, as pausas, a idempotência e as entregas incertas. Não usar uma confirmação antiga como autorização para uma proposta nova.

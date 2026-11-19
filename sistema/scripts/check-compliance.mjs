@@ -410,6 +410,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("recomendarObjetivo(")) {
     findings.push({ level: "error", id: "objetivo-experimental-ct", file: rel, line: 1, msg: "Explicar a recomendação por objetivo antes dos horários reais." });
   }
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("alternativasPorObjetivo(") || !content.includes("explicarBeneficioObjetivo(") || !content.includes("modalidadePreferida"))) {
+    findings.push({ level: "error", id: "beneficios-alternativas-ct", file: rel, line: 1, msg: "Explicar benefícios e consultar alternativas compatíveis sem confundir indicação com preferência explícita." });
+  }
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("aberturaHorarios(") || content.includes("Tenho estas duas opções para você"))) {
     findings.push({ level: "error", id: "horarios-naturais-ct", file: rel, line: 1, msg: "Adaptar a apresentação dos horários à pergunta e à disponibilidade real." });
   }
