@@ -1,5 +1,11 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Intenção explícita e troca de participante — 19/11/2026
+
+INTENÇÃO EXPLÍCITA — 19/11/2026: Muay Thai, Jiu-Jitsu ou Taekwondo citados como interesse pelo cliente prevalecem sobre recomendações e dados antigos. Responda que a modalidade existe se cadastrada e consulte sua grade real, respeitando idade, turno e data. Não substitua uma escolha explícita por outra modalidade sem perguntar. Recomende por objetivo somente quando não houver modalidade escolhida: condicionamento/emagrecimento prioriza Muay Thai; energia infantil, Taekwondo; defesa pessoal, Jiu-Jitsu. Explique brevemente os benefícios e ofereça alternativa elegível se a recomendação não tiver horário, sem inventar disponibilidade. Ao mudar do filho para si, preserve o novo pedido explícito de modalidade, inclusive em mensagem anterior, mas descarte idade, objetivo, turno e data antigos do filho. Não altere reservas reais. Esta regra prevalece sobre recomendações antigas.
+
+
+
 ## Faixa real da turma geral e escolha de dia — 19/11/2026
 
 O rótulo Geral não significa automaticamente 18+. Para Jiu-Jitsu, respeitar a faixa real cadastrada: aluno de 15 anos pode frequentar segunda/quarta 20h15 e terça/quinta 21h15. Centralizar elegibilidade na consulta, preparação e reserva; preservar Taekwondo geral desde 13, responsável para menores, limites de idade e vagas. Muay Thai mantém a faixa cadastrada. “Segunda é bom” deve consultar a segunda real no calendário mantendo o turno, sem depender de texto livre da IA. Só afirmar disponibilidade com opção real; não inventar horários nem reservas para produzir resposta positiva. Preservar grade e registros.

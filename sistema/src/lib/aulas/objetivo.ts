@@ -17,12 +17,16 @@ export function recomendarObjetivo(objetivo: ObjetivoAula | null | undefined, id
   return {modalidade:"Jiu-Jitsu",explicacao:"Para seu objetivo, recomendo Jiu-Jitsu! Você aprende técnicas de controle, escapes e defesa pessoal, respeitando seu ritmo."};
 }
 export function alternativasPorObjetivo(objetivo: ObjetivoAula | null | undefined, principal: string) {
-  if (objetivo !== "emagrecer" && objetivo !== "energia") return [];
+  if (objetivo !== "emagrecer" && objetivo !== "energia" && objetivo !== "defesa") return [];
   return ["Muay Thai", "Jiu-Jitsu", "Taekwondo"].filter(m=>m!==principal);
 }
 export function explicarBeneficioObjetivo(objetivo: ObjetivoAula | null | undefined, modalidade: string, idade: number | null, crianca: boolean, principal?: string) {
   const recomendacao=recomendarObjetivo(objetivo,idade,crianca);
   if (recomendacao?.modalidade===modalidade) return recomendacao.explicacao;
+  if (objetivo==="defesa") {
+    const defesa:Record<string,string>={"Muay Thai":"trabalha golpes, movimentação e noção de distância, habilidades úteis para defesa pessoal", "Taekwondo":"trabalha chutes, movimentação e controle de distância, habilidades úteis para defesa pessoal"};
+    return defesa[modalidade] ? `${principal ? `Minha primeira indicação é ${principal}. ` : ""}Uma opção é ${modalidade}: o treino ${defesa[modalidade]}.` : "";
+  }
   if (objetivo!=="emagrecer" && objetivo!=="energia") return "";
   const beneficios:Record<string,string>={"Muay Thai":"combina técnicas e exercícios funcionais, trabalhando o condicionamento e o gasto de energia", "Jiu-Jitsu":"trabalha movimentação, força e condicionamento, contribuindo para o gasto de energia", "Taekwondo":"tem movimentos dinâmicos que trabalham coordenação e condicionamento, contribuindo para o gasto de energia"};
   if (!beneficios[modalidade]) return "";

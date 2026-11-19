@@ -190,6 +190,7 @@ try {
     ["participante sem validação reprova", reprova("aulas/agente.ts", "participante-aula-ct")],
     ["conferência livre sem proposta reprova", reprova("agent/providers.ts", "conferencia-unica-aula")],
     ["memória do interesse inicial ausente reprova", reprova("aulas/agente.ts", "memoria-interesse-ct")],
+    ["prioridade de modalidade ausente reprova", reprova("aulas/agente.ts", "intencao-modalidade-ct")],
     ["recomendação por objetivo ausente reprova", reprova("aulas/agente.ts", "objetivo-experimental-ct")],
     ["benefícios sem alternativas compatíveis reprovam", reprova("aulas/agente.ts", "beneficios-alternativas-ct")],
     ["Taekwondo geral sem validação de adolescente reprova", reprova("aulas/agente.ts", "taekwondo-geral-adolescente")],

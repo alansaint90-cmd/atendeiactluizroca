@@ -407,6 +407,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("intencaoModalidade(texto)") || !content.includes("primeiraIdentificacao") || !content.includes("604800"))) {
     findings.push({ level: "error", id: "memoria-interesse-ct", file: rel, line: 1, msg: "Preservar interesse inicial na memória temporária ao identificar participante pela primeira vez." });
   }
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("modalidadePendente") || !content.includes("modalidade && !preferida"))) {
+    findings.push({ level: "error", id: "intencao-modalidade-ct", file: rel, line: 1, msg: "Pedido explícito prevalece sobre recomendação e acompanha a troca de participante sem herdar filtros antigos." });
+  }
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("recomendarObjetivo(")) {
     findings.push({ level: "error", id: "objetivo-experimental-ct", file: rel, line: 1, msg: "Explicar a recomendação por objetivo antes dos horários reais." });
   }

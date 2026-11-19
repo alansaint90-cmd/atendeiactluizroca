@@ -38,7 +38,8 @@ test("lembra modalidade entre processos, primeira identificação e idade infant
   assert.equal(await mensagem("isolada","pra mim"),"Claro! Qual modalidade você gostaria de experimentar?");
   await mensagem("adulto","não quero Muay Thai, prefiro Jiu-Jitsu");
   assert.equal(cadastro("adulto").consulta.modalidade,"Jiu-Jitsu");
-  assert.equal(cadastro("adulto").opcoes.length,0);
+  assert.ok(cadastro("adulto").opcoes.length>0);
+  assert.ok(cadastro("adulto").opcoes.every((o:{modalidade:string})=>o.modalidade==="Jiu-Jitsu"));
   assert.equal((await consultarAulas(banco)).reservas.length,0);
  }finally{await cliente.close();}
 });

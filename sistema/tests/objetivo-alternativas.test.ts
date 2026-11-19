@@ -47,7 +47,8 @@ test("explica benefícios e oferece alternativa real, mantendo idade, turno, dat
   await atender("explicita")("É pra mim, de manhã");
   const explicita=await atender("explicita")("Quero Muay Thai",{acao:"consultar",modalidade:"Muay Thai",idade:null,adultoSemIdade:true});
   assert.doesNotMatch(explicita!,/Taekwondo|Jiu-Jitsu/);
-  assert.match((await atender("explicita")("Quero emagrecer"))!,/Taekwondo/);
+  assert.doesNotMatch((await atender("explicita")("Quero emagrecer"))!,/Taekwondo|Jiu-Jitsu/);
+  assert.equal(estado("explicita").opcoes.length,0,"não substituir escolha explícita por recomendação");
   await atender("noite")("É pra mim");
   const noite=await atender("noite")("Quero emagrecer na próxima segunda à noite");
   assert.match(noite!,/Jiu-Jitsu/);assert.doesNotMatch(noite!,/Taekwondo/);
