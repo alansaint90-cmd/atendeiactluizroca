@@ -398,7 +398,7 @@ function analyzeFile(file) {
   if (rel === "src/lib/agendamentos/worker.ts" && (!content.includes("sincronizarLembretesAulas") || !content.includes("revalidarLembreteAula"))) {
     findings.push({ level: "error", id: "lembrete-aula-validado", file: rel, line: 1, msg: "Programar e revalidar lembretes vinculados à reserva antes do envio." });
   }
-  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("identificarParticipante(texto)") || !content.includes("adultoSemIdade") || !content.includes("faixaCompativel"))) {
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("identificarParticipante(texto)") || !content.includes("adultoSemIdade") || !content.includes("elegivelParaExperimental"))) {
     findings.push({ level: "error", id: "participante-aula-ct", file: rel, line: 1, msg: "Identificar participante e permitir adulto sem idade fictícia, preservando faixas infantis." });
   }
   if (rel === "src/lib/agent/providers.ts" && (!content.includes("openai_conferencia_sem_preparo") || !content.includes("tool_choice") || !content.includes("CONFERÊNCIA ÚNICA"))) {
@@ -410,8 +410,11 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("recomendarObjetivo(")) {
     findings.push({ level: "error", id: "objetivo-experimental-ct", file: rel, line: 1, msg: "Explicar a recomendação por objetivo antes dos horários reais." });
   }
-  if (rel === "src/lib/aulas/agente.ts" && (content.match(/adolescenteNoTaekwondoGeral\(/g)?.length ?? 0)<2) {
+  if (rel === "src/lib/aulas/agente.ts" && (content.match(/elegivelParaExperimental\(/g)?.length ?? 0)<2) {
     findings.push({ level: "error", id: "taekwondo-geral-adolescente", file: rel, line: 1, msg: "Validar Taekwondo geral para adolescentes na consulta e preparação, mantendo responsável para menores." });
+  }
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("elegivelParaExperimental(") || /idade\s*<\s*18\s*&&\s*(?:a|aula)\.turma\s*===\s*["']Geral["']/.test(content))) {
+    findings.push({ level: "error", id: "faixa-real-turma-geral", file: rel, line: 1, msg: "Usar elegibilidade comum e faixa real da aula, sem bloquear genericamente menores em turmas gerais." });
   }
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("alternativasPorObjetivo(") || !content.includes("explicarBeneficioObjetivo(") || !content.includes("modalidadePreferida"))) {
     findings.push({ level: "error", id: "beneficios-alternativas-ct", file: rel, line: 1, msg: "Explicar benefícios e consultar alternativas compatíveis sem confundir indicação com preferência explícita." });

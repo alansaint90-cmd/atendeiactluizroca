@@ -23,14 +23,14 @@ export const formatarAula = (inicio: string) => new Date(inicio).toLocaleString(
 
 export function validarVaga(aula: Aula, aluno: AlunoDados, reservas: ReservaAula[], agora = Date.now()) {
   if (Date.parse(aula.inicio) <= agora) throw new Error("Esta aula já começou. Escolha uma data futura.");
-  if (!faixaCompativel(aula, aluno.idade, aluno.adultoSemIdade)) throw new Error("A idade do aluno não corresponde à faixa etária desta turma.");
+  if (!elegivelParaExperimental(aula, aluno.idade, aluno.adultoSemIdade)) throw new Error("A idade do aluno não corresponde à faixa etária desta turma.");
   if (aula.capacidade !== null && reservas.filter(r => r.aulaId === aula.id && r.status === "confirmada").length >= aula.capacidade) throw new Error("Esta turma está lotada. Escolha outra aula.");
   if (reservas.some(r => r.aulaId === aula.id && r.status === "confirmada" && r.telefone === aluno.telefone && r.nome.toLocaleLowerCase("pt-BR") === aluno.nome.toLocaleLowerCase("pt-BR"))) throw new Error("Este aluno já tem uma reserva confirmada nesta aula.");
 }
 
 /** Adulto sem idade numérica só entra em turma geral sem limite adulto específico. */
-export function adolescenteNoTaekwondoGeral(aula: Pick<Aula,"modalidade"|"turma">, idade: number | null) {
-  return aula.modalidade === "Taekwondo" && aula.turma === "Geral" && idade !== null && idade >= 13;
+export function elegivelParaExperimental(aula: Aula, idade: number | null, adultoSemIdade = false) {
+  return faixaCompativel(aula,idade,adultoSemIdade) && !(idade!==null && idade>=18 && /^kids/iu.test(aula.turma)) && !(idade===3 && aula.modalidade==="Taekwondo");
 }
 export function faixaCompativel(aula: Aula, idade: number | null, adultoSemIdade = false) {
   if (idade !== null && idade < 13 && aula.modalidade === "Taekwondo" && aula.turma === "Geral") return false;

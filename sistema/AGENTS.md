@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Faixa real da turma geral e escolha de dia — 19/11/2026
+
+O rótulo Geral não significa automaticamente 18+. Para Jiu-Jitsu, respeitar a faixa real cadastrada: aluno de 15 anos pode frequentar segunda/quarta 20h15 e terça/quinta 21h15. Centralizar elegibilidade na consulta, preparação e reserva; preservar Taekwondo geral desde 13, responsável para menores, limites de idade e vagas. Muay Thai mantém a faixa cadastrada. “Segunda é bom” deve consultar a segunda real no calendário mantendo o turno, sem depender de texto livre da IA. Só afirmar disponibilidade com opção real; não inventar horários nem reservas para produzir resposta positiva. Preservar grade e registros.
+
 ## Taekwondo geral a partir de 13 anos — 19/11/2026
 
 Adolescentes a partir de 13 anos, inclusive, podem receber oferta e reserva na turma Geral de Taekwondo, incluindo terça/quinta às 19h15, conforme a agenda real. Menores de 13 não entram nessa turma; manter as turmas infantis compatíveis. Menores de 18 continuam exigindo responsável e idade real. Aplicar a mesma validação na consulta, preparação e reserva, sem alterar a grade ou liberar outras modalidades gerais para menores. Sem turma compatível, informar que a indisponibilidade é para aquela idade, turno e data, sem afirmar ausência geral da modalidade.

@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Jiu-Jitsu geral e escolha de dia — 19/11/2026
+
+Usar a faixa etária real da aula, sem bloqueio genérico de menores em turmas chamadas Geral. Jiu-Jitsu admite o aluno de 15 anos nos horários noturnos cadastrados: segunda/quarta 20h15 e terça/quinta 21h15. Consulta, conferência e reserva usam a mesma elegibilidade, mantendo responsável para menores e Taekwondo geral a partir de 13. Muay Thai mantém o limite cadastrado. Escolhas como “Segunda é bom” refazem a consulta na data correta. A resposta positiva exige opção real; sem disponibilidade no recorte, explicar a restrição e consultar alternativas adequadas, sem inventar vagas ou alterar a grade.
+
 ## Taekwondo geral a partir de 13 anos — 19/11/2026
 
 O CT autorizou adolescentes de 13 anos ou mais na turma Geral de Taekwondo. Aos 15 anos, oferecer terça/quinta às 19h15 quando compatível com a data solicitada. Menores de 13 usam somente turmas apropriadas; menores de 18 precisam de responsável e idade real. A validação deve valer para consulta, conferência e reserva, sem alterar os horários cadastrados nem ampliar outras modalidades gerais. Quando não houver opção, mencionar a faixa etária junto ao turno/data, em vez de dizer que a modalidade inteira não tem turma.
