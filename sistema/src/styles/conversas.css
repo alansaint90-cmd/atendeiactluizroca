@@ -1,7 +1,10 @@
 /* Estrutura compartilhada; adapta-se às cores de cada instalação Atende Aí. */
-.page-stack.pagina-conversas { gap:12px; }
-.pagina-conversas .page-head h1 { margin:0; }
-.pagina-conversas .conversas-caixa { height:max(440px,calc(100dvh - 180px)); }
+.workspace:has(> .content-conversas) { display:flex; flex-direction:column; height:100dvh; }
+.workspace:has(> .content-conversas) > .topbar { flex-shrink:0; }
+.workspace .content.content-conversas { flex:1; min-height:0; padding:12px; gap:0; }
+.content-conversas > div { min-height:0; }
+.page-stack.pagina-conversas { display:flex; flex-direction:column; height:100%; min-height:0; gap:12px; }
+.pagina-conversas .conversas-caixa { flex:1; height:auto; min-height:0; }
 .conversas-caixa { display:grid; grid-template-columns:minmax(270px,340px) minmax(0,1fr); height:clamp(440px,calc(100dvh - 235px),850px); min-width:0; overflow:hidden; border:1px solid var(--line); border-radius:16px; background:var(--surface); box-shadow:0 4px 20px #0f172a05; }
 .conversas-caixa * { box-sizing:border-box; }
 .conversas-lateral { display:flex; flex-direction:column; min-height:0; border-right:1px solid var(--line); background:var(--surface); }
@@ -78,6 +81,11 @@
 .conversas-sem-selecao { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; padding:30px; text-align:center; background:var(--bg); color:var(--muted); }
 .conversas-sem-selecao h2 { font-size:19px; color:var(--text); }
 .conversas-caixa :is(button,input,textarea,[tabindex]):focus-visible { outline:3px solid var(--marca-violeta); outline-offset:-3px; }
+@media(max-width:768px) {
+  .shell:has(> .workspace > .content-conversas) { display:flex; flex-direction:column; height:100dvh; min-height:0; }
+  .shell:has(> .workspace > .content-conversas) > .sidebar { flex-shrink:0; }
+  .shell:has(> .workspace > .content-conversas) > .workspace { flex:1; min-height:0; height:auto; }
+}
 @media(max-width:850px) {
   .conversas-caixa { display:flex; height:calc(100dvh - 180px); min-height:440px; }
   .conversas-lateral,.conversas-principal { width:100%; }

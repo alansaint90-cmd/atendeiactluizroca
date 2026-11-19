@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Memória do interesse inicial — 18/11/2026
+
+Persistir a modalidade afirmada desde a primeira mensagem no cadastro temporário Redis, com validade de sete dias e trava do processador. A primeira identificação do participante preserva modalidade, turno e data já informados. Perguntar somente o dado faltante; adulto para si não precisa de idade. Uma troca real de participante descarta a proposta anterior, preservando reservas reais. Não tratar modalidade negada ou comparação entre modalidades como escolha. Não criar reserva antes da conferência e confirmação.
+
 ## Campanhas e central de mensagens — 18/11/2026
 
 CAMPANHAS E CENTRAL DE ENVIOS — 18/11/2026: campanhas somente para telefone com mensagem recebida no chip selecionado, vinculado ao remote_jid, validando criação e cada saída, inclusive entre texto e áudio. Telefone editado não herda permissão. Rascunho não envia; iniciar exige confirmação e versão. Fila PostgreSQL persistente com cadência mínima de 10s por chip e proteção contra duplicidade; incerto não retorna a pendente. Anexos JPG/PNG/MP3/OGG/PDF até 2 MB validados por tipo, tamanho e assinatura. Central consulta agendamentos SQL, destinatários e próxima etapa real Redis; campanhas têm horário previsto. Filtros, seleção, contagem antes de confirmar, auditoria e falhas parciais. Cancelar/lixeira alteram fontes reais, nunca enviando; restaurar somente visualiza. Cancelar follow-up Redis encerra ciclo; follow-up de aula encerra pendências da mesma reserva em transação, com contagem expandida na confirmação. Preservar envios individuais antigos. Migration 0022 aditiva; não modificar migrações aplicadas. Não implantar neste trabalho; push e validação GitHub somente.

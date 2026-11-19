@@ -1,5 +1,13 @@
 # Regras do protótipo
 
+## Memória do interesse inicial — 18/11/2026
+
+A modalidade informada no início fica no cadastro temporário Redis por sete dias, isolada pela conversa e instância e protegida pela trava existente. A primeira resposta “pra mim” ou “para meu filho” preserva modalidade, turno e data; perguntar somente os dados faltantes. Para criança, coletar idade antes dos horários. Uma troca real de participante inicia proposta separada e preserva reservas existentes. Não interpretar negações ou comparações como escolha. Nenhuma reserva é criada antes da confirmação. Reutilizar o armazenamento existente, sem migração PostgreSQL.
+
+## Espaço da caixa de entrada — 18/11/2026
+
+Na caixa de entrada, manter o nome somente na barra superior, sem título duplicado acima das conversas. A área de atendimento ocupa a altura restante da janela, com margem interna compacta de 12 px e rolagem interna do histórico e da lista. Preservar a navegação entre lista e conversa no celular e os espaçamentos das demais páginas.
+
 ## Campanhas e central de mensagens — 18/11/2026
 
 CAMPANHAS E CENTRAL DE ENVIOS — 18/11/2026: campanhas somente para telefone com mensagem recebida no chip selecionado, vinculado ao remote_jid, validando criação e cada saída, inclusive entre texto e áudio. Telefone editado não herda permissão. Rascunho não envia; iniciar exige confirmação e versão. Fila PostgreSQL persistente com cadência mínima de 10s por chip e proteção contra duplicidade; incerto não retorna a pendente. Anexos JPG/PNG/MP3/OGG/PDF até 2 MB validados por tipo, tamanho e assinatura. Central consulta agendamentos SQL, destinatários e próxima etapa real Redis; campanhas têm horário previsto. Filtros, seleção, contagem antes de confirmar, auditoria e falhas parciais. Cancelar/lixeira alteram fontes reais, nunca enviando; restaurar somente visualiza. Cancelar follow-up Redis encerra ciclo; follow-up de aula encerra pendências da mesma reserva em transação, com contagem expandida na confirmação. Preservar envios individuais antigos. Migration 0022 aditiva; não modificar migrações aplicadas. Não implantar neste trabalho; push e validação GitHub somente.

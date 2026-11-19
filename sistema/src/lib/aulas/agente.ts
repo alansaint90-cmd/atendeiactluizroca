@@ -1,7 +1,7 @@
 import { limparNomeParticipante } from "./nome-participante";
 import { escolherHorario } from "./escolha";
 import { aberturaHorarios, semHorarios } from "./apresentacao";
-import { identificarObjetivo, recomendarObjetivo, modalidadeMencionada, type ObjetivoAula } from "./objetivo";
+import { identificarObjetivo, recomendarObjetivo, modalidadeMencionada, intencaoModalidade, type ObjetivoAula } from "./objetivo";
 import { identificarParticipante } from "./participante";
 import { LINK_LOCALIZACAO_CT } from "../ct/conhecimento";
 import { interpretarTurno, correspondeTurno, type TurnoAula } from "./turno";
@@ -31,12 +31,30 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       const objetivoAtual = identificarObjetivo(texto);
       const participanteAtual = identificarParticipante(texto);
       const idadeInformada = texto.match(/\b(\d{1,3})\s*anos\b/iu);
+      const interesse = intencaoModalidade(texto);
+      if (!acao && !cadastro.confirmada && !cadastro.reserva && (interesse.modalidade || cadastro.consulta?.modalidade && interesse.negadas.includes(cadastro.consulta.modalidade))) {
+        const modalidade = interesse.modalidade;
+        if (modalidade !== cadastro.consulta?.modalidade) {
+          cadastro = {...cadastro, opcoes:[], opcaoEscolhida:undefined, consulta:{...cadastro.consulta, modalidade, idade:cadastro.consulta?.idade ?? null, mostradas:[]}};
+          await salvar(cadastro);
+        }
+      }
       if (!acao && participanteAtual && (participanteAtual !== cadastro.participante || cadastro.confirmada && /pra mim|para mim|tamb[eé]m/iu.test(texto))) {
         const novoTurno = interpretarTurno(texto), novaData = interpretarDataCt(texto);
-        cadastro = {objetivo:objetivoAtual ?? (cadastro.participante === undefined ? cadastro.objetivo : undefined),opcoes:[],participante:participanteAtual,adultoSemIdade:participanteAtual === "adulto" && !idadeInformada,turnoSolicitado:novoTurno === "ambiguo" ? null : novoTurno,dataSolicitada:novaData?.tipo === "data" ? novaData.data : null};
+        const primeiraIdentificacao = cadastro.participante === undefined && !cadastro.confirmada && !cadastro.reserva;
+        cadastro = {
+          objetivo:objetivoAtual ?? (primeiraIdentificacao ? cadastro.objetivo : undefined),
+          opcoes:primeiraIdentificacao ? cadastro.opcoes : [],
+          consulta:primeiraIdentificacao ? cadastro.consulta : interesse.modalidade ? {modalidade:interesse.modalidade, idade:idadeInformada ? Number(idadeInformada[1]) : null, mostradas:[]} : undefined,
+          participante:participanteAtual,
+          adultoSemIdade:participanteAtual === "adulto" && !idadeInformada && !(primeiraIdentificacao && cadastro.consulta?.idade != null),
+          turnoSolicitado:novoTurno === "ambiguo" ? null : novoTurno !== undefined ? novoTurno : primeiraIdentificacao ? cadastro.turnoSolicitado : undefined,
+          dataSolicitada:novaData?.tipo === "data" ? novaData.data : primeiraIdentificacao ? cadastro.dataSolicitada : null,
+        };
         await salvar(cadastro);
       }
       if (!acao && idadeInformada && cadastro.adultoSemIdade) { cadastro.adultoSemIdade=false; await salvar(cadastro); }
+      if (!acao && !cadastro.confirmada && !cadastro.reserva && cadastro.consulta?.modalidade && (participanteAtual === "adulto" || idadeInformada && cadastro.participante)) return atender(texto,{acao:"consultar",modalidade:cadastro.consulta.modalidade,idade:idadeInformada?Number(idadeInformada[1]):cadastro.consulta.idade});
       if (!acao && participanteAtual === "adulto" && cadastro.objetivo) return atender(texto,{acao:"consultar",modalidade:null,idade:null});
       if (!acao && participanteAtual === "adulto" && !cadastro.consulta?.modalidade && !/taekwondo|muay|jiu/iu.test(texto) && !/onde|valor|pre[cç]o|pagamento/iu.test(texto)) return "Claro! Qual modalidade você gostaria de experimentar?";
       if (!acao && participanteAtual === "crianca" && !idadeInformada && cadastro.consulta?.idade == null && cadastro.reserva?.aluno.idade == null && !/onde|valor|pre[cç]o|pagamento/iu.test(texto)) return "Qual é a idade de quem vai fazer a aula?";
@@ -109,11 +127,14 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         const normalizar = (v: string) => { const nome = v.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("pt-BR").replace(/[^a-z]/g, ""); return ({ jiu: "jiujitsu", muay: "muaythai", tae: "taekwondo" } as Record<string,string>)[nome] ?? nome; };
         const idade = cadastro.adultoSemIdade ? null : dados.idade ?? cadastro.consulta?.idade ?? null;
         const recomendacao = recomendarObjetivo(objetivoAtual ?? cadastro.objetivo, idade, cadastro.participante === "crianca");
-        const modalidade = modalidadeMencionada(texto) ?? (objetivoAtual ? recomendacao?.modalidade ?? dados.modalidade : dados.modalidade ?? cadastro.consulta?.modalidade ?? recomendacao?.modalidade ?? null);
+        const modalidade = modalidadeMencionada(texto) ?? (objetivoAtual ? recomendacao?.modalidade ?? dados.modalidade : cadastro.consulta?.modalidade ?? dados.modalidade ?? recomendacao?.modalidade ?? null);
         const chaveExplicacao = `${objetivoAtual ?? cadastro.objetivo}:${modalidade}`;
         const introducao = recomendacao && modalidade === recomendacao.modalidade && (objetivoAtual || cadastro.objetivoExplicado !== chaveExplicacao) ? recomendacao.explicacao + "\n\n" : "";
         const adultoSemIdade = idade === null && (cadastro.adultoSemIdade || cadastro.participante !== "crianca" && dados.adultoSemIdade === true);
-        if (idade === null && !adultoSemIdade) return introducao + (cadastro.participante === "crianca" ? "Qual é a idade de quem vai fazer a aula?" : "A aula é para você ou para outra pessoa?");
+        if (idade === null && !adultoSemIdade) {
+          await salvar({...cadastro,consulta:{modalidade,idade,mostradas:[]}});
+          return introducao + (cadastro.participante === "crianca" ? "Qual é a idade de quem vai fazer a aula?" : "A aula é para você ou para outra pessoa?");
+        }
         const referencia = dataAtual ?? (!cadastro.dataSolicitada && dados.referenciaData ? interpretarDataCt(dados.referenciaData) : null);
         if (referencia?.tipo === "ambigua") return `Qual destas datas você prefere: ${referencia.datas.map(rotuloDataCt).join(" ou ")}?`;
         if (referencia?.tipo === "invalida") return referencia.mensagem;

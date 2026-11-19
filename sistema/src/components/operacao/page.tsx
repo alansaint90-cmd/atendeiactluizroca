@@ -38,8 +38,7 @@ function ListaOperacionalPage({ rota }: { rota: string }) {
   }, [carregar, rotaOperacional, invalidarConsulta]);
   const conversa = dados?.conversas.find(item => item.id === selecionada) ?? dados?.conversas[0];
   return <div className={`page-stack${rota === "inbox" ? " pagina-conversas" : ""}`}>
-    <section className="page-head"><div><h1>{rota === "contacts" ? "Contatos e leads" : "Caixa de entrada"}</h1>
-</div></section>
+    {rota === "contacts" && <section className="page-head"><div><h1>Contatos e leads</h1></div></section>}
     {erro && <p role="alert">{erro}</p>}
     {!dados && !erro && <p role="status">{ocupado ? "Consultando o banco de dados…" : "Aguardando a consulta dos dados."}</p>}
     {dados && <>

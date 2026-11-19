@@ -187,6 +187,7 @@ try {
     ["link direto e rótulos de horário do CT reprovam", reprova("aulas/agente.ts", "localizacao-direta-ct")],
     ["lembrete sem revalidação reprova", reprova("agendamentos/worker.ts", "lembrete-aula-validado")],
     ["participante sem validação reprova", reprova("aulas/agente.ts", "participante-aula-ct")],
+    ["memória do interesse inicial ausente reprova", reprova("aulas/agente.ts", "memoria-interesse-ct")],
     ["recomendação por objetivo ausente reprova", reprova("aulas/agente.ts", "objetivo-experimental-ct")],
     ["horários sem apresentação contextual reprovam", reprova("aulas/agente.ts", "horarios-naturais-ct")],
     ["escolha de horário sem vínculo reprova", reprova("aulas/agente.ts", "escolha-horario-ct")],

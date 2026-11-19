@@ -13,9 +13,15 @@ export function recomendarObjetivo(objetivo: ObjetivoAula | null | undefined, id
   if (objetivo === "emagrecer") return {modalidade:"Muay Thai",explicacao:"Para seu objetivo, recomendo Muay Thai! O treino combina técnicas e exercícios funcionais, aumentando o gasto calórico e trabalhando o condicionamento."};
   return {modalidade:"Jiu-Jitsu",explicacao:"Para seu objetivo, recomendo Jiu-Jitsu! Você aprende técnicas de controle, escapes e defesa pessoal, respeitando seu ritmo."};
 }
-export function modalidadeMencionada(texto: string) {
-  if (/taekwondo|\btae\b/iu.test(texto)) return "Taekwondo";
-  if (/muay(?: thai)?/iu.test(texto)) return "Muay Thai";
-  if (/jiu(?:[ -]?jitsu)?/iu.test(texto)) return "Jiu-Jitsu";
-  return null;
+export function intencaoModalidade(texto: string) {
+  const normal=texto.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
+  const afirmadas=new Set<string>(),negadas=new Set<string>();
+  const padroes:[string,RegExp][]=[["Taekwondo",/\b(?:taekwondo|tae)\b/g],["Muay Thai",/\bmuay(?: thai)?\b/g],["Jiu-Jitsu",/\bjiu(?:[ -]?jitsu)?\b/g]];
+  for(const [nome,padrao] of padroes) for(const m of normal.matchAll(padrao)) {
+    const antes=normal.slice(0,m.index);
+    const negada=/\b(?:nao|nem)\s+(?:(?:quero|gosto|prefiro|pretendo|vou|e)(?:\s+mais)?\s+)?(?:(?:de|fazer|treinar|experimentar)\s+){0,2}$/.test(antes);
+    (negada?negadas:afirmadas).add(nome);
+  }
+  return {modalidade:afirmadas.size===1?[...afirmadas][0]:null,negadas:[...negadas]};
 }
+export function modalidadeMencionada(texto: string) { return intencaoModalidade(texto).modalidade; }
