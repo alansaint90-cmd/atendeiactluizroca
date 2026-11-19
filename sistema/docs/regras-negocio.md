@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Conferência única antes da reserva — 19/11/2026
+
+Depois da escolha do horário e dos dados completos, o agente chama preparar_reserva_aula antes de perguntar se os dados estão corretos. A proposta precisa estar validada e salva no Redis antes dessa única pergunta. O provedor bloqueia conferências improvisadas em texto livre e solicita a ferramenta em uma tentativa adicional limitada; se ela não vier, não envia a pergunta prematura. O primeiro sim após a conferência oficial grava e confirma a reserva, sem repetir a coleta ou a confirmação. Preservar a validação do servidor, as pausas, a idempotência e as entregas incertas. Não usar uma confirmação antiga como autorização para uma proposta nova.
+
 ## Memória do interesse inicial — 18/11/2026
 
 A modalidade informada no início fica no cadastro temporário Redis por sete dias, isolada pela conversa e instância e protegida pela trava existente. A primeira resposta “pra mim” ou “para meu filho” preserva modalidade, turno e data; perguntar somente os dados faltantes. Para criança, coletar idade antes dos horários. Uma troca real de participante inicia proposta separada e preserva reservas existentes. Não interpretar negações ou comparações como escolha. Nenhuma reserva é criada antes da confirmação. Reutilizar o armazenamento existente, sem migração PostgreSQL.

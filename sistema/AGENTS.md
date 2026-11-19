@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Conferência única antes da reserva — 19/11/2026
+
+A IA chama preparar_reserva_aula antes de pedir confirmação. Só a ferramenta, depois de salvar a proposta e validar a opção, apresenta os dados e pergunta uma vez “Os dados estão corretos?”. Conferência em texto livre do modelo não é enviada: o provedor solicita a ferramenta em uma única nova tentativa; se o modelo ignorá-la, falhar sem enviar a conferência prematura. O primeiro sim após a conferência oficial grava a reserva e retorna a confirmação final, sem outra pergunta de confirmação. Não transformar um sim sem proposta preparada em reserva nem inventar dados faltantes.
+
 ## Memória do interesse inicial — 18/11/2026
 
 Persistir a modalidade afirmada desde a primeira mensagem no cadastro temporário Redis, com validade de sete dias e trava do processador. A primeira identificação do participante preserva modalidade, turno e data já informados. Perguntar somente o dado faltante; adulto para si não precisa de idade. Uma troca real de participante descarta a proposta anterior, preservando reservas reais. Não tratar modalidade negada ou comparação entre modalidades como escolha. Não criar reserva antes da conferência e confirmação.
