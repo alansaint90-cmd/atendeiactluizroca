@@ -29,6 +29,10 @@ export function validarVaga(aula: Aula, aluno: AlunoDados, reservas: ReservaAula
 }
 
 /** Adulto sem idade numérica só entra em turma geral sem limite adulto específico. */
+export function adolescenteNoTaekwondoGeral(aula: Pick<Aula,"modalidade"|"turma">, idade: number | null) {
+  return aula.modalidade === "Taekwondo" && aula.turma === "Geral" && idade !== null && idade >= 13;
+}
 export function faixaCompativel(aula: Aula, idade: number | null, adultoSemIdade = false) {
+  if (idade !== null && idade < 13 && aula.modalidade === "Taekwondo" && aula.turma === "Geral") return false;
   return idade === null ? adultoSemIdade && !/^kids/iu.test(aula.turma) && aula.idadeMinima <= 18 && aula.idadeMaxima === 120 : idade >= aula.idadeMinima && idade <= aula.idadeMaxima;
 }

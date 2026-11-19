@@ -192,6 +192,7 @@ try {
     ["memória do interesse inicial ausente reprova", reprova("aulas/agente.ts", "memoria-interesse-ct")],
     ["recomendação por objetivo ausente reprova", reprova("aulas/agente.ts", "objetivo-experimental-ct")],
     ["benefícios sem alternativas compatíveis reprovam", reprova("aulas/agente.ts", "beneficios-alternativas-ct")],
+    ["Taekwondo geral sem validação de adolescente reprova", reprova("aulas/agente.ts", "taekwondo-geral-adolescente")],
     ["horários sem apresentação contextual reprovam", reprova("aulas/agente.ts", "horarios-naturais-ct")],
     ["escolha de horário sem vínculo reprova", reprova("aulas/agente.ts", "escolha-horario-ct")],
     ["agenda sem calendário e filtro de data reprova", reprova("aulas/agente.ts", "calendario-aulas-ct")],

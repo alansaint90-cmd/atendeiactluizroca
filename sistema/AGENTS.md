@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Taekwondo geral a partir de 13 anos — 19/11/2026
+
+Adolescentes a partir de 13 anos, inclusive, podem receber oferta e reserva na turma Geral de Taekwondo, incluindo terça/quinta às 19h15, conforme a agenda real. Menores de 13 não entram nessa turma; manter as turmas infantis compatíveis. Menores de 18 continuam exigindo responsável e idade real. Aplicar a mesma validação na consulta, preparação e reserva, sem alterar a grade ou liberar outras modalidades gerais para menores. Sem turma compatível, informar que a indisponibilidade é para aquela idade, turno e data, sem afirmar ausência geral da modalidade.
+
 ## Benefícios independentes dos horários — 19/11/2026
 
 Explicar o benefício do objetivo antes dos horários, mesmo sem aula disponível. Emagrecimento prioriza Muay Thai, sem exclusividade; Jiu-Jitsu e Taekwondo também movimentam o corpo e podem contribuir para gasto de energia e condicionamento. Gastar energia é objetivo próprio; para criança, priorizar Taekwondo. Sem turma compatível da primeira indicação, oferecer uma modalidade alternativa elegível por vez, com até dois horários reais e sem mudar turno, data ou idade. Identificar claramente a alternativa; a escolha e a conferência continuam obrigatórias. Não tratar recomendação automática como preferência explícita do cliente. Guardar opções mostradas para não repetir, inclusive entre modalidades alternativas. Sem nenhuma turma, ainda explicar os benefícios e depois a indisponibilidade. Não prometer emagrecimento garantido nem alterar o cadastro das aulas. Esta orientação substitui a exclusividade do Muay Thai em regras anteriores.

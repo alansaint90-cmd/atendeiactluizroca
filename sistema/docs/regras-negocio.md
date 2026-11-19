@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Taekwondo geral a partir de 13 anos — 19/11/2026
+
+O CT autorizou adolescentes de 13 anos ou mais na turma Geral de Taekwondo. Aos 15 anos, oferecer terça/quinta às 19h15 quando compatível com a data solicitada. Menores de 13 usam somente turmas apropriadas; menores de 18 precisam de responsável e idade real. A validação deve valer para consulta, conferência e reserva, sem alterar os horários cadastrados nem ampliar outras modalidades gerais. Quando não houver opção, mencionar a faixa etária junto ao turno/data, em vez de dizer que a modalidade inteira não tem turma.
+
 ## Benefícios independentes dos horários — 19/11/2026
 
 Muay Thai é a primeira indicação para emagrecimento e condicionamento, mas não é exclusivo: Jiu-Jitsu e Taekwondo também envolvem movimento e gasto de energia, sem garantia de resultado. Gastar energia é reconhecido como objetivo, com prioridade de Taekwondo para crianças. Explicar benefícios mesmo quando não houver aula disponível; depois consultar e apresentar até dois horários reais de uma modalidade por vez. Se faltar turma compatível da primeira indicação, apresentar claramente outra modalidade elegível, mantendo data, turno, idade e disponibilidade. Não reservar automaticamente a alternativa. Diferenciar preferência literal do cliente da indicação automática e manter o histórico de opções já apresentadas ao pedir alternativas. Sem nenhuma opção, explicar os benefícios antes de informar a falta de horário. Preservar a grade e os dados existentes. Esta atualização substitui a regra antiga de recomendar somente Muay Thai.
