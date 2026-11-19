@@ -1,4 +1,6 @@
 import { limparNomeParticipante } from "./nome-participante";
+import { idadeParticipanteInformada, idadesNegadas } from "./idade-informada";
+import { FalhaAtendimento } from "../agent/falha-humana";
 import { escolherHorario } from "./escolha";
 import { aberturaHorarios, semHorarios } from "./apresentacao";
 import { identificarObjetivo, recomendarObjetivo, explicarBeneficioObjetivo, alternativasPorObjetivo, modalidadeMencionada, intencaoModalidade, type ObjetivoAula } from "./objetivo";
@@ -30,7 +32,14 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
     try {
       const objetivoAtual = identificarObjetivo(texto);
       const participanteAtual = identificarParticipante(texto);
-      const idadeInformada = texto.match(/\b(\d{1,3})\s*anos\b/iu);
+      const idadeInformada = idadeParticipanteInformada(texto);
+      if (!acao && cadastro.consulta?.idade != null && idadesNegadas(texto).includes(cadastro.consulta.idade)) {
+        const adulto = participanteAtual === "adulto" || cadastro.participante === "adulto";
+        await salvar({...cadastro,participante:participanteAtual ?? cadastro.participante,adultoSemIdade:adulto && !idadeInformada,
+          objetivo:undefined,opcoes:[],opcaoEscolhida:undefined,reserva:undefined,turnoSolicitado:undefined,dataSolicitada:null,
+          consulta:{modalidade:cadastro.modalidadePreferida ?? null,idade:idadeInformada ? Number(idadeInformada[1]) : null,mostradas:[]}});
+        throw new FalhaAtendimento("contexto_idade_contraditorio");
+      }
       const interesse = intencaoModalidade(texto);
       if (!acao && (interesse.modalidade || cadastro.consulta?.modalidade && interesse.negadas.includes(cadastro.consulta.modalidade))) {
         const modalidade = interesse.modalidade;
@@ -62,7 +71,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       if (!acao && participanteAtual === "adulto" && !cadastro.consulta?.modalidade && !/taekwondo|muay|jiu/iu.test(texto) && !/onde|valor|pre[cç]o|pagamento/iu.test(texto)) return "Claro! Qual modalidade você gostaria de experimentar?";
       if (!acao && participanteAtual === "crianca" && !idadeInformada && cadastro.consulta?.idade == null && cadastro.reserva?.aluno.idade == null && !/onde|valor|pre[cç]o|pagamento/iu.test(texto)) return "Qual é a idade de quem vai fazer a aula?";
       if (!acao && objetivoAtual) { cadastro.objetivo=objetivoAtual; await salvar(cadastro);
-        return atender(texto,{acao:"consultar",modalidade:modalidadeMencionada(texto),idade:cadastro.consulta?.idade ?? null});
+        return atender(texto,{acao:"consultar",modalidade:modalidadeMencionada(texto),idade:idadeInformada ? Number(idadeInformada[1]) : cadastro.consulta?.idade ?? null});
       }
       const pediuAlternativas = /(?:outr[oa]s?|mais)\s+(?:hor[aá]rios?|op[cç][aã]o|op[cç][oõ]es|alternativas?)|n[aã]o (?:posso|consigo|d[aá]|serve)|dif[ií]cil/iu.test(texto);
       const turnoAtual = interpretarTurno(texto);
@@ -170,7 +179,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       }
       if (cadastro.opcaoEscolhida && dados.opcao !== cadastro.opcaoEscolhida) return "Você tinha escolhido outro horário. Quer manter a escolha anterior ou mudar?";
       const opcao = cadastro.opcoes[dados.opcao - 1];
-      if (!opcao) return "Precisamos consultar as datas da agenda novamente antes de reservar.";
+      if (!opcao) throw new FalhaAtendimento("agenda_inconsistente");
       if (cadastro.dataSolicitada && dataLocalCt(Date.parse(opcao.inicio)) !== cadastro.dataSolicitada) return `A opção anterior não é de ${rotuloDataCt(cadastro.dataSolicitada)}. Precisamos consultar a data solicitada antes de reservar.`;
       if (!correspondeTurno(opcao.inicio, cadastro.turnoSolicitado)) return "Precisamos consultar uma aula no turno que você pediu antes de conferir os dados.";
       const idadeAluno = cadastro.adultoSemIdade ? null : dados.idade;

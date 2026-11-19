@@ -401,6 +401,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("identificarParticipante(texto)") || !content.includes("adultoSemIdade") || !content.includes("elegivelParaExperimental"))) {
     findings.push({ level: "error", id: "participante-aula-ct", file: rel, line: 1, msg: "Identificar participante e permitir adulto sem idade fictícia, preservando faixas infantis." });
   }
+  if (rel === "src/lib/agent/providers.ts" && !content.includes("sinalizar_falha_atendimento")) {
+    findings.push({level:"error",id:"falha-humana-ct",file:rel,line:1,msg:"Sinalizar inconsistência não resolvida com ferramenta, sem prometer transferência por texto livre."});
+  }
   if (rel === "src/lib/agent/providers.ts" && (!content.includes("openai_conferencia_sem_preparo") || !content.includes("tool_choice") || !content.includes("CONFERÊNCIA ÚNICA"))) {
     findings.push({ level: "error", id: "conferencia-unica-aula", file: rel, line: 1, msg: "Conferência de aula exige proposta preparada pela ferramenta antes da única confirmação." });
   }

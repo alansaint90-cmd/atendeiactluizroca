@@ -70,3 +70,8 @@ export async function pausaManualAtiva(client: Redis, conversation: string, agor
   const associado = await client.get(aliasKey(conversation));
   return associado ? Number(await client.get(pausaManualKey(associado))) > agora : false;
 }
+
+export async function encerrarAcompanhamentoHumano(client: Redis, token: string, conversa: string) {
+  await assertResult(await client.eval(owned + "redis.call('DEL', KEYS[2]); redis.call('ZREM', KEYS[3], ARGV[2]); return 1",
+    3, agentKeys.lock, `atendeia:{evolution}:followup:${conversa}`, 'atendeia:{evolution}:followups', token, conversa));
+}

@@ -1,3 +1,4 @@
+import { encaminharFalhaHumana, telefoneAlertaHumano } from "./falha-humana";
 import {selecionarFluxo,fluxoContinuaAtivo} from "../fluxos/repository";
 import { agendaAulasDoAgente } from "../aulas/agente";
 import { contextoDoContato, historicoDoContato } from "../operacao/memoria";
@@ -21,7 +22,7 @@ import { executarAgendamentos } from "../agendamentos/worker";
 import { chatbotDaInstancia } from "../chatbots/server-repository";
 import { db } from "../db/client";
 import { registrarEnvioIa, type RespostaEnviadaIa } from "../operacao/atribuir-ia";
-import { pausaManualAtiva, pausarTransferencia } from "./pausa";
+import { pausaManualAtiva, pausarTransferencia, encerrarAcompanhamentoHumano } from "./pausa";
 import { transferirAtendimento } from "../operacao/transferir";
 import { cadastroDaConversa } from "../consultas/fluxo-servidor";
 import { deveAguardarResposta } from "./espera";
@@ -35,7 +36,7 @@ function report(status: string) {
   if (lastLog !== status) { console.info(`Atende AI agente: ${status}`); lastLog = status; }
 }
 
-const dependenciasPadrao = { settings: effectiveSettings, generate: generateReply, send: sendReply,
+const dependenciasPadrao = { encaminharFalha: (instancia:string,numero:string,telefone:string,codigo:string) => encaminharFalhaHumana(db(),instancia,numero,telefone,codigo), settings: effectiveSettings, generate: generateReply, send: sendReply,
   transferir: (instancia: string, numero: string, destino: string) => transferirAtendimento(db(), instancia, numero, destino),
   registrarEnvio: (instancia: string, id: string, resposta?: RespostaEnviadaIa) => registrarEnvioIa(db(), instancia, id, resposta),
   chatbot: (instancia: string) => chatbotDaInstancia(db(), instancia) };
@@ -113,9 +114,19 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
             await followups.outgoing(instancia, id);
             await dependencies.registrarEnvio(instancia, id, { numero: mensagem.number, texto });
           },
+          falhaHumana: Object.keys(substituicoes).length && !substituicoes.encaminharFalha ? undefined : async codigo => {
+            const telefone=telefoneAlertaHumano(config.data);
+            if (!telefone) throw new Error("Destino de alerta não configurado.");
+            if (await client.get(agentKeys.lock) !== token) throw new Error("Lease do agente indisponível.");
+            await dependencies.encaminharFalha(instancia,mensagem.number,telefone,codigo);
+            await encerrarAcompanhamentoHumano(client,token,mensagem.conversation);
+          },
           transferir: async destino => {
+            const telefone=telefoneAlertaHumano(config.data);
             await dependencies.transferir(instancia, mensagem.number, destino);
-            await pausarTransferencia(client, token, mensagem.conversation);
+            if (telefone && (!Object.keys(substituicoes).length || substituicoes.encaminharFalha)) await dependencies.encaminharFalha(instancia,mensagem.number,telefone,"pedido_humano");
+            if (telefone && (!Object.keys(substituicoes).length || substituicoes.encaminharFalha)) await encerrarAcompanhamentoHumano(client, token, mensagem.conversation);
+            else await pausarTransferencia(client, token, mensagem.conversation);
           },
           enabled: atendimentoAtivo,
         });

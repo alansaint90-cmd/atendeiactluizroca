@@ -8,7 +8,7 @@ import { followupDaInstancia, instanciasConfiguradas, settingsDaInstancia } from
 import { sendReply, ProviderError } from "../agent/providers";
 import { reservarAgendamento, concluirAgendamento, type BancoAgendamentos } from "./repository";
 
-const configuracaoEnvio = settingsSchema.pick({ EVOLUTION_API_URL: true, EVOLUTION_API_KEY: true, EVOLUTION_INSTANCE_NAME: true }).required();
+const configuracaoEnvio = settingsSchema.pick({ EVOLUTION_API_URL: true, EVOLUTION_API_KEY: true, EVOLUTION_INSTANCE_NAME: true }).required().strip();
 export async function processarAgendamento(banco: BancoAgendamentos, configuracoes: () => Promise<IntegrationSettings>, enviar = sendReply) {
   const settings = await configuracoes();
   for (const instancia of instanciasConfiguradas(settings)) await sincronizarLembretesAulas(banco, instancia, followupDaInstancia(settings,instancia));

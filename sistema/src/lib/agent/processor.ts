@@ -1,3 +1,5 @@
+import { FalhaAtendimento } from "./falha-humana";
+import { escalarFalha } from "./escalonamento";
 import type { EntradaFluxo } from "../fluxos/schema";
 import type { AcaoAulas } from "../aulas/agente-schema";
 import { dividirResposta, mensagensDaAula } from "./blocos";
@@ -10,7 +12,7 @@ import { deveConsultarAgenda } from "../consultas/intencao";
 import { correspondeAoGatilho } from "./ativacao";
 import { mensagensDaConsulta } from "../consultas/fluxo";
 
-export interface DeliveryState { fluxo?: {id:string;versao:number}; status: "gerando" | "gerada" | "enviando" | "enviada" | "incerta" | "falhou"; attempts: number; reply?: string; partes?: string[]; providerIds?: string[]; transcript?: string; code?: string; configHash?: string; providerId?: string; transferencia?: boolean; consulta?: boolean }
+export interface DeliveryState { escalar?: boolean; fluxo?: {id:string;versao:number}; status: "gerando" | "gerada" | "enviando" | "enviada" | "incerta" | "falhou"; attempts: number; reply?: string; partes?: string[]; providerIds?: string[]; transcript?: string; code?: string; configHash?: string; providerId?: string; transferencia?: boolean; consulta?: boolean }
 export interface ProcessingPort {
   fluxoEntrada?(texto:string):Promise<EntradaFluxo|null>;
   fluxoValido?(alvo:{id:string;versao:number}):Promise<boolean>;
@@ -24,6 +26,7 @@ export interface ProcessingPort {
   autorizarAtivacao?(gatilho: string): Promise<boolean>;
   transcribe?(config: AgentConfig, message: IncomingMessage): Promise<string>;
   transferir?(destino: string): Promise<void>;
+  falhaHumana?(codigo: string): Promise<void>;
   aulaExperimental?(texto: string, acao?: AcaoAulas): Promise<string | null>;
   contextoPersistido?(): Promise<string>;
   cadastroConsulta?(texto: string, iniciar: boolean): Promise<string | null>;
@@ -34,10 +37,15 @@ export interface ProcessingPort {
 
 export async function processMessage(message: IncomingMessage, config: AgentConfig, port: ProcessingPort): Promise<string> {
   let state = await port.read();
-  if (state?.status === "enviada" || state?.status === "incerta" || state?.status === "falhou") return state.status;
+  if (state?.status === "enviada" || state?.status === "incerta" || state?.status === "falhou") {
+    if (state.status !== "enviada") await escalarFalha(config,port,state);
+    return state.status;
+  }
   // Não repetir um envio cujo resultado se perdeu durante queda ou timeout.
   if (state?.status === "enviando") {
-    await port.write({ ...state, status: "incerta", code: "envio_interrompido" });
+    const interrompido: DeliveryState = { ...state, status: "incerta", code: "envio_interrompido", escalar:true };
+    await port.write(interrompido);
+    await escalarFalha(config,port,interrompido);
     return "incerta";
   }
   if (!await port.enabled()) return "pausada";
@@ -99,7 +107,9 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       const gerada = cadastro ?? (partes ? partes.join("\n\n") : message.midia && config.atendimento?.transferMedia ? { transferir: true as const }
         : await port.generate({ ...config, AI_SYSTEM_PROMPT: instrucoes }, contextoAtual, transcript ?? message.text));
       if (cadastro) { consulta = true; partes = undefined; reply = cadastro; }
-      else if (typeof gerada !== "string" && "aula" in gerada) {
+      else if (typeof gerada !== "string" && "falhaAtendimento" in gerada) {
+        throw new FalhaAtendimento("inconsistencia_identificada_ia");
+      } else if (typeof gerada !== "string" && "aula" in gerada) {
         const resposta = await port.aulaExperimental?.(transcript ?? message.text, gerada.aula);
         if (!resposta) throw new ProviderError("agenda_aulas_indisponivel");
         reply = resposta; partes = mensagensDaAula(reply);
@@ -118,9 +128,12 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       if (respostaAula) partes = mensagensDaAula(reply);
     }
     catch (error) {
-      const code = error instanceof ProviderError ? error.code : "geracao_falhou";
-      await port.write({ status: attempts >= 3 ? "falhou" : "gerando", attempts, code, configHash, transcript });
-      return attempts >= 3 ? "falhou" : "repetir";
+      const code = error instanceof ProviderError || error instanceof FalhaAtendimento ? error.code : "geracao_falhou";
+      const falhou = attempts >= 3 || error instanceof FalhaAtendimento;
+      const falha: DeliveryState = {status:falhou ? "falhou" : "gerando",attempts,code,configHash,transcript,escalar:falhou};
+      await port.write(falha);
+      if (falhou) await escalarFalha(config,port,falha);
+      return falhou ? "falhou" : "repetir";
     }
     state = { status: "gerada", attempts, reply, partes, configHash, transcript, transferencia, consulta, fluxo };
     await port.write(state);
@@ -147,7 +160,9 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       state.providerId = await port.send(config, message.number, partes[indice]);
       await port.registrarParte?.(state.providerId, partes[indice]);
     } catch (error) {
-      await port.write({ ...state, status: "incerta", code: error instanceof ProviderError ? error.code : "envio_incerto" });
+      const falha: DeliveryState = { ...state, status: "incerta", code: error instanceof ProviderError ? error.code : "envio_incerto", escalar:true };
+      await port.write(falha);
+      await escalarFalha(config,port,falha);
       return "incerta";
     }
     state = { ...state, providerIds: [...(state.providerIds ?? []), state.providerId!] };
