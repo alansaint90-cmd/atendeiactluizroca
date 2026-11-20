@@ -430,3 +430,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+Próximas datas reais: sem turma no dia pedido, apresentar alternativas reais posteriores, mantendo modalidade, idade e turno. Guardar a data original até o cliente aceitar a alternativa ou escolher uma opção; não permitir preparar reserva de outro dia antes disso. O relógio continua dinâmico, inclusive depois da meia-noite.
+

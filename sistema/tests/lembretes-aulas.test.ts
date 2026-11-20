@@ -36,7 +36,7 @@ test('etapas únicas antes e após o término; cancelamento, pausa, configuraç�
   await applyMigrations(banco);
   const inicio=new Date(Date.now()+3*86400000).toISOString();
   const aula=await criarAula(banco,{modalidade:'Muay Thai',turma:'Geral',professor:'Professor',inicio,duracao:60,capacidade:null,idadeMinima:18,idadeMaxima:120},systemUserId);
-  const reservar=async(telefone:string)=>reservarAula(banco,{aulaId:aula.id,inicio,aluno:{nome:'Ana Silva',telefone,idade:null,adultoSemIdade:true,responsavel:''},solicitacaoId:randomUUID(),conferido:true},systemUserId);
+  const reservar=async(telefone:string,nome='Ana Silva')=>reservarAula(banco,{aulaId:aula.id,inicio,aluno:{nome,telefone,idade:null,adultoSemIdade:true,responsavel:''},solicitacaoId:randomUUID(),conferido:true},systemUserId);
   const r=await reservar('+5571999999999');
   await sincronizarLembretesAulas(banco,'outro');assert.equal((await listarAgendamentos(banco)).length,0);
   await sincronizarLembretesAulas(banco,'ctluizroca');await sincronizarLembretesAulas(banco,'ctluizroca');
@@ -54,7 +54,8 @@ test('etapas únicas antes e após o término; cancelamento, pausa, configuraç�
    const ini=new Date(Date.now()+(etapa===1?59:-121)*60000).toISOString();
    await cliente.query('UPDATE atendeia_aulas_reservas SET inicio=$1 WHERE id=$2',[ini,reserva]);
    const devido=new Date(Date.parse(ini)+(etapa===1?-3600000:7200000)).toISOString();
-   const texto=mensagemLembreteAula('Ana Silva','',null,'Muay Thai',devido,etapa);
+   const participante=(await cliente.query<{nome:string}>('SELECT nome FROM atendeia_aulas_reservas WHERE id=$1',[reserva])).rows[0].nome;
+   const texto=mensagemLembreteAula(participante,'',null,'Muay Thai',devido,etapa);
    await cliente.query('UPDATE atendeia_agendamentos SET agendado_para=$1,mensagem=$2 WHERE reserva_aula_id=$3 AND etapa_aula=$4',[devido,texto,reserva,etapa]);
   }
   await vencer(r.id,1);await processarAgendamento(banco,async()=>settings,enviar);await processarAgendamento(banco,async()=>settings,enviar);assert.equal(envios,1);
@@ -66,7 +67,7 @@ test('etapas únicas antes e após o término; cancelamento, pausa, configuraç�
   const incerta=await reservar('+5571666666666');await sincronizarLembretesAulas(banco,'ctluizroca');await vencer(incerta.id,1);
   await processarAgendamento(banco,async()=>settings,async()=>{envios++;throw new Error('timeout');});await processarAgendamento(banco,async()=>settings,enviar);assert.equal(envios,3);
   assert.ok((await listarAgendamentos(banco)).some(j=>j.reservaAulaId===incerta.id && j.status==='incerto'));
-  const pausa=await reservar('+5571999999999');await sincronizarLembretesAulas(banco,'ctluizroca');await vencer(pausa.id,1);
+  const pausa=await reservar('+5571999999999','Outra Aluna');await sincronizarLembretesAulas(banco,'ctluizroca');await vencer(pausa.id,1);
   await cliente.query("UPDATE atendeia_conversations SET human_takeover=true WHERE remote_jid='5571999999999@s.whatsapp.net'");
   await processarAgendamento(banco,async()=>settings,enviar);assert.equal(envios,3);
   const desligado={...config,enabled:false};await sincronizarLembretesAulas(banco,'ctluizroca',desligado);

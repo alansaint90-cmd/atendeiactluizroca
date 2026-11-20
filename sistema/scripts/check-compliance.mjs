@@ -443,9 +443,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("correspondeTurno(inicio, turno)")) {
     findings.push({ level: "error", id: "turno-experimental-ct", file: rel, line: 1, msg: "Filtrar as opções pelo turno solicitado." });
   }
-  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("interpretarDataCt(texto)") || !content.includes("dataLocalCt(Date.parse(inicio)) === data"))) {
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("interpretarDataCt(texto)") || !/dataLocalCt\(Date\.parse\((?:a\.)?inicio\)\)\s*===\s*data/.test(content))) {
     findings.push({ level: "error", id: "calendario-aulas-ct", file: rel, line: 1,
-      msg: "A agenda deve resolver referências temporais e filtrar somente a data solicitada." });
+      msg: "A agenda deve resolver referências temporais e filtrar a data solicitada antes de sugerir alternativas explícitas." });
   }
   if (rel === "src/lib/operacao/memoria.ts" && !content.includes("m.provider_message_id<>")) {
     findings.push({ level: "error", id: "historico-evento-atual", file: rel, line: 1,

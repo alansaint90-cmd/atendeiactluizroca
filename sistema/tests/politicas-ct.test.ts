@@ -137,3 +137,19 @@ test("pedido efetivo de alteração encaminha humano; pergunta sobre política s
  assert.equal(await processMessage({identity:"alterar",conversation:"aluno",number:"5571000000001",text:"Quero remarcar minha experimental",timestamp:Date.now()/1000},cfg,port),"enviada");assert.equal(transferencias,1);assert.doesNotMatch(msgs.join(" "),/remarcada|cancelada/);
  assert.match(responderDuvidaCt("Posso cancelar a matrícula quando quiser?")!.resposta,/30 dias/);
 });
+
+test("19/11 às 22h44: amanhã é sexta sem turma; sugere segunda real e só muda após aceite",async()=>{
+ const clock=Date.now;Date.now=()=>Date.parse("2026-11-19T22:44:00-03:00");
+ const cliente=new PGlite(),banco=drizzle(cliente),cache=new Map<string,string>();
+ const redis={get:async(k:string)=>cache.get(k)??null,eval:async(_s:string,_n:number,_l:string,k:string,_t:string,v:string)=>{cache.set(k,v);return 1;}} as unknown as Redis;
+ try{
+  await applyMigrations(banco);const atender=agendaAulasDoAgente(banco,redis,"lease","proxima","5571000000040",async()=>true);
+  await atender("Para mim");const r=await atender("Muay Thai amanhã de noite");
+  assert.match(r!,/sexta-feira, 20\/11\/2026.*próximas aulas.*segunda-feira, 23\/11\/2026/s);
+  const estado=()=>JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:proxima")!);
+  assert.equal(estado().dataSolicitada,"2026-11-20");assert.equal(estado().dataAlternativa,"2026-11-23");
+  assert.match((await atender("Aluno Teste",{acao:"preparar",opcao:1,nome:"Aluno Teste",idade:null,adultoSemIdade:true,responsavel:""}))!,/não é/);
+  await atender("1");assert.equal(estado().dataSolicitada,"2026-11-23");assert.equal(estado().dataAlternativa,undefined);
+  assert.equal((await consultarAulas(banco)).reservas.length,0);
+ }finally{Date.now=clock;await cliente.close();}
+});

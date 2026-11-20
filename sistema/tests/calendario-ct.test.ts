@@ -56,7 +56,8 @@ test("agenda filtra a data real, preserva a escolha após meia-noite e não troc
     cadastro=JSON.parse(dados.get("atendeia:{evolution}:cadastro-aula:calendario-teste")!);
     assert.ok(cadastro.opcoes.every((a:{inicio:string})=>dataLocalCt(Date.parse(a.inicio))==="2026-11-17"));
     const sexta=await atender("sexta-feira",{acao:"consultar",modalidade:"Muay Thai",idade:25});
-    assert.match(sexta!,/sexta-feira, 20\/11\/2026/);assert.match(sexta!,/Poxa, infelizmente ainda não temos turma/);
+    assert.match(sexta!,/sexta-feira, 20\/11\/2026/);assert.match(sexta!,/próximas aulas/);
+    const alternativa=JSON.parse(dados.get("atendeia:{evolution}:cadastro-aula:calendario-teste")!);assert.equal(alternativa.dataSolicitada,"2026-11-20");assert.equal(alternativa.dataAlternativa,"2026-11-23");
     assert.equal(JSON.stringify((await consultarAulas(banco)).aulas),gradeAntes);
   }finally{await cliente.close();t.mock.restoreAll();}
 });

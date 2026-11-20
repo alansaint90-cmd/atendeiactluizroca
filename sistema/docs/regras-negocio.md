@@ -326,3 +326,6 @@ Novos agendamentos coletam idade de 5 a 120 anos, sem pedir nem inventar data de
 
 ### Aceite antes do cadastro
 Antes de pedir nome completo, idade ou endereço, o fluxo pergunta “Vamos agendar a sua consulta?” e aguarda aceite explícito. Dúvidas e escolha de cidade não autorizam a coleta. O aceite inicial não confirma a reserva: a conferência dos dados e a confirmação real da agenda continuam obrigatórias.
+
+Próximas datas reais: sem turma no dia pedido, apresentar alternativas reais posteriores, mantendo modalidade, idade e turno. Guardar a data original até o cliente aceitar a alternativa ou escolher uma opção; não permitir preparar reserva de outro dia antes disso. O relógio continua dinâmico, inclusive depois da meia-noite.
+
