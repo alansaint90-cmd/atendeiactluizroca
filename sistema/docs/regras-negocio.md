@@ -2,7 +2,7 @@
 
 ## Funcionamento do espaço — 19/11/2026
 
-O CT abre no início da primeira aula de cada dia e fecha ao término da última, incluindo sua duração cadastrada. Horas exatas vêm de todas as aulas vivas da agenda, sem filtros de modalidade, idade, turno ou lotação herdados do interessado. Pergunta de abertura não altera a proposta de reserva. Sem dia informado, explicar a regra e perguntar o dia; sem aulas no dia, não anunciar abertura. Essa regra não define horário humano no WhatsApp. Incorporar às instruções em tempo de execução sem editar migrações aplicadas nem alterar a grade.
+O CT abre no início da primeira aula de cada dia e fecha ao término da última, incluindo sua duração cadastrada. Horas exatas vêm de todas as aulas vivas da agenda, sem filtros de modalidade, idade, turno ou lotação herdados do interessado. Pergunta de abertura não altera a proposta de reserva. Sem dia informado, apresentar diretamente abertura e fechamento dos próximos sete dias, agrupando dias com horários iguais e listando dias sem aulas; não perguntar qual dia deseja. Incluir sábado e não inventar sexta-feira. Sem aulas no dia, não anunciar abertura. Essa regra não define horário humano no WhatsApp. Incorporar às instruções em tempo de execução sem editar migrações aplicadas nem alterar a grade.
 
 ## Base confirmada e prioridade das dúvidas — 19/11/2026
 
