@@ -9,7 +9,7 @@ export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeCon
  const responder=(assunto:keyof typeof respostasCt)=>({assunto,resposta:respostasCt[assunto]});
  const agenda=/\b(?:agendar|agende|marcar|reserve|reservar|remarcar|reagendar|horarios?|vagas?)\b/.test(t);
  if (/\b(?:professor|professora|instrutor|quem ensina|quem da (?:a |as )?aulas)\b/.test(t) || /quem.*responsavel.*(?:ct|centro)/.test(t)
-   || anterior==="professores" && modalidade && /^(?:e\s+)?(?:(?:o|a|de|do|da)\s+)*(?:muay(?: thai)?|jiu(?:[ -]?jitsu)?|taekwondo|tae)[?!.\s]*$/.test(t)) {
+   || anterior==="professores" && modalidade && /^(?:e\s+(?:(?:o|a|de|do|da)\s+)*|(?:de|do|da)\s+)(?:muay(?: thai)?|jiu(?:[ -]?jitsu)?|taekwondo|tae)[?!.\s]*$/.test(t)) {
    const alvo=modalidade ?? (/responsavel.*(?:ct|centro)/.test(t)?"Taekwondo":modalidadeContexto);
    return {assunto:"professores",resposta:alvo==="Taekwondo"?respostasCt.professorTae:alvo?respostasCt.professorLutas:`${respostasCt.professorTae} ${respostasCt.professorLutas}`};
  }
@@ -53,6 +53,6 @@ export function perguntaInformativaCt(texto:string) {
 
 export function solicitaHumanoCt(texto:string) {
  const t=texto.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
- return /\b(?:quero|preciso|gostaria de|posso|pode)\s+(?:falar|conversar|atendimento)\s+(?:(?:com|um|uma|o|a)\s+)*(?:humano|humana|atendente|pessoa|alguem|equipe)\b/.test(t)
+ return /\b(?:quero|preciso|gostaria de|posso|pode)\s+(?:falar|conversar|atendimento)\s+(?:(?:com|um|uma|o|a)\s+)*(?:humano|humana|atendente|pessoa|alguem|equipe|professor|professora)\b/.test(t)
    || /\b(?:quero|preciso|gostaria de|pode)\s+(?:cancelar|remarcar|reagendar)\b/.test(t);
 }

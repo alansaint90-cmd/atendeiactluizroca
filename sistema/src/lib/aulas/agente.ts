@@ -143,7 +143,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
             return `Boa! Vamos de ${horario}.\n\nPara prepararmos a aula de ${opcao.modalidade}, qual é o nome completo do participante${pedirIdade ? " e a idade" : ""}?`;
           }
         }
-        if (cadastro.consultaPorDia && !cadastro.reserva && !cadastro.confirmada && /^(?:sim|quero(?: sim)?|pode ser)[.!\s]*$/iu.test(texto.trim())) {
+        if (cadastro.consultaPorDia && !cadastro.assuntoInformativo && !cadastro.reserva && !cadastro.confirmada && /^(?:sim|quero(?: sim)?|pode ser)[.!\s]*$/iu.test(texto.trim())) {
           if (!cadastro.adultoSemIdade && cadastro.consulta?.idade == null) return cadastro.participante === "crianca" ? "Qual é a idade de quem vai fazer a aula?" : "A aula seria para você ou para outra pessoa?";
           if (cadastro.opcaoEscolhida) return "Qual é o nome completo do participante?";
           if (cadastro.opcoes.length === 1 && !cadastro.opcaoEscolhida) return atender("1");

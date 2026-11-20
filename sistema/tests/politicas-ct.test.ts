@@ -154,3 +154,9 @@ test("19/11 às 22h44: amanhã é sexta sem turma; sugere segunda real e só mud
   assert.equal((await consultarAulas(banco)).reservas.length,0);
  }finally{Date.now=clock;await cliente.close();}
 });
+
+test("continuação de professor exige referência; modalidade isolada continua sendo uma escolha nova",()=>{
+ assert.equal(responderDuvidaCt("Jiu-Jitsu","professores"),null);
+ assert.match(responderDuvidaCt("E de jiu-jítsu?","professores")!.resposta,/André Prado/);
+ assert.equal(responderDuvidaCt("Quero Muay Thai","professores"),null);
+});
