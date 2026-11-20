@@ -1,3 +1,4 @@
+import { temExperimentalConfirmada,avisoExperimentalUnica } from "../aulas/experimental-unica";
 import { z } from "zod";
 import { aulaSchema, alunoSchema, validarVaga, type AgendaAulas } from "../aulas/schema";
 import { chatbotSchema, type Chatbot } from "../chatbots/schema";
@@ -33,6 +34,7 @@ export function reservarLocal(estado: AgendaAulas, entrada: { aulaId: string; al
     if (existente.aulaId !== aula.id || existente.status !== "confirmada") throw new Error("Solicitação já processada.");
     return estado;
   }
+  if (temExperimentalConfirmada(aluno,estado.reservas)) throw new Error(avisoExperimentalUnica);
   validarVaga(aula, aluno, estado.reservas);
   return { aulas: estado.aulas, reservas: [...estado.reservas, { ...aluno, aulaId: aula.id, id: crypto.randomUUID(), solicitacaoId: entrada.solicitacaoId, status: "confirmada", atualizadoEm: new Date().toISOString() }] };
 }

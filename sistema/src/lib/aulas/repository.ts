@@ -1,3 +1,5 @@
+import { systemUserId } from "../db/bootstrap";
+import { nomeIdentidade,temExperimentalConfirmada,avisoExperimentalUnica } from "./experimental-unica";
 import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { type BancoSql, type TransacaoSql, linhas } from "../db/porta";
@@ -30,9 +32,12 @@ export async function criarAula(banco: BancoSql, entrada: unknown, autor: string
 export async function reservarAula(banco: BancoSql, entrada: unknown, autor: string) {
   const r = reservaAulaSchema.parse(entrada);
   return banco.transaction(async tx => {
+    const nomePessoa=nomeIdentidade(r.aluno.nome);
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${r.aluno.telefone + ":" + nomePessoa},0))`);
     // A trava por aula serializa a contagem e impede ultrapassar a capacidade.
     const [aula] = linhas<Aula>(await tx.execute(sql`SELECT ${camposAula} FROM atendeia_aulas WHERE id=${r.aulaId} AND ${vivos(aulas)} FOR UPDATE`));
     if (!aula) throw new ErroDeNegocio("Aula indisponível.");
+    if (autor === systemUserId && aula.modalidade === "Muay Thai" && r.aluno.idade !== null && r.aluno.idade < 14) throw new ErroDeNegocio("Para menores de 14 anos, a equipe precisa confirmar o treino adaptado de Muay Thai antes de reservar.");
     const inicio = r.inicio ?? new Date(aula.inicio).toISOString();
     const local = new Date(Date.parse(inicio) - 3 * 3600000), base = new Date(Date.parse(aula.inicio) - 3 * 3600000);
     if (aula.diaSemana != null ? local.getUTCDay() !== aula.diaSemana || local.getUTCHours() !== base.getUTCHours() || local.getUTCMinutes() !== base.getUTCMinutes() || local.getUTCSeconds() !== base.getUTCSeconds() || local.getUTCMilliseconds() !== base.getUTCMilliseconds() : Date.parse(inicio) !== Date.parse(aula.inicio)) throw new ErroDeNegocio("Data e horário não correspondem à aula cadastrada.");
@@ -41,6 +46,8 @@ export async function reservarAula(banco: BancoSql, entrada: unknown, autor: str
       if (existente.aulaId !== r.aulaId || (existente.inicio && Date.parse(existente.inicio) !== Date.parse(inicio)) || existente.autor !== autor || existente.status !== "confirmada" || existente.nome !== r.aluno.nome || existente.idade !== r.aluno.idade || existente.telefone !== r.aluno.telefone || existente.responsavel !== r.aluno.responsavel) throw new ErroDeNegocio("Solicitação já utilizada. Atualize a agenda.");
       return { id: existente.id };
     }
+    const anteriores=linhas<{nome:string;telefone:string;status:string}>(await tx.execute(sql`SELECT nome,telefone,status FROM atendeia_aulas_reservas WHERE telefone=${r.aluno.telefone} AND status='confirmada' AND ${vivos(aulasReservas)}`));
+    if (temExperimentalConfirmada(r.aluno,anteriores)) throw new ErroDeNegocio(avisoExperimentalUnica);
     const reservas = linhas<ReservaAula>(await tx.execute(sql`SELECT ${camposReserva} FROM atendeia_aulas_reservas WHERE aula_id=${r.aulaId} AND ${vivos(aulasReservas)}`));
     try { validarVaga({ ...aula, inicio }, r.aluno, reservas.filter(item => !item.inicio || Date.parse(item.inicio) === Date.parse(inicio))); } catch (erro) { throw new ErroDeNegocio(erro instanceof Error ? erro.message : "Reserva indisponível."); }
     const id = randomUUID(), p = r.aluno;

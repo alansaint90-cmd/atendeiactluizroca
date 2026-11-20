@@ -401,6 +401,12 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("identificarParticipante(texto)") || !content.includes("adultoSemIdade") || !content.includes("elegivelParaExperimental"))) {
     findings.push({ level: "error", id: "participante-aula-ct", file: rel, line: 1, msg: "Identificar participante e permitir adulto sem idade fictícia, preservando faixas infantis." });
   }
+  if (rel === "src/lib/aulas/agente.ts" && !content.includes("responderDuvidaCt(")) {
+    findings.push({level:"error",id:"faq-antes-agenda-ct",file:rel,line:1,msg:"Responder dúvidas informativas antes de consultar ou alterar a agenda."});
+  }
+  if (rel === "src/lib/agent/providers.ts" && !content.includes("perguntaInformativaCt(text)")) {
+    findings.push({level:"error",id:"faq-sem-ferramenta-agenda",file:rel,line:1,msg:"Não oferecer ferramenta de horários a perguntas informativas desconhecidas."});
+  }
   if (rel === "src/lib/agent/processor.ts" && !content.includes("aceiteConsulta(")) {
     findings.push({level:"error",id:"aceite-consulta-dia-ct",file:rel,line:1,msg:"Vincular o sim de consulta à pergunta anterior, sem reaproveitar data ou modalidade antigas."});
   }

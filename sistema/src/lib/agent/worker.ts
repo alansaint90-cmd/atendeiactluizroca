@@ -36,7 +36,7 @@ function report(status: string) {
   if (lastLog !== status) { console.info(`Atende AI agente: ${status}`); lastLog = status; }
 }
 
-const dependenciasPadrao = { encaminharFalha: (instancia:string,numero:string,telefone:string,codigo:string) => encaminharFalhaHumana(db(),instancia,numero,telefone,codigo), settings: effectiveSettings, generate: generateReply, send: sendReply,
+const dependenciasPadrao = { encaminharFalha: (instancia:string,numero:string,telefone:string,codigo:string,nome?:string|null) => encaminharFalhaHumana(db(),instancia,numero,telefone,codigo,nome), settings: effectiveSettings, generate: generateReply, send: sendReply,
   transferir: (instancia: string, numero: string, destino: string) => transferirAtendimento(db(), instancia, numero, destino),
   registrarEnvio: (instancia: string, id: string, resposta?: RespostaEnviadaIa) => registrarEnvioIa(db(), instancia, id, resposta),
   chatbot: (instancia: string) => chatbotDaInstancia(db(), instancia) };
@@ -118,13 +118,13 @@ export async function runAgentTick(substituicoes: Partial<typeof dependenciasPad
             const telefone=telefoneAlertaHumano(config.data);
             if (!telefone) throw new Error("Destino de alerta não configurado.");
             if (await client.get(agentKeys.lock) !== token) throw new Error("Lease do agente indisponível.");
-            await dependencies.encaminharFalha(instancia,mensagem.number,telefone,codigo);
+            await dependencies.encaminharFalha(instancia,mensagem.number,telefone,codigo,await store.contactName());
             await encerrarAcompanhamentoHumano(client,token,mensagem.conversation);
           },
           transferir: async destino => {
             const telefone=telefoneAlertaHumano(config.data);
             await dependencies.transferir(instancia, mensagem.number, destino);
-            if (telefone && (!Object.keys(substituicoes).length || substituicoes.encaminharFalha)) await dependencies.encaminharFalha(instancia,mensagem.number,telefone,"pedido_humano");
+            if (telefone && (!Object.keys(substituicoes).length || substituicoes.encaminharFalha)) await dependencies.encaminharFalha(instancia,mensagem.number,telefone,"pedido_humano",await store.contactName());
             if (telefone && (!Object.keys(substituicoes).length || substituicoes.encaminharFalha)) await encerrarAcompanhamentoHumano(client, token, mensagem.conversation);
             else await pausarTransferencia(client, token, mensagem.conversation);
           },

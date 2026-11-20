@@ -58,7 +58,7 @@ test("agenda PostgreSQL valida idade, capacidade, repetição, auditoria e cance
     agenda = await consultarAulas(banco);
     assert.equal(agenda.reservas.filter(r => r.status === "confirmada").length, 1);
     assert.equal(agenda.reservas.filter(r => r.status === "cancelada").length, 1);
-    const logs = await cliente.query<{ action: string; changed_fields: unknown }>("SELECT action,changed_fields FROM atendeia_audit_logs WHERE entity_type='aula' AND action<>'grade_ct_cadastrada' ORDER BY created_at");
+    const logs = await cliente.query<{ action: string; changed_fields: unknown }>("SELECT action,changed_fields FROM atendeia_audit_logs WHERE entity_type='aula' AND action NOT IN ('grade_ct_cadastrada','politicas_ct_grade_atualizada') ORDER BY created_at");
     assert.equal(logs.rows.length, 4);
     assert.ok(logs.rows.every(l => JSON.stringify(l.changed_fields) === "[]"));
   } finally { await cliente.close(); }

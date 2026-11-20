@@ -97,7 +97,7 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     const aula = agenda.aulas.find(a => a.modalidade==="Taekwondo" && a.diaSemana===6)!;
     const datas=ocorrenciasAula(aula); assert.ok(datas.length>=2);
     const aluno={nome:"Outro Aluno",idade:25,telefone:"+5571888888888",responsavel:""};
-    for(const inicio of datas.slice(0,2)) await reservarAula(banco,{aulaId:aula.id,inicio,aluno,solicitacaoId:randomUUID(),conferido:true},systemUserId);
+    for(const [i,inicio] of datas.slice(0,2).entries()) await reservarAula(banco,{aulaId:aula.id,inicio,aluno:{...aluno,nome:i ? "Segundo Aluno" : aluno.nome},solicitacaoId:randomUUID(),conferido:true},systemUserId);
     await assert.rejects(reservarAula(banco,{aulaId:aula.id,inicio:new Date(Date.parse(datas[0])+86400000).toISOString(),aluno,solicitacaoId:randomUUID(),conferido:true},systemUserId), /não correspondem/);
     assert.equal(JSON.stringify((await consultarAulas(banco)).aulas),gradeAntes,"a oferta não altera o cadastro das aulas");
     const jiu=agenda.aulas.find(a=>a.modalidade==="Jiu-Jitsu")!, dataJiu=ocorrenciasAula(jiu)[0];

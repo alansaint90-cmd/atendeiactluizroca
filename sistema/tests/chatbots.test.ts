@@ -54,7 +54,7 @@ test("informações gerais entram no chatbot CT já salvo sem sobrescrever seu c
   const antes=JSON.stringify(salvo); const prompt=montarInstrucoesDoAgente(salvo);
   assert.ok(prompt.includes(CONHECIMENTO_CT)); assert.match(prompt,/Instruções personalizadas/);
   assert.equal(JSON.stringify(salvo),antes);
-  for (const trecho of ["R$ 35,00", "avaliação", "crédito", "Pix", "anuidade", "Wellhub", "TotalPass", "42709-430", "pendentes de validação"]) assert.ok(prompt.toLowerCase().includes(trecho.toLowerCase()),trecho);
+  for (const trecho of ["R$ 35,00", "avaliação", "crédito", "Pix", "anuidade", "Wellhub", "TotalPass", "42709-430", "CT_POLITICAS_20261119"]) assert.ok(prompt.toLowerCase().includes(trecho.toLowerCase()),trecho);
   assert.equal(montarInstrucoesDoAgente(null),"");
   assert.ok(!montarInstrucoesDoAgente({...salvo,identifier:"Outro negócio",context:"Outro contexto"}).includes(CONHECIMENTO_CT));
 });

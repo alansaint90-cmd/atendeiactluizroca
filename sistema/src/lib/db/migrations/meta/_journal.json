@@ -162,6 +162,13 @@
       "when": 1795024150219,
       "tag": "0022_campanhas_ct",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795136400000,
+      "tag": "0023_politicas_ct_confirmadas",
+      "breakpoints": true
     }
   ]
 }

@@ -34,7 +34,7 @@ test("15 anos consulta Jiu-Jitsu noturno, escolhe segunda e confirma uma única 
   assert.equal(JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:jiu9")!).opcoes.length,0);
   const muay=agendaAulasDoAgente(banco,redis,"lease","muay15","5571000000115",async()=>true);
   await muay("Muay Thai à noite",{acao:"consultar",modalidade:"Muay Thai",idade:15});
-  assert.equal(JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:muay15")!).opcoes.length,0);
+  assert.equal(JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:muay15")!).opcoes.length>0,true);
   assert.equal(JSON.stringify((await consultarAulas(banco)).aulas),grade);
  }finally{await cliente.close();}
 });

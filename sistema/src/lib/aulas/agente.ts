@@ -1,3 +1,5 @@
+import { responderDuvidaCt } from "../ct/duvidas";
+import type { AssuntoCt } from "../ct/politicas";
 import { perguntaGradeDia } from "./aceite-consulta";
 import { limparNomeParticipante } from "./nome-participante";
 import { idadeParticipanteInformada, idadesNegadas } from "./idade-informada";
@@ -23,7 +25,7 @@ import { alunoSchema, elegivelParaExperimental, type AlunoDados, type Aula } fro
 import { acaoAulasSchema, type AcaoAulas } from "./agente-schema";
 import { owned, agentKeys, assertResult } from "../agent/redis";
 interface Opcao { aulaId: string; inicio: string; modalidade: string; turma: string }
-interface Cadastro { consultaPorDia?: boolean; modalidadePendente?: string; modalidadePreferida?: string | null; opcaoEscolhida?: number; objetivo?: ObjetivoAula; objetivoExplicado?: string; participante?: "adulto" | "crianca" | "outraPessoa"; adultoSemIdade?: boolean; turnoSolicitado?: TurnoAula | null; aguardandoAlteracao?: boolean; aguardandoAjuda?: boolean; opcoes: Opcao[]; dataSolicitada?: string | null; consulta?: { modalidade: string | null; idade: number | null; adultoSemIdade?: boolean; mostradas: string[]; turno?: TurnoAula | null; data?: string | null }; reserva?: { aulaId: string; inicio: string; aluno: AlunoDados; solicitacaoId: string; conferido: true }; confirmada?: string }
+interface Cadastro { assuntoInformativo?:AssuntoCt; consultaPorDia?: boolean; modalidadePendente?: string; modalidadePreferida?: string | null; opcaoEscolhida?: number; objetivo?: ObjetivoAula; objetivoExplicado?: string; participante?: "adulto" | "crianca" | "outraPessoa"; adultoSemIdade?: boolean; turnoSolicitado?: TurnoAula | null; aguardandoAlteracao?: boolean; aguardandoAjuda?: boolean; opcoes: Opcao[]; dataSolicitada?: string | null; consulta?: { modalidade: string | null; idade: number | null; adultoSemIdade?: boolean; mostradas: string[]; turno?: TurnoAula | null; data?: string | null }; reserva?: { aulaId: string; inicio: string; aluno: AlunoDados; solicitacaoId: string; conferido: true }; confirmada?: string }
 export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: string, conversa: string, numero: string, enabled: () => Promise<boolean>) {
   const chave = `atendeia:{evolution}:cadastro-aula:${conversa}`;
   const salvar = async (v: Cadastro) => assertResult(await client.eval(owned + "redis.call('SET', KEYS[2], ARGV[2], 'EX', 604800); return 1", 2, agentKeys.lock, chave, token, JSON.stringify(v)));
@@ -40,6 +42,12 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
           objetivo:undefined,opcoes:[],opcaoEscolhida:undefined,reserva:undefined,turnoSolicitado:undefined,dataSolicitada:null,
           consulta:{modalidade:cadastro.modalidadePreferida ?? null,idade:idadeInformada ? Number(idadeInformada[1]) : null,mostradas:[]}});
         throw new FalhaAtendimento("contexto_idade_contraditorio");
+      }
+      const duvida=responderDuvidaCt(texto,cadastro.assuntoInformativo,cadastro.consulta?.modalidade);
+      if (duvida) {
+        const idade=idadeParticipanteInformada(texto), pessoal=/\b(?:eu\s+)?tenho\s+\d+\s*anos\b/iu.test(texto) || /\bmeu filh[oa]\b/iu.test(texto);
+        await salvar({...cadastro,assuntoInformativo:duvida.assunto,...(idade && pessoal ? {participante:Number(idade[1])<18?"crianca" as const:"adulto" as const,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? null,idade:Number(idade[1]),mostradas:[]},opcoes:[],opcaoEscolhida:undefined,reserva:undefined}: {})});
+        return duvida.resposta;
       }
       const interesse = intencaoModalidade(texto);
       if (!acao && (interesse.modalidade || cadastro.consulta?.modalidade && interesse.negadas.includes(cadastro.consulta.modalidade))) {
@@ -158,6 +166,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         const recomendacao = recomendarObjetivo(objetivo, idade, cadastro.participante === "crianca");
         const preferida = modalidadeMencionada(texto) ?? cadastro.modalidadePreferida ?? null;
         const modalidade = preferida ?? (objetivo ? recomendacao?.modalidade ?? dados.modalidade : cadastro.consulta?.modalidade ?? dados.modalidade ?? null);
+        if (modalidade === "Muay Thai" && idade !== null && idade < 14) throw new FalhaAtendimento("muay_adaptado");
         let chaveExplicacao = `${objetivo}:${modalidade}`;
         let introducao = objetivo && modalidade && (objetivoAtual || cadastro.objetivoExplicado !== chaveExplicacao) ? explicarBeneficioObjetivo(objetivo,modalidade,idade,cadastro.participante === "crianca") : "";
         const adultoSemIdade = idade === null && (cadastro.adultoSemIdade || cadastro.participante !== "crianca" && dados.adultoSemIdade === true);
@@ -177,7 +186,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         if (data && data < dataLocalCt()) return "A data que estávamos consultando já passou. Qual data futura você prefere?";
         const turno = turnoAtual !== undefined ? turnoAtual : cadastro.turnoSolicitado ?? dados.turno ?? null;
         const mostradas = maisOpcoes && turno === (cadastro.consulta?.turno ?? null) && data === (cadastro.consulta?.data ?? null) && normalizar(modalidade ?? "") === normalizar(cadastro.consulta?.modalidade ?? "") && idade === cadastro.consulta?.idade ? cadastro.consulta.mostradas : [];
-        const elegivel = (a: Aula) => elegivelParaExperimental(a, idade, adultoSemIdade);
+        const elegivel = (a: Aula) => elegivelParaExperimental(a, idade, adultoSemIdade) && !(a.modalidade === "Muay Thai" && idade !== null && idade < 14);
         const disponiveis = agenda.aulas.filter(elegivel).flatMap(a => ocorrenciasAula(a).filter(inicio => (!data || dataLocalCt(Date.parse(inicio)) === data) && correspondeTurno(inicio, turno) && (a.capacidade === null || agenda.reservas.filter(r => r.aulaId === a.id && r.status === "confirmada" && (!r.inicio || Date.parse(r.inicio) === Date.parse(inicio))).length < a.capacidade)).map(inicio => ({ aulaId: a.id, inicio, modalidade: a.modalidade, turma: a.turma })));
         let candidatas = disponiveis.filter(a => !modalidade || normalizar(a.modalidade) === normalizar(modalidade));
         let modalidadeOfertada = modalidade;
@@ -192,7 +201,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
           }
         }
         const opcoes = selecionarExperimentais(priorizarInfantil(candidatas, idade, modalidade, mostradas), mostradas);
-        await salvar({ consultaPorDia:cadastro.consultaPorDia,objetivo,modalidadePendente:interesse.modalidade ?? cadastro.modalidadePendente,modalidadePreferida:preferida,objetivoExplicado:introducao ? chaveExplicacao : cadastro.objetivoExplicado,participante:cadastro.participante,adultoSemIdade,opcoes, turnoSolicitado: turno, dataSolicitada: data, consulta: { modalidade, idade, adultoSemIdade, turno, data, mostradas: [...mostradas, ...opcoes.map(a => a.aulaId)] } });
+        await salvar({ assuntoInformativo:undefined,consultaPorDia:cadastro.consultaPorDia,objetivo,modalidadePendente:interesse.modalidade ?? cadastro.modalidadePendente,modalidadePreferida:preferida,objetivoExplicado:introducao ? chaveExplicacao : cadastro.objetivoExplicado,participante:cadastro.participante,adultoSemIdade,opcoes, turnoSolicitado: turno, dataSolicitada: data, consulta: { modalidade, idade, adultoSemIdade, turno, data, mostradas: [...mostradas, ...opcoes.map(a => a.aulaId)] } });
         const resposta = opcoes.length ? `${aberturaHorarios(texto, opcoes.length, turno, Boolean(maisOpcoes))}\n\n${opcoes.map((a,i) => `${i+1}. ${a.modalidade} · ${a.turma} · ${formatarOcorrenciaCt(a.inicio)}`).join("\n")}\n\n${opcoes.length === 1 ? "Esse horário funciona pra você?" : "Qual fica melhor pra você?"}` : semHorarios(modalidadeOfertada,turno,data ? rotuloDataCt(data) : null,candidatas.length>0,idade);
         const existeModalidade = preferida && !candidatas.length && agenda.aulas.some(a=>normalizar(a.modalidade)===normalizar(preferida));
         return (introducao ? introducao+"\n\n" : "") + (existeModalidade ? `Temos aulas de ${preferida} no CT. ` : "") + resposta;
@@ -203,6 +212,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       if (cadastro.dataSolicitada && dataLocalCt(Date.parse(opcao.inicio)) !== cadastro.dataSolicitada) return `A opção anterior não é de ${rotuloDataCt(cadastro.dataSolicitada)}. Precisamos consultar a data solicitada antes de reservar.`;
       if (!correspondeTurno(opcao.inicio, cadastro.turnoSolicitado)) return "Precisamos consultar uma aula no turno que você pediu antes de conferir os dados.";
       const idadeAluno = cadastro.adultoSemIdade ? null : dados.idade;
+      if (opcao.modalidade === "Muay Thai" && idadeAluno !== null && idadeAluno < 14) throw new FalhaAtendimento("muay_adaptado");
       const adultoSemIdade = idadeAluno === null && (cadastro.adultoSemIdade || cadastro.participante !== "crianca" && dados.adultoSemIdade === true);
       const aluno = alunoSchema.parse({ nome: limparNomeParticipante(dados.nome), idade: idadeAluno, adultoSemIdade, telefone: `+${numero}`, responsavel: adultoSemIdade ? "" : dados.responsavel });
       const agenda = await consultarAulas(banco), aula = agenda.aulas.find(a => a.id === opcao.aulaId);

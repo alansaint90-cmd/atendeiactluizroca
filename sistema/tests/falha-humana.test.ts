@@ -22,7 +22,7 @@ import {agentKeys,agentRedis} from "../src/lib/agent/redis";
 import {encerrarAcompanhamentoHumano,pausaManualKey} from "../src/lib/agent/pausa";
 
 const config:AgentConfig={AI_ENABLED:"true",AI_SYSTEM_PROMPT:"Atenda o aluno.",OPENAI_API_KEY:"sk-test-only",OPENAI_MODEL:"modelo",EVOLUTION_API_URL:"https://example.invalid",EVOLUTION_API_KEY:"teste",EVOLUTION_INSTANCE_NAME:"ctluizroca",REDIS_URL:"redis://localhost:6379",AI_HUMAN_ALERT_PHONE:"+5511000000099",agendaAulas:true};
-const evento={event:"messages.upsert" as const,instance:"ctluizroca",data:{key:{id:"teste-falha",fromMe:false,remoteJid:"5571000000001@s.whatsapp.net"},messageTimestamp:Math.floor(Date.now()/1000),message:{conversation:"Na verdade é para mim\nNão tenho 15 anos"}}};
+const evento={event:"messages.upsert" as const,instance:"ctluizroca",data:{pushName:"Aluno de Teste",key:{id:"teste-falha",fromMe:false,remoteJid:"5571000000001@s.whatsapp.net"},messageTimestamp:Math.floor(Date.now()/1000),message:{conversation:"Na verdade é para mim\nNão tenho 15 anos"}}};
 const message=incomingMessage(evento,"ctluizroca")!;
 function fixture(){
  let state:DeliveryState|null=null,sends=0,alerts=0;
@@ -74,7 +74,7 @@ test("erro do print pausa conversa real e enfileira um alerta atômico, sem reen
   await processMessage(message,config,f.port);
   assert.equal(await encaminharFalhaHumana(banco,"ctluizroca",message.number,config.AI_HUMAN_ALERT_PHONE!,"agenda_inconsistente"),false);
   let fila=await listarAgendamentos(banco);assert.equal(fila.length,1);assert.equal(fila[0].telefone,config.AI_HUMAN_ALERT_PHONE);
-  assert.match(fila[0].mensagem,/IA está pausada/);assert.doesNotMatch(fila[0].mensagem,/15 anos|Detalhe privado/);
+  assert.match(fila[0].mensagem,/IA está pausada/);assert.match(fila[0].mensagem,/Nome: Aluno de Teste/);assert.doesNotMatch(fila[0].mensagem,/15 anos|Detalhe privado/);
   const cadastro=JSON.parse(cache.get(`atendeia:{evolution}:cadastro-aula:${message.conversation}`)!);
   assert.equal(cadastro.consulta.idade,null);assert.equal(cadastro.adultoSemIdade,true);
   f.reset();assert.equal(await processMessage({...message,identity:randomUUID(),text:"Oi"},config,f.port),"pausada");
