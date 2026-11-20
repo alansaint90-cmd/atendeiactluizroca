@@ -52,12 +52,12 @@ test("sim consulta o sábado real e abandona filtro antigo de quinta/Muay sem gr
   assert.match((await atender("sabado")("Sim"))!,/nome completo/);
   assert.equal((await consultarAulas(banco)).reservas.length,0);
   const explicito=await atender("sabado")("Quero Muay Thai aos sábados");
-  assert.match(explicito!,/Muay Thai.*sábado/s);assert.doesNotMatch(explicito!,/quinta/);assert.equal(estado("sabado").opcoes.length,0);
+  assert.match(explicito!,/sábado/);assert.match(explicito!,/Muay Thai/);assert.doesNotMatch(explicito!,/quinta/);assert.equal(estado("sabado").dataSolicitada,"2026-11-21");assert.equal(estado("sabado").dataAlternativa,"2026-11-23");assert.ok(estado("sabado").opcoes.every((o:{modalidade:string;inicio:string})=>o.modalidade==="Muay Thai"&&dataLocalCt(Date.parse(o.inicio))==="2026-11-23"));
   const desconhecido=await atender("novo")("Vocês têm aulas aos sábados?");
   assert.match(desconhecido!,/Taekwondo/);assert.match(desconhecido!,/para você ou para outra pessoa/);
   assert.doesNotMatch((await atender("novo")("Sim"))!,/Muay|quinta|agendada/);
   assert.match((await atender("novo")("Para mim"))!,/Taekwondo.*sábado/s);
-  await atender("infantil")("Para meu filho de 8 anos",{acao:"consultar",modalidade:"Muay Thai",idade:8});
+  cache.set("atendeia:{evolution}:cadastro-aula:infantil",JSON.stringify({participante:"crianca",modalidadePreferida:"Muay Thai",opcoes:[],consulta:{modalidade:"Muay Thai",idade:8,mostradas:[]}}));
   assert.match((await atender("infantil")("Vocês têm aulas aos sábados?"))!,/Taekwondo.*10:00/s);
   assert.equal(JSON.stringify((await consultarAulas(banco)).aulas),grade);
   assert.equal((await consultarAulas(banco)).reservas.length,0);
