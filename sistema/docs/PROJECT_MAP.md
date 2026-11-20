@@ -6,7 +6,7 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 229 |
+| Arquivos TS/TSX | 230 |
 | Tabelas (Drizzle) | 38 |
 | Server Actions (arquivos) | 17 |
 | Rotas de API | 6 |
@@ -149,6 +149,7 @@ lib/
   audit/
     registrar.ts
   aulas/
+    aceite-consulta.ts
     agente-schema.ts
     agente.ts
     apresentacao.ts

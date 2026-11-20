@@ -401,6 +401,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("identificarParticipante(texto)") || !content.includes("adultoSemIdade") || !content.includes("elegivelParaExperimental"))) {
     findings.push({ level: "error", id: "participante-aula-ct", file: rel, line: 1, msg: "Identificar participante e permitir adulto sem idade fictícia, preservando faixas infantis." });
   }
+  if (rel === "src/lib/agent/processor.ts" && !content.includes("aceiteConsulta(")) {
+    findings.push({level:"error",id:"aceite-consulta-dia-ct",file:rel,line:1,msg:"Vincular o sim de consulta à pergunta anterior, sem reaproveitar data ou modalidade antigas."});
+  }
   if (rel === "src/lib/agent/providers.ts" && !content.includes("sinalizar_falha_atendimento")) {
     findings.push({level:"error",id:"falha-humana-ct",file:rel,line:1,msg:"Sinalizar inconsistência não resolvida com ferramenta, sem prometer transferência por texto livre."});
   }

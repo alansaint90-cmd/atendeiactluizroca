@@ -191,6 +191,7 @@ try {
     ["conferência livre sem proposta reprova", reprova("agent/providers.ts", "conferencia-unica-aula")],
     ["memória do interesse inicial ausente reprova", reprova("aulas/agente.ts", "memoria-interesse-ct")],
     ["prioridade de modalidade ausente reprova", reprova("aulas/agente.ts", "intencao-modalidade-ct")],
+    ["aceite de consulta sem contexto reprova", reprova("agent/processor.ts", "aceite-consulta-dia-ct")],
     ["falha sem ferramenta de atendimento humano reprova", reprova("agent/providers.ts", "falha-humana-ct")],
     ["recomendação por objetivo ausente reprova", reprova("aulas/agente.ts", "objetivo-experimental-ct")],
     ["benefícios sem alternativas compatíveis reprovam", reprova("aulas/agente.ts", "beneficios-alternativas-ct")],

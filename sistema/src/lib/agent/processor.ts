@@ -1,3 +1,4 @@
+import { aceiteConsulta } from "../aulas/aceite-consulta";
 import { FalhaAtendimento } from "./falha-humana";
 import { escalarFalha } from "./escalonamento";
 import type { EntradaFluxo } from "../fluxos/schema";
@@ -95,7 +96,7 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       const contextoAtual = persona ? historico.filter(turno => turno.role === "user" || turno.revisao === revisao) : historico;
       const saudacao = /^(?:oi+|ol[aá]+|bom dia|boa tarde|boa noite)[\s!.😊👋]*$/iu.test((transcript ?? message.text).trim());
       if (!historico.length && !message.midia && ((!nome && saudacao) || Boolean(config.AI_ACTIVATION_TRIGGER && correspondeAoGatilho(message, config.AI_ACTIVATION_TRIGGER))) && config.openingMessages?.length) partes = config.openingMessages;
-      const respostaAula = config.agendaAulas ? await port.aulaExperimental?.(transcript ?? message.text) : null;
+      const respostaAula = config.agendaAulas ? await port.aulaExperimental?.(aceiteConsulta(transcript ?? message.text,historico) ?? transcript ?? message.text) : null;
       if (!respostaAula && !historico.length && !message.midia && !/RESERVAS CONFIRMADAS NO BANCO/.test(memoria)) {
         const entrada = await port.fluxoEntrada?.(transcript ?? message.text);
         if(entrada){fluxo={id:entrada.id,versao:entrada.versao};partes=entrada.mensagens;}

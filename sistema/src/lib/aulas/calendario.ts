@@ -23,8 +23,8 @@ export function interpretarDataCt(texto:string, agora=Date.now()): DataInterpret
   restante=restante.replace(/\bamanha\b/g,()=>{encontradas.push(somarDiasCt(hoje,1));return " ";});
   if(/\bhoje\b/.test(restante)) encontradas.push(hoje);
   const porDia:Record<string,number>={domingo:0,segunda:1,terca:2,quarta:3,quinta:4,sexta:5,sabado:6};
-  for(const m of restante.matchAll(/\b(?:(proxim[ao])\s+)?(domingo|segunda|terca|quarta|quinta|sexta|sabado)(?:-feira)?(?:\s+(que vem))?\b(?!\s+(?:opcao|alternativa))/g)) {
-    let distancia=(porDia[m[2]]-new Date(`${hoje}T12:00:00Z`).getUTCDay()+7)%7;
+  for(const m of restante.matchAll(/\b(?:(proxim[ao])\s+)?(domingos?|segundas?|tercas?|quartas?|quintas?|sextas?|sabados?)(?:[ -]feiras?)?(?:\s+(que vem))?\b(?!\s+(?:opcao|alternativa))/g)) {
+    let distancia=(porDia[m[2].replace(/s$/,"")]-new Date(`${hoje}T12:00:00Z`).getUTCDay()+7)%7;
     if(distancia===0 && (m[1] || m[3]))distancia=7;
     encontradas.push(somarDiasCt(hoje,distancia));
   }
