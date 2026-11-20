@@ -1,4 +1,5 @@
 import { responderDuvidaCt } from "../ct/duvidas";
+import { funcionamentoNoDiaCt } from "../ct/funcionamento";
 import type { AssuntoCt } from "../ct/politicas";
 import { perguntaGradeDia } from "./aceite-consulta";
 import { limparNomeParticipante } from "./nome-participante";
@@ -46,6 +47,11 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       }
       const duvida=responderDuvidaCt(texto,cadastro.assuntoInformativo,cadastro.consulta?.modalidade);
       if (duvida) {
+        if (duvida.assunto === "funcionamento") {
+          const agenda = await consultarAulas(banco);
+          await salvar({...cadastro, assuntoInformativo:"funcionamento"});
+          return funcionamentoNoDiaCt(agenda.aulas, texto);
+        }
         const idade=idadeParticipanteInformada(texto), pessoal=/\b(?:eu\s+)?tenho\s+\d+\s*anos\b/iu.test(texto) || /\bmeu filh[oa]\b/iu.test(texto);
         await salvar({...cadastro,assuntoInformativo:duvida.assunto,...(idade && pessoal ? {participanteProprio:/\b(?:eu\s+)?tenho\s+\d+\s*anos\b/iu.test(texto),participante:Number(idade[1])<18?"crianca" as const:"adulto" as const,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? null,idade:Number(idade[1]),mostradas:[]},opcoes:[],opcaoEscolhida:undefined,reserva:undefined}: {})});
         return duvida.resposta;

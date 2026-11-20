@@ -1,4 +1,5 @@
 import { dataLocalCt } from "../aulas/calendario";
+import { perguntaFuncionamentoCt, continuacaoFuncionamentoCt, RESPOSTA_FUNCIONAMENTO_CT } from "./funcionamento";
 import {modalidadeMencionada} from "../aulas/objetivo";
 import {respostasCt,type AssuntoCt} from "./politicas";
 
@@ -8,6 +9,7 @@ export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeCon
  const modalidade=modalidadeMencionada(texto);
  const responder=(assunto:keyof typeof respostasCt)=>({assunto,resposta:respostasCt[assunto]});
  const agenda=/\b(?:agendar|agende|marcar|reserve|reservar|remarcar|reagendar|horarios?|vagas?)\b/.test(t);
+ if (perguntaFuncionamentoCt(texto) || anterior === "funcionamento" && continuacaoFuncionamentoCt(texto)) return {assunto:"funcionamento",resposta:RESPOSTA_FUNCIONAMENTO_CT};
  if (/\b(?:professor|professora|instrutor|quem ensina|quem da (?:a |as )?aulas)\b/.test(t) || /quem.*responsavel.*(?:ct|centro)/.test(t)
    || anterior==="professores" && modalidade && /^(?:e\s+(?:(?:o|a|de|do|da)\s+)*|(?:de|do|da)\s+)(?:muay(?: thai)?|jiu(?:[ -]?jitsu)?|taekwondo|tae)[?!.\s]*$/.test(t)) {
    const alvo=modalidade ?? (/responsavel.*(?:ct|centro)/.test(t)?"Taekwondo":modalidadeContexto);
@@ -46,6 +48,7 @@ export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeCon
 }
 
 export function perguntaInformativaCt(texto:string) {
+ if (perguntaFuncionamentoCt(texto)) return true;
  const t=texto.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
  return /\b(?:professores?|professoras?|instrutor|documentos?|equipamentos?|gratuita|gratuito|desconto|mensalidade|feminina|matricula|anuidade|kimono|quimono|beneficios?|reposicao|vestiario|banheiro|chuveiro|estacionamento|multa|contrato|fidelidade|taxa)\b|idade minima|partir de quantos|quantos.*alunos/.test(t)
    && !/\b(?:agendar|agende|marcar|reservar|reserva|horarios?|vagas?|remarcar|reagendar)\b/.test(t);

@@ -60,6 +60,11 @@ test("perguntas da Giovanna usam a base confirmada e não desviam para a agenda 
   await applyMigrations(banco);
   const atender=agendaAulasDoAgente(banco,redis,"lease","faq","5571000000001",async()=>true);
   await atender("Para mim");await atender("Muay Thai nesta quinta-feira");
+  const contextoAntes=JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:faq")!);
+  assert.match((await atender("Qual horário de funcionamento hoje?"))!,/06:00.*22:15/);
+  const contextoDepois=JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:faq")!);
+  assert.deepEqual(contextoDepois.consulta,contextoAntes.consulta,"abertura do espaço não altera filtros da reserva");
+  assert.match((await atender("E amanhã?"))!,/não há aulas cadastradas/);
   for(const [pergunta,esperado] of perguntas){
    const resposta=await atender(pergunta);
    assert.match(resposta!,esperado,pergunta);
