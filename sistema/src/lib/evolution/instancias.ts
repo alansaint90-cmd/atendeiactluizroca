@@ -1,5 +1,5 @@
 import type { IntegrationSettings } from "../settings/schema";
-import { padraoAulasCt } from "../followups/aulas-ct";
+import { padraoAulasCt, atualizarIntervalosAulasCt } from "../followups/aulas-ct";
 import { parseFollowup } from "../followups/schema";
 
 export const camposInstancias = [
@@ -26,7 +26,7 @@ export function followupDaInstancia(settings: IntegrationSettings, instancia: st
   if (!campo || (config.instance && config.instance !== instancia)) {
     return { ...parseFollowup(), instance: instancia };
   }
-  return { ...config, instance: instancia };
+  return atualizarIntervalosAulasCt({ ...config, instance: instancia });
 }
 
 export function settingsDaInstancia(settings: IntegrationSettings, instancia: string): IntegrationSettings | null {

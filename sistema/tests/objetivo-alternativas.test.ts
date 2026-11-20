@@ -54,8 +54,9 @@ test("explica benefícios e oferece alternativa real, mantendo idade, turno, dat
   assert.match(noite!,/Jiu-Jitsu/);assert.doesNotMatch(noite!,/Taekwondo/);
   const dia=interpretarDataCt("próxima segunda");assert.equal(dia?.tipo,"data");
   assert.ok(estado("noite").opcoes.every((o:{modalidade:string;inicio:string})=>o.modalidade==="Jiu-Jitsu"&&correspondeTurno(o.inicio,"noite")&&dia?.tipo==="data"&&dataLocalCt(Date.parse(o.inicio))===dia.data));
+  await atender("noite")("1");
   assert.match((await atender("noite")("Participante Exemplo",{acao:"preparar",opcao:1,nome:"Participante Exemplo",idade:null,adultoSemIdade:true,responsavel:""}))!,/Jiu-Jitsu/);
-  assert.equal((await consultarAulas(banco)).reservas.length,0);
+  assert.equal((await consultarAulas(banco)).reservas.length,1);
   await atender("mais-noite")("É pra mim, de noite");
   await atender("mais-noite")("Quero emagrecer");
   const vistas=new Set<string>();let ofereceuTaekwondo=false;
@@ -89,6 +90,6 @@ test("explica benefícios e oferece alternativa real, mantendo idade, turno, dat
   const vazia=await atender("vazia")("Quero emagrecer");
   assert.match(vazia!,/recomendo Muay Thai/);assert.match(vazia!,/funcionais/);
   assert.equal(estado("vazia").opcoes.length,0);assert.doesNotMatch(vazia!,/Temos sim/);
-  assert.equal((await consultarAulas(banco)).reservas.length,0);
+  assert.equal((await consultarAulas(banco)).reservas.length,1,"consultas posteriores preservam a reserva realizada");
  }finally{await cliente.close();}
 });

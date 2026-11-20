@@ -32,6 +32,7 @@ test("pai agenda depois do filho sem idade fictícia e sem apagar a reserva infa
   assert.match((await atender("É para meu filho"))!,/Qual é a idade/);
   assert.match((await atender("Taekwondo",{acao:"consultar",modalidade:"Taekwondo",idade:null}))!,/Qual é a idade/);
   await atender("Ele tem 8 anos",{acao:"consultar",modalidade:"Taekwondo",idade:8});
+  await atender("1");
   await atender("Filho de Teste",{acao:"preparar",opcao:1,nome:"Filho de Teste",idade:8,responsavel:"Pai de Teste"});
   await atender("sim");
   assert.equal((await consultarAulas(banco)).reservas.length,1);
@@ -40,9 +41,9 @@ test("pai agenda depois do filho sem idade fictícia e sem apagar a reserva infa
   const cadastro=JSON.parse(dados.get("atendeia:{evolution}:cadastro-aula:participantes")!);
   assert.equal(cadastro.consulta.idade,null); assert.equal(cadastro.adultoSemIdade,true);
   assert.ok(cadastro.opcoes.length>0 && cadastro.opcoes.every((o:{turma:string})=>!o.turma.startsWith("Kids")));
+  await atender("1");
   const conferencia=await atender("Pai de Teste",{acao:"preparar",opcao:1,nome:"Pai de Teste",idade:null,adultoSemIdade:true,responsavel:""});
-  assert.match(conferencia!,/Adulto/);assert.doesNotMatch(conferencia!,/null|8 anos|18 anos/);
-  const resultado=await atender("sim");assert.match(resultado!,/está agendada/);
+  assert.match(conferencia!,/está agendada/);assert.doesNotMatch(conferencia!,/null|8 anos|18 anos|Os dados estão corretos/);
   const reservas=(await consultarAulas(banco)).reservas;
   assert.equal(reservas.length,2);
   assert.equal(reservas.find(r=>r.nome==="Filho de Teste")?.idade,8);

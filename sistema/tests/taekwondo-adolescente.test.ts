@@ -24,10 +24,10 @@ test("Taekwondo geral recebe 13 e 15 anos à noite; menores exigem responsável"
    const estado=JSON.parse(cache.get(`atendeia:{evolution}:cadastro-aula:${conversa}`)!);
    assert.equal(estado.opcoes.length,2);
    assert.ok(estado.opcoes.every((o:{turma:string;inicio:string})=>o.turma==="Geral"&&correspondeTurno(o.inicio,"noite")&&[2,4].includes(new Date(Date.parse(o.inicio)-3*3600000).getUTCDay())));
+   await atender("1");
    assert.match((await atender("Aluno Exemplo",{acao:"preparar",opcao:1,nome:"Aluno Exemplo",idade,responsavel:""}))!,/responsável/);
    assert.equal((await consultarAulas(banco)).reservas.length,idade===13?0:1);
-   assert.match((await atender("Aluno Exemplo",{acao:"preparar",opcao:1,nome:"Aluno Exemplo",idade,responsavel:"Responsavel Exemplo"}))!,/Os dados estão corretos/);
-   assert.match((await atender("sim"))!,/está agendada/);
+   assert.match((await atender("Aluno Exemplo",{acao:"preparar",opcao:1,nome:"Aluno Exemplo",idade,responsavel:"Responsavel Exemplo"}))!,/está agendada/);
   }
   const pequeno=agendaAulasDoAgente(banco,redis,"lease","pequeno","5571000000006",async()=>true);
   assert.match((await pequeno("Tem Taekwondo à noite?",{acao:"consultar",modalidade:"Taekwondo",idade:6}))!,/para alunos de 6 anos/);

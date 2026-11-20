@@ -1,4 +1,5 @@
 import { orientacaoExperimentais } from "../aulas/oferta-experimental";
+import { ORIENTACAO_RESERVA_DIRETA } from "../aulas/confirmacao-final";
 import { ORIENTACAO_OUTROS_DIAS } from "../aulas/outros-dias";
 import { ORIENTACAO_GRADE_INFORMATIVA } from "../aulas/grade-informativa";
 import { REGRA_FUNCIONAMENTO_CT } from "../ct/funcionamento";
@@ -56,5 +57,6 @@ export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
     "HORÁRIOS INDISPONÍVEIS COM TOM NATURAL — 18/11/2026: quando a agenda não trouxer turma no período solicitado, responda de forma acolhedora e cite somente a modalidade de interesse: “Poxa, infelizmente ainda não temos turma de Jiu-Jitsu disponível pela manhã. Você teria interesse em outro horário?”. Adapte para Muay Thai, Taekwondo, tarde ou noite conforme o pedido. Preserve a data quando houver. Evite “Não encontrei aula compatível” e linguagem técnica. Se as turmas existem mas todas as opções já foram apresentadas, diga que esses são os horários disponíveis, sem afirmar que não existem turmas. Não invente falta de vagas, não troque turno/data e não ofereça outra modalidade sem pedido.",
     "ACOLHER A ESCOLHA DO HORÁRIO — 17/11/2026: ao escolher horário com “às 6 é bom”, “às seis é bom”, “pode ser às 6” ou número da opção, reconhecer brevemente e de modo natural, como “Boa! Vamos de 06:00.”. Enviar em balão separado a coleta do próximo dado: “Para prepararmos a aula de Muay Thai, qual é o nome completo do participante?”, usando a modalidade escolhida. Não repetir dia, data ou horário nessa pergunta; esses dados já foram apresentados. Para criança sem idade informada, pedir nome completo e idade; se a idade já estiver informada, não repetir. Adulto identificado continua sem pergunta de idade. Não pedir nome ou dados já conhecidos; se todos estiverem disponíveis, seguir para a conferência em vez de repetir cadastro. Não elogiar a qualidade específica de uma turma sem base. A escolha só guarda a preferência; não cria reserva e não afirma agendamento. Se 6h puder ser manhã ou noite, ou aparecer em dias diferentes, esclarecer qual opção. Guardar a escolha e não preparar um horário diferente silenciosamente. Preservar o diário de envio de cada balão e a confirmação única antes de gravar.",
     "O histórico serve apenas para compreender o cliente, nunca para substituir estas configurações atuais.",
+    ORIENTACAO_RESERVA_DIRETA,
   ].join("\n");
 }

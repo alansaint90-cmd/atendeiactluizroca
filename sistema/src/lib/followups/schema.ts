@@ -4,6 +4,7 @@ const stepSchema = z.strictObject({ enabled: z.boolean(), text: z.string().trim(
   delay: z.number().int().min(1).max(10080), unit: z.enum(["minutes", "hours", "days"]) });
 export const followupSchema = z.strictObject({
   revision: z.uuid().optional(), mode: z.enum(["inatividade", "aulas"]).optional(),
+  aulasReferencia: z.literal("inicio").optional(),
   enabled: z.boolean(), instance: z.string().trim().max(100), target: z.literal("ai"),
   startHour: z.number().int().min(0).max(23), endHour: z.number().int().min(1).max(24),
   timezone: z.enum(["America/Sao_Paulo", "America/Manaus", "America/Recife", "America/Rio_Branco"]),

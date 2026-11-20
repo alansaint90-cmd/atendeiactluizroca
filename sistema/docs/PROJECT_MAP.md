@@ -6,7 +6,7 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 236 |
+| Arquivos TS/TSX | 237 |
 | Tabelas (Drizzle) | 38 |
 | Server Actions (arquivos) | 17 |
 | Rotas de API | 6 |
@@ -154,6 +154,7 @@ lib/
     agente.ts
     apresentacao.ts
     calendario.ts
+    confirmacao-final.ts
     escolha.ts
     experimental-unica.ts
     grade-informativa.ts

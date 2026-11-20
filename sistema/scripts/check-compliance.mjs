@@ -369,9 +369,9 @@ function analyzeFile(file) {
     findings.push({ level: "error", id: "ct-agenda-contexto", file: rel, line: 1,
       msg: "O worker do CT exige agrupamento, agenda de aulas e contexto persistente." });
   }
-  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("reservarAula(banco, cadastro.reserva") || !content.includes("confirmo") || !content.includes("systemUserId"))) {
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("reservarAula(banco,reserva") || !content.includes("cadastro.opcaoEscolhida") || !content.includes("systemUserId"))) {
     findings.push({ level: "error", id: "ct-reserva-confirmacao", file: rel, line: 1,
-      msg: "A reserva pelo agente exige confirmação explícita e a transação validada da agenda." });
+      msg: "A reserva direta exige escolha explícita, dados válidos e transação real da agenda." });
   }
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("selecionarExperimentais(") || !content.includes("mostradas"))) {
     findings.push({ level: "error", id: "oferta-experimental-ct", file: rel, line: 1,
@@ -386,10 +386,10 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("priorizarInfantil(candidatas")) {
     findings.push({ level: "error", id: "prioridade-infantil-ct", file: rel, line: 1, msg: "Preservar prioridade de Taekwondo para menores de 12 sem restringir pedidos explícitos." });
   }
-  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("pediuAlternativas") || !content.includes("garrafinha de água"))) {
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("pediuAlternativas") || !content.includes("confirmacaoFinalAula"))) {
     findings.push({ level: "error", id: "alternativas-naturais-ct", file: rel, line: 1, msg: "Preservar consulta de alternativas e confirmação natural." });
   }
-  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("LINK_LOCALIZACAO_CT") || content.includes("Brasília"))) {
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("confirmacaoFinalAula") || content.includes("Brasília"))) {
     findings.push({ level: "error", id: "localizacao-direta-ct", file: rel, line: 1, msg: "Usar link direto do CT e omitir o rótulo de fuso nas mensagens." });
   }
   if (rel === "src/lib/agent/processor.ts" && (!content.includes("fluxoValido") || !content.includes("!historico.length") || !content.includes("RESERVAS CONFIRMADAS NO BANCO"))) findings.push({level:"error",id:"fluxo-entrada-seguro",file:rel,line:1,msg:"Fluxo só acolhe novo contato e revalida versão antes de enviar."});
@@ -413,8 +413,8 @@ function analyzeFile(file) {
   if (rel === "src/lib/agent/providers.ts" && !content.includes("sinalizar_falha_atendimento")) {
     findings.push({level:"error",id:"falha-humana-ct",file:rel,line:1,msg:"Sinalizar inconsistência não resolvida com ferramenta, sem prometer transferência por texto livre."});
   }
-  if (rel === "src/lib/agent/providers.ts" && (!content.includes("openai_conferencia_sem_preparo") || !content.includes("tool_choice") || !content.includes("CONFERÊNCIA ÚNICA"))) {
-    findings.push({ level: "error", id: "conferencia-unica-aula", file: rel, line: 1, msg: "Conferência de aula exige proposta preparada pela ferramenta antes da única confirmação." });
+  if (rel === "src/lib/agent/providers.ts" && (!content.includes("openai_conferencia_sem_preparo") || !content.includes("tool_choice") || !content.includes("ORIENTACAO_RESERVA_DIRETA") || !content.includes("contextoCalendarioCt()"))) {
+    findings.push({ level: "error", id: "conferencia-unica-aula", file: rel, line: 1, msg: "Bloquear confirmação livre e concluir a reserva real com calendário atual, sem conferência adicional." });
   }
   if (rel === "src/lib/aulas/agente.ts" && (!content.includes("intencaoModalidade(texto)") || !content.includes("primeiraIdentificacao") || !content.includes("604800"))) {
     findings.push({ level: "error", id: "memoria-interesse-ct", file: rel, line: 1, msg: "Preservar interesse inicial na memória temporária ao identificar participante pela primeira vez." });

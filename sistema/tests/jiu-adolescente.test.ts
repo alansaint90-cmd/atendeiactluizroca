@@ -25,9 +25,9 @@ test("15 anos consulta Jiu-Jitsu noturno, escolhe segunda e confirma uma única 
   const segunda=await atender("Segunda é bom");
   assert.match(segunda!,/20:15/);assert.doesNotMatch(segunda!,/infelizmente/);
   assert.equal((await consultarAulas(banco)).reservas.length,0);
+  await atender("1");
   assert.match((await atender("Aluno Exemplo",{acao:"preparar",opcao:1,nome:"Aluno Exemplo",idade:15,responsavel:""}))!,/responsável/);
-  assert.match((await atender("Aluno Exemplo",{acao:"preparar",opcao:1,nome:"Aluno Exemplo",idade:15,responsavel:"Responsavel Exemplo"}))!,/Os dados estão corretos/);
-  assert.match((await atender("sim"))!,/está agendada/);
+  assert.match((await atender("Aluno Exemplo",{acao:"preparar",opcao:1,nome:"Aluno Exemplo",idade:15,responsavel:"Responsavel Exemplo"}))!,/está agendada/);
   const reserva=(await consultarAulas(banco)).reservas;assert.equal(reserva.length,1);assert.equal(reserva[0].idade,15);
   const menor=agendaAulasDoAgente(banco,redis,"lease","jiu9","5571000000009",async()=>true);
   await menor("Jiu-Jitsu à noite",{acao:"consultar",modalidade:"Jiu-Jitsu",idade:9});

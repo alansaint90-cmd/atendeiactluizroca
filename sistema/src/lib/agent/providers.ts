@@ -1,4 +1,6 @@
 import { perguntaInformativaCt } from "../ct/duvidas";
+import { contextoCalendarioCt } from "../aulas/calendario";
+import { ORIENTACAO_RESERVA_DIRETA } from "../aulas/confirmacao-final";
 import { telefoneAlertaHumano } from "./falha-humana";
 import { acaoAulasSchema, ferramentasAulas, type AcaoAulas } from "../aulas/agente-schema";
 import { z } from "zod";
@@ -17,7 +19,7 @@ const responseSchema = z.object({ status: z.literal("completed"), output: z.arra
 export async function generateReply(config: AgentConfig, history: Turn[], text: string, request = fetch, prepararAula = false): Promise<RespostaGerada> {
   let response: Response;
   const parametrosVazios = { type: "object", properties: {}, required: [], additionalProperties: false };
-  const conferenciaAulas = config.agendaAulas ? "\nCONFERÊNCIA ÚNICA DA EXPERIMENTAL: assim que houver opção escolhida e dados completos, chame preparar_reserva_aula antes de pedir confirmação. Não escreva sua própria conferência nem pergunte se confirma a reserva por texto livre. A ferramenta guarda a proposta e faz a única pergunta: Os dados estão corretos? Não invente dados faltantes; pergunte somente o que falta." : "";
+  const conferenciaAulas = config.agendaAulas ? `\n${ORIENTACAO_RESERVA_DIRETA}\n${contextoCalendarioCt()}` : "";
   const consultarAgenda = config.agendaAulas && !perguntaInformativaCt(text);
   const ferramentas = [
     ...(consultarAgenda ? ferramentasAulas : []),
@@ -59,8 +61,8 @@ export async function generateReply(config: AgentConfig, history: Turn[], text: 
   const reply = parsed.data.output.filter(item => item.type === "message")
     .flatMap(item => item.content ?? []).filter(item => item.type === "output_text").map(item => item.text ?? "").join("\n").trim();
   if (!reply || reply.length > 6000) throw new ProviderError("openai_resposta_invalida");
-  // A conferência só pode sair da ferramenta que salva a proposta no servidor.
-  if (config.agendaAulas && /(?:os dados (?:e (?:o )?hor[aá]rio )?est[aã]o corretos|confirma(?:r)?\s+(?:a |essa |sua |esta )?(?:reserva|aula|experimental)|confira\s+(?:os dados|sua aula experimental))/iu.test(reply)) {
+  // Conferência antiga e alegação de reserva por texto livre exigem conclusão real no servidor.
+  if (config.agendaAulas && /(?:os dados (?:e (?:o )?hor[aá]rio )?est[aã]o corretos|confirma(?:r)?\s+(?:a |essa |sua |esta )?(?:reserva|aula|experimental)|confira\s+(?:os dados|sua aula experimental)|est[aá]\s+(?:agendada|marcada|reservada)|agendei\s+(?:a|sua))/iu.test(reply)) {
     return generateReply(config, history, text, request, true);
   }
   return reply;

@@ -34,7 +34,7 @@ test("acolhe em dois balões, guarda o horário e só reserva após dados e conf
   assert.equal((await consultarAulas(banco)).reservas.length,0);
   assert.match((await atender("Aluno de Teste",{acao:"preparar",opcao:2,nome:"Aluno de Teste",idade:null,adultoSemIdade:true,responsavel:""}))!,/outro horário/);
   const conferencia=await atender("Aluno de Teste",{acao:"preparar",opcao:1,nome:"Aluno de Teste",idade:null,adultoSemIdade:true,responsavel:""});
-  assert.match(conferencia!,/Os dados estão corretos/);assert.equal((await consultarAulas(banco)).reservas.length,0);
+  assert.match(conferencia!,/está agendada/);assert.doesNotMatch(conferencia!,/Os dados estão corretos|Confira sua aula/);assert.equal((await consultarAulas(banco)).reservas.length,1);
   await atender("sim");assert.equal((await consultarAulas(banco)).reservas.length,1);
  }finally{await cliente.close();}
 });
