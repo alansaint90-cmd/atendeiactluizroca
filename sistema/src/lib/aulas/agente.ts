@@ -1,5 +1,6 @@
 import { responderDuvidaCt } from "../ct/duvidas";
 import { pediuOutrosDias } from "./outros-dias";
+import { pedidoGradeInformativa, apresentarGradeInformativa } from "./grade-informativa";
 import { funcionamentoNoDiaCt } from "../ct/funcionamento";
 import type { AssuntoCt } from "../ct/politicas";
 import { perguntaGradeDia } from "./aceite-consulta";
@@ -47,6 +48,18 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         throw new FalhaAtendimento("contexto_idade_contraditorio");
       }
       const duvida=responderDuvidaCt(texto,cadastro.assuntoInformativo,cadastro.consulta?.modalidade);
+      if (!duvida && !acao && pedidoGradeInformativa(texto) && (!/^(?:todos|todas)[!.\s]*$/iu.test(texto.trim()) || cadastro.consulta && !cadastro.assuntoInformativo)) {
+        const modalidade=modalidadeMencionada(texto) ?? cadastro.consulta?.modalidade ?? cadastro.modalidadePreferida ?? null;
+        const turno=interpretarTurno(texto),data=interpretarDataCt(texto);
+        const agenda=await consultarAulas(banco);
+        const resposta=apresentarGradeInformativa(agenda.aulas,texto,modalidade);
+        if(turno!=="ambiguo" && (!data || data.tipo==="data")) await salvar({...cadastro,assuntoInformativo:undefined,consultaPorDia:false,
+          modalidadePreferida:modalidade,modalidadePendente:modalidade ?? undefined,objetivo:undefined,objetivoExplicado:undefined,
+          opcoes:[],opcaoEscolhida:undefined,...(!cadastro.confirmada ? {reserva:undefined}:{}),dataAlternativa:undefined,
+          dataSolicitada:data?.data ?? null,turnoSolicitado:turno ?? null,
+          consulta:{modalidade,idade:cadastro.consulta?.idade ?? null,adultoSemIdade:cadastro.adultoSemIdade,mostradas:[],turno:turno ?? null,data:data?.data ?? null}});
+        return resposta;
+      }
       if (duvida) {
         if (duvida.assunto === "funcionamento") {
           const agenda = await consultarAulas(banco);

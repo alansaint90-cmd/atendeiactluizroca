@@ -6,7 +6,7 @@
 
 | Metrica | Total |
 |---------|-------|
-| Arquivos TS/TSX | 235 |
+| Arquivos TS/TSX | 236 |
 | Tabelas (Drizzle) | 38 |
 | Server Actions (arquivos) | 17 |
 | Rotas de API | 6 |
@@ -156,6 +156,7 @@ lib/
     calendario.ts
     escolha.ts
     experimental-unica.ts
+    grade-informativa.ts
     idade-informada.ts
     lembretes.ts
     nome-participante.ts

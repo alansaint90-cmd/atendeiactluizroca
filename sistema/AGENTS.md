@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Grade informativa completa — 20/11/2026
+
+Pedidos de todos os horários, horários da semana ou grade de uma modalidade mostram a grade real completa, agrupada por turma e dias com horas iguais, sem exigir cadastro e sem limite de duas opções. “Todos” após a oferta amplia a consulta da modalidade conhecida. Usar apenas data e turno explícitos na mensagem atual; liberar filtros antigos quando o pedido é geral. Preservar a idade real e o participante, cancelar somente a proposta ainda não confirmada e não alterar reservas reais. Mostrar a grade não cria opções numeradas de reserva nem confirma vagas. Manter alternativas contextuais para “outros horários”. Esta regra substitui o limite antigo de duas opções somente para pedidos informativos de grade completa. Respostas extensas continuam divididas em balões legíveis.
+
 ## Perguntas por outros dias — 20/11/2026
 
 “Só segunda?”, “não tem outro dia?” e “tem outro dia à tarde?” pedem alternativas, sem escolher ou restringir ao dia citado. Liberar o filtro de data antes de consultar turno, preservar modalidade, idade e período, excluir os dias das opções anteriores e não repetir turmas já apresentadas. Consultar datas reais, sem reservar automaticamente. “Só posso segunda” permanece uma restrição, e “segunda é bom” permanece escolha de dia. Preservar reservas confirmadas e usar a confirmação única ao final da coleta.

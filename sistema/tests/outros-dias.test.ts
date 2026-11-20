@@ -7,10 +7,14 @@ import { applyMigrations } from "../src/lib/db/migrate";
 import { agendaAulasDoAgente } from "../src/lib/aulas/agente";
 import { consultarAulas } from "../src/lib/aulas/repository";
 import { pediuOutrosDias } from "../src/lib/aulas/outros-dias";
+import { pedidoGradeInformativa } from "../src/lib/aulas/grade-informativa";
 
 test("pergunta sobre exclusividade do dia não é uma restrição ou confirmação",()=>{
   for(const texto of ["Só segunda?","É só segunda?","Não tem outro dia?","Tem outro dia à tarde?","Outras datas"]) assert.equal(pediuOutrosDias(texto),true,texto);
   for(const texto of ["Só posso segunda","Segunda é bom","Quero apenas segunda","Não quero outro dia","Sim"]) assert.equal(pediuOutrosDias(texto),false,texto);
+  for(const texto of ["Me passe os horários de Muay Thai","Todos","Quero saber o horário das aulas de Muay Thai da semana"]) assert.equal(pedidoGradeInformativa(texto),true,texto);
+  assert.equal(pedidoGradeInformativa("Outros horários de Muay Thai"),false);
+  assert.equal(pedidoGradeInformativa("Quero agendar Muay Thai"),false);
 });
 
 test("só segunda e outro dia à tarde consultam quarta sem repetir a segunda nem perder o contexto",async()=>{
@@ -43,5 +47,20 @@ test("só segunda e outro dia à tarde consultam quarta sem repetir a segunda ne
     assert.doesNotMatch(esgotadas!,/não temos turma|1\./);
     cache.set(chave,original);
     assert.match((await atender("Só posso segunda"))!,/23\/11\/2026 às 15:45/);
+    for(const pedido of ["Me passe os horários de Muay Thai","Todos","Quero saber o horário das aulas de Muay Thai da semana"]) {
+      const antigo=JSON.parse(original);
+      antigo.dataSolicitada="2026-11-26";antigo.turnoSolicitado="tarde";antigo.consulta.data="2026-11-26";antigo.consulta.turno="tarde";
+      cache.set(chave,JSON.stringify(antigo));
+      const grade=await atender(pedido),estado=JSON.parse(cache.get(chave)!);
+      assert.match(grade!,/Segunda e quarta: 15:45, 18:15 e 21:15/);
+      assert.match(grade!,/Terça e quinta: 06:00, 08:00, 09:00 e 20:15/);
+      assert.doesNotMatch(grade!,/26\/11|30\/11|não temos|para essa idade|nome completo/);
+      assert.equal(estado.dataSolicitada,null);assert.equal(estado.turnoSolicitado,null);
+      assert.equal(estado.adultoSemIdade,true);assert.equal(estado.consulta.modalidade,"Muay Thai");
+      assert.equal(estado.opcoes.length,0);assert.equal(estado.reserva,undefined);
+    }
+    const tarde=await atender("Todos os horários de Muay Thai à tarde");
+    assert.match(tarde!,/15:45/);assert.doesNotMatch(tarde!,/06:00|18:15|21:15/);
+    assert.equal((await consultarAulas(banco)).reservas.length,0);
   } finally {Date.now=clock;await cliente.close();}
 });
