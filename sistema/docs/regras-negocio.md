@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Perguntas por outros dias — 20/11/2026
+
+“Só segunda?”, “não tem outro dia?” e “tem outro dia à tarde?” pedem alternativas, sem escolher ou restringir ao dia citado. Liberar o filtro de data antes de consultar turno, preservar modalidade, idade e período, excluir os dias das opções anteriores e não repetir turmas já apresentadas. Consultar datas reais, sem reservar automaticamente. “Só posso segunda” permanece uma restrição, e “segunda é bom” permanece escolha de dia. Preservar reservas confirmadas e usar a confirmação única ao final da coleta.
+
 ## Funcionamento do espaço — 19/11/2026
 
 O CT abre no início da primeira aula de cada dia e fecha ao término da última, incluindo sua duração cadastrada. Horas exatas vêm de todas as aulas vivas da agenda, sem filtros de modalidade, idade, turno ou lotação herdados do interessado. Pergunta de abertura não altera a proposta de reserva. Sem dia informado, apresentar diretamente abertura e fechamento dos próximos sete dias, agrupando dias com horários iguais e listando dias sem aulas; não perguntar qual dia deseja. Incluir sábado e não inventar sexta-feira. Sem aulas no dia, não anunciar abertura. Essa regra não define horário humano no WhatsApp. Incorporar às instruções em tempo de execução sem editar migrações aplicadas nem alterar a grade.
