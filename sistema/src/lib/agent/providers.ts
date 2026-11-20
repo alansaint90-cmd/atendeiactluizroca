@@ -62,7 +62,7 @@ export async function generateReply(config: AgentConfig, history: Turn[], text: 
     .flatMap(item => item.content ?? []).filter(item => item.type === "output_text").map(item => item.text ?? "").join("\n").trim();
   if (!reply || reply.length > 6000) throw new ProviderError("openai_resposta_invalida");
   // Conferência antiga e alegação de reserva por texto livre exigem conclusão real no servidor.
-  if (config.agendaAulas && /(?:os dados (?:e (?:o )?hor[aá]rio )?est[aã]o corretos|confirma(?:r)?\s+(?:a |essa |sua |esta )?(?:reserva|aula|experimental)|confira\s+(?:os dados|sua aula experimental)|est[aá]\s+(?:agendada|marcada|reservada)|agendei\s+(?:a|sua))/iu.test(reply)) {
+  if (config.agendaAulas && /(?:os dados (?:e (?:o )?hor[aá]rio )?est[aã]o corretos|confirma(?:r)?\s+(?:a |essa |sua |esta )?(?:reserva|aula|experimental)|confira\s+(?:os dados|sua aula experimental)|(?:est[aá]|foi|ficou)\s+(?:agendad[ao]|marcad[ao]|reservad[ao]|confirmad[ao])|(?:agendei|marquei|reservei|confirmei)\s+(?:a|sua|seu))/iu.test(reply)) {
     return generateReply(config, history, text, request, true);
   }
   return reply;

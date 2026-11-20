@@ -18,6 +18,9 @@ test("não entrega conferência livre nem entra em loop se o modelo ignorar a fe
  let chamadas=0;
  await assert.rejects(generateReply(config,[],"Participante Exemplo",async()=>{chamadas++;return texto("Os dados estão corretos? Confirma a reserva?");}), (e:unknown)=>e instanceof ProviderError&&e.code==="openai_conferencia_sem_preparo");
  assert.equal(chamadas,2);
+ for(const resposta of ["Sua aula foi agendada!","Seu agendamento está confirmado.","Agendei sua aula para quinta."]) {
+  await assert.rejects(generateReply(config,[],"Participante Exemplo",async()=>texto(resposta)),/openai_conferencia_sem_preparo/);
+ }
  assert.equal(await generateReply(config,[],"Onde fica?",async()=>texto("Estamos em Buraquinho.")),"Estamos em Buraquinho.");
  assert.equal(await generateReply({...config,agendaAulas:false},[],"Dados?",async()=>texto("Os dados estão corretos?")),"Os dados estão corretos?");
 });
