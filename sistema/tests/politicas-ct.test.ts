@@ -64,6 +64,7 @@ test("perguntas da Giovanna usam a base confirmada e não desviam para a agenda 
    const resposta=await atender(pergunta);
    assert.match(resposta!,esperado,pergunta);
    assert.doesNotMatch(resposta!,/infelizmente|1\. Muay|1\. Jiu|19\/11\/2026|20\/11\/2026/,pergunta);
+   if(pergunta.startsWith("Eu tenho 15 anos")){await atender("Para mim");const menor=JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:faq")!);assert.equal(menor.consulta.idade,15,"para mim não apaga a idade real já informada");assert.equal(menor.adultoSemIdade,false);}
   }
   assert.equal((await consultarAulas(banco)).reservas.length,0);
   assert.equal(JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:faq")!).consulta.idade,40,"idade pessoal informada em uma dúvida continua lembrada");
