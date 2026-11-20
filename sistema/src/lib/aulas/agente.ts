@@ -102,7 +102,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       if (!acao && /(?:outr[oa]s? (?:datas?|dias?)|qualquer dia|sem prefer[eê]ncia de data)/iu.test(texto)) { cadastro.dataSolicitada = null; await salvar(cadastro); }
       if (!acao && dataAtual?.tipo === "data") { cadastro.dataSolicitada = dataAtual.data; await salvar(cadastro); }
       if (!acao && dataAtual?.tipo === "data" && cadastro.consulta && !cadastro.confirmada && !/remarc|cancel/iu.test(texto)) return atender(texto,{acao:"consultar",modalidade:cadastro.consulta.modalidade,idade:cadastro.consulta.idade,referenciaData:texto.slice(0,160),maisOpcoes:pediuAlternativas});
-      if (!acao && cadastro.dataAlternativa && /^(?:sim|quero(?: sim)?|pode ser)[.!\s]*$/iu.test(texto.trim())) {
+      if (!acao && cadastro.dataAlternativa && !cadastro.assuntoInformativo && /^(?:sim|quero(?: sim)?|pode ser)[.!\s]*$/iu.test(texto.trim())) {
         cadastro={...cadastro,dataSolicitada:cadastro.dataAlternativa,consulta:cadastro.consulta ? {...cadastro.consulta,data:cadastro.dataAlternativa}:undefined,dataAlternativa:undefined};
         await salvar(cadastro);
         return cadastro.opcoes.length === 1 ? atender("1") : "Qual desses horários fica melhor pra você?";

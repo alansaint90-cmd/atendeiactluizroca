@@ -149,6 +149,7 @@ test("19/11 às 22h44: amanhã é sexta sem turma; sugere segunda real e só mud
   const estado=()=>JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:proxima")!);
   assert.equal(estado().dataSolicitada,"2026-11-20");assert.equal(estado().dataAlternativa,"2026-11-23");
   assert.match((await atender("Aluno Teste",{acao:"preparar",opcao:1,nome:"Aluno Teste",idade:null,adultoSemIdade:true,responsavel:""}))!,/não é/);
+  await atender("A experimental é gratuita?");await atender("sim");assert.equal(estado().dataSolicitada,"2026-11-20","sim após uma dúvida não aceita silenciosamente uma data antiga");
   await atender("1");assert.equal(estado().dataSolicitada,"2026-11-23");assert.equal(estado().dataAlternativa,undefined);
   assert.equal((await consultarAulas(banco)).reservas.length,0);
  }finally{Date.now=clock;await cliente.close();}
