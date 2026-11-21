@@ -410,7 +410,7 @@ function analyzeFile(file) {
   if (rel === "src/lib/agent/providers.ts" && !content.includes("perguntaInformativaCt(text)")) {
     findings.push({level:"error",id:"faq-sem-ferramenta-agenda",file:rel,line:1,msg:"Não oferecer ferramenta de horários a perguntas informativas desconhecidas."});
   }
-  if (rel === "src/lib/agent/processor.ts" && !content.includes("aceiteConsulta(")) {
+  if (rel === "src/lib/agent/processor.ts" && (!content.includes("aceiteConsulta(") || !content.includes("contextualizarGradeDia("))) {
     findings.push({level:"error",id:"aceite-consulta-dia-ct",file:rel,line:1,msg:"Vincular o sim de consulta à pergunta anterior, sem reaproveitar data ou modalidade antigas."});
   }
   if (rel === "src/lib/agent/providers.ts" && !content.includes("sinalizar_falha_atendimento")) {

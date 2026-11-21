@@ -6,6 +6,18 @@ import type Redis from "ioredis";
 import {applyMigrations} from "../src/lib/db/migrate";
 import {agendaAulasDoAgente} from "../src/lib/aulas/agente";
 import {consultarAulas} from "../src/lib/aulas/repository";
+import {contextualizarGradeDia} from "../src/lib/aulas/aceite-consulta";
+import {processMessage,type DeliveryState,type ProcessingPort} from "../src/lib/agent/processor";
+import type {AgentConfig} from "../src/lib/agent/config";
+
+test("contexto do dia vem do pedido do cliente, sem restaurar modalidade negada ou de outro participante",()=>{
+ const pergunta="Tem aula na quinta?";
+ assert.match(contextualizarGradeDia(pergunta,[{role:"user",content:"Quero Muay Thai"},{role:"assistant",content:"Temos Jiu-Jitsu"}]),/Muay Thai$/);
+ assert.equal(contextualizarGradeDia(pergunta,[{role:"user",content:"Quero Muay Thai"},{role:"user",content:"Não quero Muay Thai"}]),pergunta);
+ assert.equal(contextualizarGradeDia(pergunta,[{role:"user",content:"Quero Muay Thai"},{role:"user",content:"Agora é para mim"}]),pergunta);
+ assert.equal(contextualizarGradeDia(pergunta,[{role:"user",content:"Quem é o professor de Jiu-Jitsu?"}]),pergunta);
+ assert.equal(contextualizarGradeDia("Tem Taekwondo quinta?",[{role:"user",content:"Quero Muay Thai"}]),"Tem Taekwondo quinta?");
+});
 
 test("pergunta sobre quinta preserva Muay Thai e ignora turno e alternativas antigos",async()=>{
  const clock=Date.now;Date.now=()=>Date.parse("2026-11-20T21:39:00-03:00");
@@ -37,6 +49,14 @@ test("pergunta sobre quinta preserva Muay Thai e ignora turno e alternativas ant
   cache.set(chave,JSON.stringify(original));
   const tarde=await atender("Tem aula na quinta à tarde?");
   assert.match(tarde!,/Não há horários de Muay Thai/);assert.doesNotMatch(tarde!,/segunda|Jiu-Jitsu|Taekwondo|1\./);
+  cache.set(chave,JSON.stringify({...original,modalidadePreferida:null,modalidadePendente:undefined,consulta:{...original.consulta,modalidade:null}}));
+  let estado:DeliveryState|null=null;const enviadas:string[]=[];
+  const config:AgentConfig={AI_ENABLED:"true",AI_SYSTEM_PROMPT:"Atenda o aluno do CT.",OPENAI_API_KEY:"teste",OPENAI_MODEL:"modelo",EVOLUTION_API_KEY:"teste",EVOLUTION_API_URL:"https://example.invalid",EVOLUTION_INSTANCE_NAME:"ctluizroca",REDIS_URL:"redis://localhost:6379",agendaAulas:true};
+  const port:ProcessingPort={read:async()=>estado,write:async s=>{estado=s;},history:async()=>[{role:"user",content:"Quero Muay Thai"},{role:"assistant",content:"Muay Thai e Jiu-Jitsu na segunda-feira"}],complete:async s=>{estado=s;},enabled:async()=>true,aulaExperimental:atender,generate:async()=>{throw new Error("A pergunta deve ser resolvida pelo servidor");},send:async(_c,_n,t)=>{enviadas.push(t);return `teste-${enviadas.length}`;}};
+  assert.equal(await processMessage({identity:"quinta-cache-antigo",conversation:"grade-quinta",number:"5571000000001",text:"Tem aula na quinta?",timestamp:Date.now()/1000},config,port),"enviada");
+  assert.match(enviadas.join("\n"),/Muay Thai.*Quinta: 06:00, 08:00, 09:00 e 20:15/s);
+  assert.doesNotMatch(enviadas.join("\n"),/Jiu-Jitsu|segunda|30\/11/);
+  assert.equal(JSON.parse(cache.get(chave)!).modalidadePreferida,"Muay Thai");
   assert.equal(JSON.stringify(await consultarAulas(banco)),antes,"informação não altera grade ou reservas");
  } finally {Date.now=clock;await cliente.close();}
 });

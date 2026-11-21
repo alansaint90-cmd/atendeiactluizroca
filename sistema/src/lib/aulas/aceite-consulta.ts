@@ -1,5 +1,7 @@
 import { interpretarDataCt } from "./calendario";
-import { modalidadeMencionada } from "./objetivo";
+import { modalidadeMencionada, intencaoModalidade } from "./objetivo";
+import { identificarParticipante } from "./participante";
+import { responderDuvidaCt, perguntaInformativaCt } from "../ct/duvidas";
 import type { Turn } from "../agent/providers";
 
 export function perguntaGradeDia(texto: string) {
@@ -20,4 +22,20 @@ export function aceiteConsulta(texto: string, historico: Turn[]) {
   const anterior=pergunta ? modalidadeMencionada(pergunta) : null, oferecida=modalidadeMencionada(ultima.content);
   if (anterior && oferecida && anterior !== oferecida) return null;
   return pergunta && (interpretarDataCt(pergunta)?.tipo === "data" || modalidadeMencionada(pergunta)) ? pergunta : null;
+}
+
+/** Repara contexto perdido por versões antigas usando somente pedidos do cliente. */
+export function contextualizarGradeDia(texto:string,historico:Turn[]) {
+  if(!perguntaGradeDia(texto) || modalidadeMencionada(texto))return texto;
+  for(const turno of [...historico].reverse()) {
+    if(turno.role!=="user")continue;
+    if(responderDuvidaCt(turno.content) || perguntaInformativaCt(turno.content)) {
+      if(identificarParticipante(turno.content))return texto;
+      continue;
+    }
+    const interesse=intencaoModalidade(turno.content);
+    if(interesse.modalidade)return `${texto}\n${interesse.modalidade}`;
+    if(interesse.negadas.length || identificarParticipante(turno.content))return texto;
+  }
+  return texto;
 }
