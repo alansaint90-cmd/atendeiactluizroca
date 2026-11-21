@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Sábado sem aulas regulares — 20/11/2026
+
+O CT não tem aulas programadas aos sábados; o dia fica livre para aulas extras, eventos e atendimentos na academia. Essa orientação substitui as antigas ofertas recorrentes de Taekwondo às 9h/10h, sem excluir ou editar cadastros e reservas existentes. A resposta é geral, sem herdar modalidade ou turno da conversa e sem a expressão “nesse recorte”. Recorrências antigas de sábado não geram novas ofertas automáticas; a preparação revalida as ocorrências e rejeita opções antigas do cache. Extras só aparecem com cadastro real em data específica e futura. Grade e funcionamento usam a mesma política. Perguntar por sábado não reserva nem reutiliza uma proposta pendente de outro dia; preserva participante, idade e reservas reais. Testes usam banco descartável e nenhum envio real. Implantação manual.
+
 ## Pergunta por dia mantém modalidade — 20/11/2026
 
 Na conversa sobre uma modalidade, “tem aula na quinta?”, “tem aula nas quintas-feiras?” ou “e na quinta?” consultam a grade informativa do dia mantendo a modalidade, sem herdar o turno anterior. Mostrar todos os horários reais desse dia, sem trocar modalidade, oferecer segunda-feira ou aplicar o limite de duas opções de reserva. Usar turno apenas se explícito na pergunta atual; sem horário naquele turno, explicar o recorte sem oferecer outra modalidade ou data automaticamente. Preservar idade e reservas existentes. Pergunta informativa não seleciona aula nem grava reserva. Escolha de dia (“quinta é bom”) e pedido explícito de agendar continuam no fluxo de reserva. Se a regra antiga já apagou a modalidade do cache, recuperar o último pedido explícito do cliente no histórico, ignorando sugestões da IA e perguntas informativas; não atravessar negação ou troca de participante. Esta regra substitui a orientação antiga de limpar a modalidade em toda pergunta genérica sobre dia.

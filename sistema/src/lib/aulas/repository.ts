@@ -1,4 +1,5 @@
 import { systemUserId } from "../db/bootstrap";
+import { aulaProgramadaCt, RESPOSTA_SABADO_CT } from "../ct/sabado";
 import { nomeIdentidade,temExperimentalConfirmada,avisoExperimentalUnica } from "./experimental-unica";
 import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
@@ -46,6 +47,7 @@ export async function reservarAula(banco: BancoSql, entrada: unknown, autor: str
       if (existente.aulaId !== r.aulaId || (existente.inicio && Date.parse(existente.inicio) !== Date.parse(inicio)) || existente.autor !== autor || existente.status !== "confirmada" || existente.nome !== r.aluno.nome || existente.idade !== r.aluno.idade || existente.telefone !== r.aluno.telefone || existente.responsavel !== r.aluno.responsavel) throw new ErroDeNegocio("Solicitação já utilizada. Atualize a agenda.");
       return { id: existente.id };
     }
+    if (autor === systemUserId && !aulaProgramadaCt(aula)) throw new ErroDeNegocio(RESPOSTA_SABADO_CT);
     const anteriores=linhas<{nome:string;telefone:string;status:string}>(await tx.execute(sql`SELECT nome,telefone,status FROM atendeia_aulas_reservas WHERE telefone=${r.aluno.telefone} AND status='confirmada' AND ${vivos(aulasReservas)}`));
     if (temExperimentalConfirmada(r.aluno,anteriores)) throw new ErroDeNegocio(avisoExperimentalUnica);
     const reservas = linhas<ReservaAula>(await tx.execute(sql`SELECT ${camposReserva} FROM atendeia_aulas_reservas WHERE aula_id=${r.aulaId} AND ${vivos(aulasReservas)}`));

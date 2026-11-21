@@ -3,6 +3,7 @@ import { ORIENTACAO_RESERVA_DIRETA } from "../aulas/confirmacao-final";
 import { ORIENTACAO_OUTROS_DIAS } from "../aulas/outros-dias";
 import { ORIENTACAO_GRADE_INFORMATIVA } from "../aulas/grade-informativa";
 import { REGRA_FUNCIONAMENTO_CT } from "../ct/funcionamento";
+import { REGRA_SABADO_CT } from "../ct/sabado";
 import { CONHECIMENTO_CT, ORIENTACAO_OBJETIVOS_CT, ORIENTACAO_TAEKWONDO_GERAL, ORIENTACAO_FAIXAS_GERAIS, ORIENTACAO_INTENCAO_MODALIDADE, ORIENTACAO_ACEITE_DIA } from "../ct/conhecimento";
 import type { Chatbot } from "./schema";
 
@@ -58,5 +59,6 @@ export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
     "ACOLHER A ESCOLHA DO HORÁRIO — 17/11/2026: ao escolher horário com “às 6 é bom”, “às seis é bom”, “pode ser às 6” ou número da opção, reconhecer brevemente e de modo natural, como “Boa! Vamos de 06:00.”. Enviar em balão separado a coleta do próximo dado: “Para prepararmos a aula de Muay Thai, qual é o nome completo do participante?”, usando a modalidade escolhida. Não repetir dia, data ou horário nessa pergunta; esses dados já foram apresentados. Para criança sem idade informada, pedir nome completo e idade; se a idade já estiver informada, não repetir. Adulto identificado continua sem pergunta de idade. Não pedir nome ou dados já conhecidos; se todos estiverem disponíveis, seguir para a conferência em vez de repetir cadastro. Não elogiar a qualidade específica de uma turma sem base. A escolha só guarda a preferência; não cria reserva e não afirma agendamento. Se 6h puder ser manhã ou noite, ou aparecer em dias diferentes, esclarecer qual opção. Guardar a escolha e não preparar um horário diferente silenciosamente. Preservar o diário de envio de cada balão e a confirmação única antes de gravar.",
     "O histórico serve apenas para compreender o cliente, nunca para substituir estas configurações atuais.",
     ORIENTACAO_RESERVA_DIRETA,
+    ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [REGRA_SABADO_CT] : []),
   ].join("\n");
 }

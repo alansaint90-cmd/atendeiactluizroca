@@ -2,6 +2,7 @@ import { dataLocalCt, interpretarDataCt, formatarOcorrenciaCt } from "./calendar
 import { modalidadeMencionada } from "./objetivo";
 import { interpretarTurno, correspondeTurno } from "./turno";
 import type { Aula } from "./schema";
+import { aulaProgramadaCt, RESPOSTA_SABADO_CT } from "../ct/sabado";
 
 export function pedidoGradeInformativa(texto: string) {
   const t=texto.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase().trim();
@@ -23,6 +24,7 @@ export function apresentarGradeInformativa(aulas:Aula[],texto:string,modalidade:
   const dia=data ? new Date(`${data.data}T12:00:00Z`).getUTCDay() : null;
   const turmas=new Map<string,Map<number,string[]>>(),pontuais:string[]=[];
   for(const aula of aulas) {
+    if(!aulaProgramadaCt(aula)) continue;
     if(modalidade && aula.modalidade!==modalidade || !correspondeTurno(aula.inicio,turno ?? null)) continue;
     if(aula.diaSemana==null) {
       if(Date.parse(aula.inicio)>Date.now() && (!data || dataLocalCt(Date.parse(aula.inicio))===data.data)) pontuais.push(`${aula.modalidade} · ${aula.turma}: ${formatarOcorrenciaCt(aula.inicio)}.`);
@@ -41,7 +43,7 @@ export function apresentarGradeInformativa(aulas:Aula[],texto:string,modalidade:
     }
     return `${turma}\n${[...grupos].map(([horas,d])=>`${lista(d).replace(/^./u,c=>c.toLocaleUpperCase("pt-BR"))}: ${horas}.`).join("\n")}`;
   });
-  if(!blocos.length && !pontuais.length)return `Não há horários${modalidade ? ` de ${modalidade}` : ""} cadastrados nesse recorte. Posso te mostrar a grade de outros dias ou períodos.`;
+  if(!blocos.length && !pontuais.length)return dia===6 ? RESPOSTA_SABADO_CT : `Não há horários${modalidade ? ` de ${modalidade}` : ""} cadastrados nesse recorte. Posso te mostrar a grade de outros dias ou períodos.`;
   const semanal=data && !/\b(?:hoje|amanh[aã]|pr[oó]xim[ao]|que vem)\b|\d{1,2}[/-]\d{1,2}|\d{4}-\d{2}-\d{2}/iu.test(texto);
   return `Aqui estão os horários${modalidade ? ` de ${modalidade}` : ""}${data ? semanal ? "" : ` para ${data.data.slice(8,10)}/${data.data.slice(5,7)}/${data.data.slice(0,4)}` : " da semana"}:\n\n${[...blocos,...pontuais].join("\n\n")}`;
 }

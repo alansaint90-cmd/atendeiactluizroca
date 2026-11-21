@@ -1,5 +1,6 @@
 import { dataLocalCt, interpretarDataCt, rotuloDataCt, somarDiasCt } from "../aulas/calendario";
 import type { Aula } from "../aulas/schema";
+import { aulaProgramadaCt, consultaSabadoCt, RESPOSTA_SABADO_CT } from "./sabado";
 
 export const REGRA_FUNCIONAMENTO_CT = "FUNCIONAMENTO DO CT — atualizado em 20/11/2026: o CT abre no início da primeira aula do dia e fecha ao término da última aula, considerando a duração cadastrada. Na pergunta geral, apresentar diretamente abertura e fechamento por dia, agrupando dias com horas iguais, sem perguntar qual dia deseja e sem introdução sobre os próximos sete dias. Consulte a grade real de todas as modalidades e idades, sem reutilizar filtros da conversa. Sexta e domingo abrimos eventualmente em aulas extras. Informar horas exatas nesses dias somente quando a aula extra estiver cadastrada, sem inventar funcionamento fixo. Nos demais dias sem aula cadastrada, não anunciar abertura. Essa regra é do espaço físico, não define horário de atendimento humano no WhatsApp.";
 export const RESPOSTA_FUNCIONAMENTO_CT = "O CT abre na primeira aula e fecha quando termina a última do dia.";
@@ -18,7 +19,7 @@ export function continuacaoFuncionamentoCt(texto: string) {
 
 function limitesNoDia(aulas: Aula[], data: string) {
   const diaSemana = new Date(`${data}T12:00:00Z`).getUTCDay();
-  const intervalos = aulas.filter(a => a.diaSemana == null ? dataLocalCt(Date.parse(a.inicio)) === data : a.diaSemana === diaSemana)
+  const intervalos = aulas.filter(a => aulaProgramadaCt(a) && (a.diaSemana == null ? dataLocalCt(Date.parse(a.inicio)) === data : a.diaSemana === diaSemana))
     .map(a => {
       const hora = new Date(a.inicio).toLocaleTimeString("pt-BR", { timeZone: "America/Bahia", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
       const inicio = Date.parse(`${data}T${hora}:00-03:00`);
@@ -42,7 +43,8 @@ function funcionamentoSemanalCt(aulas: Aula[]) {
     grupos.set(faixa,[...grupos.get(faixa) ?? [], nomesDias[dia]]);
   }
   const linhas = [...grupos].map(([faixa,dias]) => `${listarDias(dias)}: ${faixa}.`);
-  const semGrade=semAulas.filter(d=>d!=="Sexta" && d!=="Domingo"), extras=semAulas.filter(d=>d==="Sexta" || d==="Domingo");
+  const semGrade=semAulas.filter(d=>d!=="Sexta" && d!=="Domingo" && d!=="Sábado"), extras=semAulas.filter(d=>d==="Sexta" || d==="Domingo");
+  if (semAulas.includes("Sábado")) linhas.push(RESPOSTA_SABADO_CT);
   if (semGrade.length) linhas.push(`${listarDias(semGrade)}: sem aulas cadastradas.`);
   if (extras.length) linhas.push(`${listarDias(extras)}: abrimos eventualmente em aulas extras.`);
   return `${RESPOSTA_FUNCIONAMENTO_CT}\n\n${linhas.join("\n")}`;
@@ -54,6 +56,7 @@ export function funcionamentoNoDiaCt(aulas: Aula[], texto: string) {
   if (!data) return funcionamentoSemanalCt(aulas);
   if (data.tipo !== "data") return "Qual data você quer consultar para saber quando o CT abre e fecha?";
   const limites = limitesNoDia(aulas,data.data);
+  if (!limites && consultaSabadoCt(texto)) return RESPOSTA_SABADO_CT;
   if (!limites) return `Em ${rotuloDataCt(data.data)}, não há aulas cadastradas. O CT funciona nos dias com aulas. Quer consultar outro dia?`;
   return `Em ${rotuloDataCt(data.data)}, o CT abre às ${horaCt(limites.inicio)} e fecha às ${horaCt(limites.fim)}${dataLocalCt(limites.fim) !== data.data ? " do dia seguinte" : ""}. O fechamento é ao término da última aula.`;
 }

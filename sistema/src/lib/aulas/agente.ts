@@ -1,4 +1,5 @@
 import { responderDuvidaCt } from "../ct/duvidas";
+import { aulaProgramadaCt, consultaSabadoCt, RESPOSTA_SABADO_CT } from "../ct/sabado";
 import { confirmacaoFinalAula } from "./confirmacao-final";
 import { pediuOutrosDias } from "./outros-dias";
 import { pedidoGradeInformativa, apresentarGradeInformativa } from "./grade-informativa";
@@ -48,6 +49,16 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         throw new FalhaAtendimento("contexto_idade_contraditorio");
       }
       const duvida=responderDuvidaCt(texto,cadastro.assuntoInformativo,cadastro.consulta?.modalidade);
+      if (!acao && !duvida && consultaSabadoCt(texto)) {
+        const agenda=await consultarAulas(banco);
+        const data=interpretarDataCt(texto);
+        await salvar({...cadastro,assuntoInformativo:undefined,opcoes:[],opcaoEscolhida:undefined,
+          ...(!cadastro.confirmada ? {reserva:undefined}:{}),dataAlternativa:undefined,
+          dataSolicitada:data?.tipo==="data" ? data.data : null,turnoSolicitado:null,
+          ...(cadastro.consulta ? {consulta:{...cadastro.consulta,mostradas:[],turno:null,data:data?.tipo==="data" ? data.data : null}} : {})});
+        // Sábado é política do CT inteiro; não reaproveitar modalidade/turno antigos.
+        return apresentarGradeInformativa(agenda.aulas,texto,null);
+      }
       const modalidadeGrade=modalidadeMencionada(texto) ?? cadastro.modalidadePreferida ?? cadastro.modalidadePendente ?? cadastro.consulta?.modalidade ?? null;
       const gradeDoDia=Boolean(modalidadeGrade) && perguntaGradeDia(texto);
       if (!duvida && !acao && (pedidoGradeInformativa(texto) || gradeDoDia) && (!/^(?:todos|todas)[!.\s]*$/iu.test(texto.trim()) || cadastro.consulta && !cadastro.assuntoInformativo)) {
@@ -269,6 +280,10 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       const adultoSemIdade = idadeAluno === null && (cadastro.adultoSemIdade || cadastro.participante !== "crianca" && dados.adultoSemIdade === true);
       const aluno = alunoSchema.parse({ nome: limparNomeParticipante(dados.nome), idade: idadeAluno, adultoSemIdade, telefone: `+${numero}`, responsavel: adultoSemIdade ? "" : dados.responsavel });
       const agenda = await consultarAulas(banco), aula = agenda.aulas.find(a => a.id === opcao.aulaId);
+      if (aula && !aulaProgramadaCt(aula)) {
+        await salvar({...cadastro,opcoes:[],opcaoEscolhida:undefined,reserva:undefined});
+        return RESPOSTA_SABADO_CT;
+      }
       if (!aula || !ocorrenciasAula(aula).includes(opcao.inicio) || !elegivelParaExperimental(aula, aluno.idade, aluno.adultoSemIdade)) return "Esta opção precisa de conferência da equipe para a idade informada. Nenhuma reserva foi feita.";
       const anterior=cadastro.reserva;
       const reserva=anterior && anterior.aulaId===opcao.aulaId && anterior.inicio===opcao.inicio && JSON.stringify(anterior.aluno)===JSON.stringify(aluno)
