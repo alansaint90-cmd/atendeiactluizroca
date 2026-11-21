@@ -65,7 +65,7 @@ test("perguntas da Giovanna usam a base confirmada e não desviam para a agenda 
   assert.match(semana,/Segunda e quarta: das 08:00 às 22:15/);
   assert.match(semana,/Terça e quinta: das 06:00 às 22:15/);
   assert.match(semana,/Sábado: das 09:00 às 11:00/);
-  assert.match(semana,/Sexta e domingo: sem aulas cadastradas/);
+  assert.match(semana,/Sexta e domingo: abrimos eventualmente em aulas extras/);
   assert.doesNotMatch(semana,/Qual dia/);
   assert.match((await atender("Qual horário de funcionamento hoje?"))!,/06:00.*22:15/);
   const contextoDepois=JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:faq")!);

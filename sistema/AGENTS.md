@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Texto do funcionamento e aulas extras — 20/11/2026
+
+A resposta de funcionamento não exibe “Na agenda dos próximos 7 dias”. Sexta e domingo abrem eventualmente em aulas extras; na ausência de grade nesses dias, usar “Sexta e domingo: abrimos eventualmente em aulas extras.”. Informar horas exatas apenas quando a aula extra estiver cadastrada, sem criar horários fixos nem alterar a grade. Nos demais dias, manter os horários calculados da agenda real.
+
 ## Reserva direta e horários relativos ao início — 20/11/2026
 
 Após escolha explícita de um horário real e dados obrigatórios completos, a ferramenta preparar_reserva_aula grava imediatamente e retorna somente a confirmação final em balões. Não enviar conferência nem perguntar se os dados estão corretos, sim ou confirmo. Nome sem escolha não autoriza reservar. Manter idade real, responsável, elegibilidade, experimental única, transação e auditoria, idempotência e diário de entrega. Nunca afirmar reserva por texto livre ou por histórico; o provedor bloqueia conferências antigas e confirmações inventadas. Injetar o relógio atual America/Bahia em cada geração e validar que a ocorrência é futura também ao concluir, inclusive quando vier de cache antigo. Aula de quinta às 6h não pode ser reservada quinta às 21h. Follow-up 1 é relativo ao início menos duas horas; follow-up 2, início mais duas horas, sem somar duração. Configurações antigas de aulas do CT recebem essa referência ao serem lidas, preservando textos, etapas desligadas, demais chips e futuras edições explícitas; filas pendentes são reconciliadas com auditoria, sem reativar cancelados/incertos ou enviar lembrete atrasado. Sem alterar migrações já aplicadas ou reservas existentes. Esta regra prevalece sobre toda orientação antiga de conferência e de uma hora antes/depois do término. Implantação manual.

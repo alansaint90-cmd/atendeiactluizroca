@@ -1,7 +1,7 @@
 import { dataLocalCt, interpretarDataCt, rotuloDataCt, somarDiasCt } from "../aulas/calendario";
 import type { Aula } from "../aulas/schema";
 
-export const REGRA_FUNCIONAMENTO_CT = "FUNCIONAMENTO DO CT — atualizado em 20/11/2026: o CT abre no início da primeira aula do dia e fecha ao término da última aula, considerando a duração cadastrada. Na pergunta geral, apresentar diretamente abertura e fechamento por dia na agenda dos próximos sete dias, agrupando dias com horas iguais, sem perguntar qual dia deseja. Consulte a grade real de todas as modalidades e idades, sem reutilizar filtros da conversa. Sem aula cadastrada no dia, não anunciar abertura. Não inventar horário de sexta-feira ou qualquer outro dia sem aulas. Essa regra é do espaço físico, não define horário de atendimento humano no WhatsApp.";
+export const REGRA_FUNCIONAMENTO_CT = "FUNCIONAMENTO DO CT — atualizado em 20/11/2026: o CT abre no início da primeira aula do dia e fecha ao término da última aula, considerando a duração cadastrada. Na pergunta geral, apresentar diretamente abertura e fechamento por dia, agrupando dias com horas iguais, sem perguntar qual dia deseja e sem introdução sobre os próximos sete dias. Consulte a grade real de todas as modalidades e idades, sem reutilizar filtros da conversa. Sexta e domingo abrimos eventualmente em aulas extras. Informar horas exatas nesses dias somente quando a aula extra estiver cadastrada, sem inventar funcionamento fixo. Nos demais dias sem aula cadastrada, não anunciar abertura. Essa regra é do espaço físico, não define horário de atendimento humano no WhatsApp.";
 export const RESPOSTA_FUNCIONAMENTO_CT = "O CT abre na primeira aula e fecha quando termina a última do dia.";
 
 export function perguntaFuncionamentoCt(texto: string) {
@@ -42,8 +42,10 @@ function funcionamentoSemanalCt(aulas: Aula[]) {
     grupos.set(faixa,[...grupos.get(faixa) ?? [], nomesDias[dia]]);
   }
   const linhas = [...grupos].map(([faixa,dias]) => `${listarDias(dias)}: ${faixa}.`);
-  if (semAulas.length) linhas.push(`${listarDias(semAulas)}: sem aulas cadastradas.`);
-  return `${RESPOSTA_FUNCIONAMENTO_CT}\n\nNa agenda dos próximos 7 dias:\n${linhas.join("\n")}`;
+  const semGrade=semAulas.filter(d=>d!=="Sexta" && d!=="Domingo"), extras=semAulas.filter(d=>d==="Sexta" || d==="Domingo");
+  if (semGrade.length) linhas.push(`${listarDias(semGrade)}: sem aulas cadastradas.`);
+  if (extras.length) linhas.push(`${listarDias(extras)}: abrimos eventualmente em aulas extras.`);
+  return `${RESPOSTA_FUNCIONAMENTO_CT}\n\n${linhas.join("\n")}`;
 }
 
 /** Limites do espaço físico: não aplica idade, modalidade, turno ou lotação. */
