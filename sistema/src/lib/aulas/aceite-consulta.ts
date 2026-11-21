@@ -4,9 +4,11 @@ import type { Turn } from "../agent/providers";
 
 export function perguntaGradeDia(texto: string) {
   const t=texto.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
-  return !modalidadeMencionada(texto) && interpretarDataCt(texto)?.tipo === "data"
-    && /\b(?:tem|temos|ha|oferecem|funcionam|quais|acontecem)\b/.test(t)
-    && /\b(?:aulas?|turmas?|treinos?|modalidades?)\b/.test(t);
+  const curta=/^(?:e\s+)?(?:(?:tem|ha)\s+)?(?:(?:na|no|nas|nos|as|aos)\s+)?(?:domingos?|segundas?|tercas?|quartas?|quintas?|sextas?|sabados?)(?:[ -]feiras?)?\s*\?$/.test(t.trim());
+  return interpretarDataCt(texto)?.tipo === "data"
+    && !/\b(?:agendar|agende|marcar|reservar|reserve|confirmar|remarcar|reagendar)\b/.test(t)
+    && (curta || /\b(?:tem|temos|ha|oferecem|funcionam|quais|acontecem|mostre|mostrar)\b/.test(t)
+    && (/\b(?:aulas?|turmas?|treinos?|modalidades?|horarios?)\b/.test(t) || Boolean(modalidadeMencionada(texto))));
 }
 export function aceiteConsulta(texto: string, historico: Turn[]) {
   if (!/^(?:sim|quero(?: sim)?|pode(?: sim)?|pode consultar|pode ver|claro)[.!\s]*$/iu.test(texto.trim())) return null;

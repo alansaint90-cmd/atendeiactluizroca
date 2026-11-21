@@ -404,6 +404,9 @@ function analyzeFile(file) {
   if (rel === "src/lib/aulas/agente.ts" && !content.includes("responderDuvidaCt(")) {
     findings.push({level:"error",id:"faq-antes-agenda-ct",file:rel,line:1,msg:"Responder dúvidas informativas antes de consultar ou alterar a agenda."});
   }
+  if (rel === "src/lib/aulas/agente.ts" && (!content.includes("const gradeDoDia") || !content.includes("modalidadeGrade") || !content.includes("apresentarGradeInformativa("))) {
+    findings.push({level:"error",id:"grade-dia-contexto",file:rel,line:1,msg:"Pergunta de grade por dia mantém modalidade e usa apenas o turno explícito da pergunta, sem alternativas automáticas."});
+  }
   if (rel === "src/lib/agent/providers.ts" && !content.includes("perguntaInformativaCt(text)")) {
     findings.push({level:"error",id:"faq-sem-ferramenta-agenda",file:rel,line:1,msg:"Não oferecer ferramenta de horários a perguntas informativas desconhecidas."});
   }

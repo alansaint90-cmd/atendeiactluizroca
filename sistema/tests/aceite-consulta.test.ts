@@ -27,7 +27,7 @@ test("reconhece dias no plural sem confundir segunda opção com segunda-feira",
  assert.equal(perguntaGradeDia("Segunda é bom"),false);
 });
 
-test("sim consulta o sábado real e abandona filtro antigo de quinta/Muay sem gravar reserva",async()=>{
+test("aceite de consulta preserva modalidade da conversa; troca explícita e conversa nova usam o sábado real",async()=>{
  const clock=Date.now;Date.now=()=>agora;
  const cliente=new PGlite(),banco=drizzle(cliente),cache=new Map<string,string>();
  const redis={get:async(k:string)=>cache.get(k)??null,eval:async(_s:string,_n:number,_l:string,k:string,_t:string,v:string)=>{cache.set(k,v);return 1;}} as unknown as Redis;
@@ -44,12 +44,12 @@ test("sim consulta o sábado real e abandona filtro antigo de quinta/Muay sem gr
   const port:ProcessingPort={read:async()=>state,write:async s=>{state=s;},history:async()=>history,complete:async s=>{state=s;},enabled:async()=>true,aulaExperimental:atender("sabado"),generate:async()=>{throw new Error("Não usar IA para reinterpretar esse aceite");},send:async(_c,_n,t)=>{textos.push(t);return "id-teste";}};
   const mensagem=incomingMessage({instance:"teste",event:"messages.upsert",data:{key:{id:"aceite",fromMe:false,remoteJid:"5571000000001@s.whatsapp.net"},messageTimestamp:Math.floor(agora/1000),message:{conversation:"Sim"}}},"teste",agora)!;
   assert.equal(await processMessage(mensagem,config,port),"enviada");
-  assert.match(textos.join("\n"),/Taekwondo.*sábado, 21\/11\/2026/s);
-  assert.doesNotMatch(textos.join("\n"),/Muay Thai|quinta|19\/11|agendada|Os dados estão corretos/);
+  assert.match(textos.join("\n"),/Não há horários de Muay Thai/);
+  assert.doesNotMatch(textos.join("\n"),/Taekwondo|quinta|19\/11|agendada|Os dados estão corretos/);
   assert.equal(estado("sabado").dataSolicitada,"2026-11-21");
-  assert.ok(estado("sabado").opcoes.length>0);
-  assert.ok(estado("sabado").opcoes.every((o:{modalidade:string;inicio:string})=>o.modalidade==="Taekwondo"&&dataLocalCt(Date.parse(o.inicio))==="2026-11-21"));
-  assert.match((await atender("sabado")("Sim"))!,/nome completo/);
+  assert.equal(estado("sabado").opcoes.length,0);
+  assert.equal(estado("sabado").consulta.modalidade,"Muay Thai");
+  assert.equal(await atender("sabado")("Sim"),null);
   assert.equal((await consultarAulas(banco)).reservas.length,0);
   const explicito=await atender("sabado")("Quero Muay Thai aos sábados");
   assert.match(explicito!,/sábado/);assert.match(explicito!,/Muay Thai/);assert.doesNotMatch(explicito!,/quinta/);assert.equal(estado("sabado").dataSolicitada,"2026-11-21");assert.equal(estado("sabado").dataAlternativa,"2026-11-23");assert.ok(estado("sabado").opcoes.every((o:{modalidade:string;inicio:string})=>o.modalidade==="Muay Thai"&&dataLocalCt(Date.parse(o.inicio))==="2026-11-23"));
@@ -58,7 +58,9 @@ test("sim consulta o sábado real e abandona filtro antigo de quinta/Muay sem gr
   assert.doesNotMatch((await atender("novo")("Sim"))!,/Muay|quinta|agendada/);
   assert.match((await atender("novo")("Para mim"))!,/Taekwondo.*sábado/s);
   cache.set("atendeia:{evolution}:cadastro-aula:infantil",JSON.stringify({participante:"crianca",modalidadePreferida:"Muay Thai",opcoes:[],consulta:{modalidade:"Muay Thai",idade:8,mostradas:[]}}));
-  assert.match((await atender("infantil")("Vocês têm aulas aos sábados?"))!,/Taekwondo.*10:00/s);
+  assert.match((await atender("infantil")("Vocês têm aulas aos sábados?"))!,/Não há horários de Muay Thai/);
+  assert.equal(estado("infantil").consulta.idade,8);
+  assert.match((await atender("infantil")("Tem aulas de Taekwondo aos sábados?"))!,/Taekwondo.*10:00/s);
   assert.equal(JSON.stringify((await consultarAulas(banco)).aulas),grade);
   assert.equal((await consultarAulas(banco)).reservas.length,0);
  }finally{Date.now=clock;await cliente.close();}

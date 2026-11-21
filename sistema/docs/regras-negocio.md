@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Pergunta por dia mantém modalidade — 20/11/2026
+
+Na conversa sobre uma modalidade, “tem aula na quinta?”, “tem aula nas quintas-feiras?” ou “e na quinta?” consultam a grade informativa do dia mantendo a modalidade, sem herdar o turno anterior. Mostrar todos os horários reais desse dia, sem trocar modalidade, oferecer segunda-feira ou aplicar o limite de duas opções de reserva. Usar turno apenas se explícito na pergunta atual; sem horário naquele turno, explicar o recorte sem oferecer outra modalidade ou data automaticamente. Preservar idade e reservas existentes. Pergunta informativa não seleciona aula nem grava reserva. Escolha de dia (“quinta é bom”) e pedido explícito de agendar continuam no fluxo de reserva. Esta regra substitui a orientação antiga de limpar a modalidade em toda pergunta genérica sobre dia.
+
 ## Texto do funcionamento e aulas extras — 20/11/2026
 
 A resposta de funcionamento não exibe “Na agenda dos próximos 7 dias”. Sexta e domingo abrem eventualmente em aulas extras; na ausência de grade nesses dias, usar “Sexta e domingo: abrimos eventualmente em aulas extras.”. Informar horas exatas apenas quando a aula extra estiver cadastrada, sem criar horários fixos nem alterar a grade. Nos demais dias, manter os horários calculados da agenda real.

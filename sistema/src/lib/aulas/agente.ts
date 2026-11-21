@@ -48,8 +48,10 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         throw new FalhaAtendimento("contexto_idade_contraditorio");
       }
       const duvida=responderDuvidaCt(texto,cadastro.assuntoInformativo,cadastro.consulta?.modalidade);
-      if (!duvida && !acao && pedidoGradeInformativa(texto) && (!/^(?:todos|todas)[!.\s]*$/iu.test(texto.trim()) || cadastro.consulta && !cadastro.assuntoInformativo)) {
-        const modalidade=modalidadeMencionada(texto) ?? cadastro.consulta?.modalidade ?? cadastro.modalidadePreferida ?? null;
+      const modalidadeGrade=modalidadeMencionada(texto) ?? cadastro.modalidadePreferida ?? cadastro.modalidadePendente ?? cadastro.consulta?.modalidade ?? null;
+      const gradeDoDia=Boolean(modalidadeGrade) && perguntaGradeDia(texto);
+      if (!duvida && !acao && (pedidoGradeInformativa(texto) || gradeDoDia) && (!/^(?:todos|todas)[!.\s]*$/iu.test(texto.trim()) || cadastro.consulta && !cadastro.assuntoInformativo)) {
+        const modalidade=modalidadeGrade;
         const turno=interpretarTurno(texto),data=interpretarDataCt(texto);
         const agenda=await consultarAulas(banco);
         const resposta=apresentarGradeInformativa(agenda.aulas,texto,modalidade);
