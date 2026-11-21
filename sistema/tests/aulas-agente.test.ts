@@ -92,7 +92,7 @@ test("grade semanal, reserva real, confirmação e memória do agendamento", asy
     const retomada = await conversar("oi"); assert.match(retomada!, /dúvida sobre seu agendamento/);
     assert.equal((await reservasDoContato(banco,"5571888888888")).length,0,"outro telefone não vê a reserva");
     assert.match(await contextoDoContato(banco,"ctluizroca","5571999999999"),/RESERVAS CONFIRMADAS NO BANCO/);
-    const aula = agenda.aulas.find(a => a.modalidade==="Taekwondo" && a.diaSemana===6)!;
+    const aula = agenda.aulas.find(a => a.modalidade==="Taekwondo" && a.turma==="Geral" && a.diaSemana===2)!;
     const datas=ocorrenciasAula(aula); assert.ok(datas.length>=2);
     const aluno={nome:"Outro Aluno",idade:25,telefone:"+5571888888888",responsavel:""};
     for(const [i,inicio] of datas.slice(0,2).entries()) await reservarAula(banco,{aulaId:aula.id,inicio,aluno:{...aluno,nome:i ? "Segundo Aluno" : aluno.nome},solicitacaoId:randomUUID(),conferido:true},systemUserId);
