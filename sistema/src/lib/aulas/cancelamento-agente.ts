@@ -19,23 +19,23 @@ export function pedidoAlteracaoExperimental(texto:string) {
  return null;
 }
 interface Estado { fase:'selecionar'|'motivo'|'alternativa'|'remarcar'|'encerrado'; reservas:ReservaContato[]; alvo?:ReservaContato; pedido:'cancelar'|'remarcar'; cancelarDireto?:boolean }
-type Resultado = {resposta:string;cancelada?:string}|{remarcar:ReservaContato}|null;
+type Resultado = {resposta:string;cancelada?:string;manter?:boolean}|{remarcar:ReservaContato}|null;
 const fim="Pronto, cancelei sua aula experimental. Obrigada por avisar! Até mais.";
 
 export function cancelamentoDoAgente(banco:BancoSql,client:Redis,token:string,conversa:string,numero:string) {
  const chave=`atendeia:{evolution}:cancelamento-aula:${conversa}`,telefone=`+${numero}`;
  const salvar=async(e:Estado)=>assertResult(await client.eval(owned+"redis.call('SET', KEYS[2], ARGV[2], 'EX', 604800); return 1",2,agentKeys.lock,chave,token,JSON.stringify(e)));
- return async (texto:string):Promise<Resultado>=>{
+ return async (texto:string,remarcacaoAtiva?:string):Promise<Resultado>=>{
   const pedido=pedidoAlteracaoExperimental(texto),raw=await client.get(chave);let e:Estado|null=raw?JSON.parse(raw) as Estado:null;
   if(e && (!Array.isArray(e.reservas) || !['selecionar','motivo','alternativa','remarcar','encerrado'].includes(e.fase)))e=null;
   const t=normalizar(texto);
-  if(!pedido && (!e || e.fase==='encerrado' || e.fase==='remarcar'))return null;
+  const recusa=/\b(?:nao quero(?: mais)?|nao tenho (?:mais )?interesse|nao vou (?:querer|mais)|prefiro cancelar|so cancel[ae]|pode cancelar|cancele mesmo|desisti|desisto|deixa pra la)\b/.test(t) || /^(?:nao(?:,? (?:obrigad[oa]|quero|precisa))?|cancel[ae]|cancelar)[.!\s]*$/.test(t);
+  if(!pedido && (!e || e.fase==='encerrado' || e.fase==='remarcar' && (!recusa || remarcacaoAtiva!==e.alvo?.id)))return null;
   if(!pedido && /nao (?:quero |precisa |e para )?cancelar|manter (?:a |o )?(?:aula|reserva|agendamento)|deixa como esta/.test(t)) {
-   await salvar({...e!,fase:'encerrado'});return {resposta:"Combinado, mantemos seu agendamento. Até a aula!"};
+   await salvar({...e!,fase:'encerrado'});return {resposta:"Combinado, mantemos seu agendamento. Até a aula!",manter:true};
   }
   if(!pedido && responderDuvidaCt(texto))return null;
-  const recusa=/\b(?:nao quero(?: mais)?|nao tenho (?:mais )?interesse|nao vou (?:querer|mais)|prefiro cancelar|so cancel[ae]|pode cancelar|cancele mesmo|desisti|desisto|deixa pra la)\b/.test(t) || /^(?:nao(?:,? (?:obrigad[oa]|quero|precisa))?|cancel[ae]|cancelar)[.!\s]*$/.test(t);
-  if(!e || e.fase==='encerrado' || e.fase==='remarcar') {
+  if(!e || e.fase==='encerrado' || e.fase==='remarcar' && pedido) {
    const reservas=await reservasFuturasDoContato(banco,telefone);
    if(!reservas.length)return {resposta:"Não há uma aula experimental futura agendada neste número. Se a reserva foi feita em outro número, me avise para a equipe conferir."};
    e={fase:reservas.length>1?'selecionar':'motivo',reservas,alvo:reservas.length===1?reservas[0]:undefined,pedido:pedido!,cancelarDireto:recusa};

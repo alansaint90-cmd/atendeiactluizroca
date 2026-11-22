@@ -75,6 +75,14 @@ test('cancelamento acolhe, seleciona a reserva certa e encerra só os lembretes 
   assert.equal(await status(r1.id),'cancelada');assert.equal(await statusJob(outraPendencia),'cancelado');
   const novas=await reservasFuturasDoContato(banco,telefone);assert.equal(novas.length,1);assert.equal(novas[0].nome,aluno.nome);
   assert.notEqual(novas[0].id,r1.id);
+  await atender('remarcar')('Não, obrigado');
+  assert.equal(await status(novas[0].id),'confirmada','despedida após sucesso não cancela a nova reserva');
+  await atender('manter')('Quero cancelar');await atender('manter')('Sim');
+  assert.match((await atender('manter')('Não quero cancelar'))!,/mantemos/);
+  assert.equal(JSON.parse(cache.get('atendeia:{evolution}:cadastro-aula:manter')!).remarcacao,undefined,'manter original encerra a proposta de remarcação');
+  await atender('desistir')('Quero cancelar');await atender('desistir')('Sim');
+  assert.match((await atender('desistir')('Não quero mais'))!,/cancelei/,'recusa durante busca de nova data cancela o original');
+  assert.equal(await status(novas[0].id),'cancelada');
   await cancelarReservaDoContato(banco,novas[0],telefone);await cancelarReservaDoContato(banco,novas[0],telefone);
   const logs=await cliente.query("SELECT id FROM atendeia_audit_logs WHERE action='aula_cancelada_pelo_contato' AND entity_id=$1",[novas[0].id]);assert.equal(logs.rows.length,1,'retry não duplica auditoria');
   const cancelarSemInsistir=agendaAulasDoAgente(banco,redis,'lease','outro','5571000000002',async()=>true);

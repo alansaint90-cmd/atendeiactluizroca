@@ -41,8 +41,10 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
     const raw = await client.get(chave); let cadastro: Cadastro = raw ? JSON.parse(raw) as Cadastro : { opcoes: [] };
     try {
       if (!acao) {
-        const alteracao=await alterar(texto);
+        const alteracao=await alterar(texto,cadastro.remarcacao?.id);
         if (alteracao && 'resposta' in alteracao) {
+          if(alteracao.manter && cadastro.remarcacao)
+            await salvar({opcoes:[],confirmada:cadastro.remarcacao.id,participante:cadastro.participante,adultoSemIdade:cadastro.adultoSemIdade,modalidadePreferida:cadastro.modalidadePreferida});
           if(alteracao.cancelada && (!cadastro.confirmada || cadastro.confirmada===alteracao.cancelada))
             await salvar({opcoes:[],participante:cadastro.participante,adultoSemIdade:cadastro.adultoSemIdade,modalidadePreferida:cadastro.modalidadePreferida});
           return alteracao.resposta;
@@ -190,7 +192,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         if (cadastro.dataSolicitada && dataLocalCt(Date.parse(cadastro.reserva.inicio)) !== cadastro.dataSolicitada) return `Você pediu ${rotuloDataCt(cadastro.dataSolicitada)}, mas a conferência anterior era de outra data. Precisamos consultar e conferir a data correta antes de reservar.`;
         if (!correspondeTurno(cadastro.reserva.inicio, cadastro.turnoSolicitado)) return "Precisamos consultar e conferir uma aula no turno que você pediu antes de confirmar.";
         const resultado = await reservarAula(banco, cadastro.reserva, systemUserId,cadastro.remarcacao);
-        await salvar({ ...cadastro, confirmada: resultado.id, aguardandoAjuda: false });
+        await salvar({ ...cadastro, remarcacao:undefined,confirmada: resultado.id, aguardandoAjuda: false });
         const a = cadastro.opcoes.find(o => o.aulaId === cadastro.reserva?.aulaId && o.inicio === cadastro.reserva?.inicio);
         return confirmacaoFinalAula(a?.modalidade ?? "artes marciais",cadastro.reserva.inicio);
       }
