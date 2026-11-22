@@ -22,6 +22,8 @@ test('idade com e sem anos, por extenso e número isolado somente na etapa de id
  assert.match(contextualizarRespostaIdade('23',[{role:'assistant',content:'Qual é a idade de quem vai fazer a aula?'}]),/23 anos/);
  assert.equal(contextualizarRespostaIdade('1',[{role:'assistant',content:'Qual opção você prefere?'}]),'1');
  assert.equal(contextualizarRespostaIdade('23/11',[{role:'assistant',content:'Qual é a idade?'}]),'23/11');
+ for(const texto of ['Se for para o meu filho de 9?','Se for pro meu filho de nove','Se for para meu filho que tem nove','É para minha filha de nove anos','minha neta com nove','para criança de 9'])assert.equal(idadeParticipanteInformada(texto)?.[1],'9',texto);
+ for(const texto of ['Se meu filho tivesse 9 anos','Se eu tivesse 9 anos','Se for para meu filho de 9/11','Meu filho de 9 meses','Ele tem de 9 a 10 anos','Meu filho de 9 e minha filha de 7'])assert.equal(idadeParticipanteInformada(texto),null,texto);
 });
 
 test('datas numéricas, por extenso e relativas usam o calendário atual sem confundir idade',()=>{
@@ -51,6 +53,14 @@ test('resposta curta de idade avança sem repetir pergunta nem perder Muay Thai;
    assert.ok(estado.opcoes.length);
   }
   const estado=JSON.parse(cache.get(chave)!);
+  for(const texto of ['Se for para o meu filho de 9?','Se for para meu filho de nove anos','É para minha filha de nove']) {
+   cache.set(chave,JSON.stringify({...estado,participante:'adulto',participanteProprio:true,modalidadePendente:undefined,modalidadePreferida:'Muay Thai',consulta:{...estado.consulta,idade:23}}));
+   const resposta=await atender(texto),infantil=JSON.parse(cache.get(chave)!);
+   assert.equal(infantil.consulta.idade,9,texto);assert.equal(infantil.participante,'crianca');
+   assert.match(resposta!,/Taekwondo/,texto);assert.doesNotMatch(resposta!,/Qual.*idade|nome completo/iu,texto);
+   assert.ok(infantil.opcoes.length);assert.equal(infantil.adultoSemIdade,false);
+  }
+  cache.set(chave,JSON.stringify(estado));
   await atender('1');assert.equal(JSON.parse(cache.get(chave)!).consulta.idade,23,'opção não sobrescreve idade');
   assert.equal((await consultarAulas(banco)).reservas.length,0);
   cache.set(chave,JSON.stringify({...estado,opcoes:[],opcaoEscolhida:undefined}));

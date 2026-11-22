@@ -7,9 +7,12 @@ export function idadesNegadas(texto: string) {
 /** Número isolado só é idade quando a etapa anterior aguardava esse dado. */
 export function idadeParticipanteInformada(texto: string, aguardandoIdade=false): [string,string]|null {
   const t=numerosDaFala(texto),negadas=idadesNegadas(texto);
-  if(/^(?:qual|quais|quanto|quantos|a partir|posso|se\b)|\b(?:ou|idade minima|por exemplo|se (?:eu|ele|ela))\b/.test(t))return null;
+  const dependente=/\b(?:filh[oa]|net[oa]|crianca|bebe)\s+(?:(?:que\s+)?tem\s+|de\s+|com\s+)\d{1,3}\b/.test(t);
+  const paraDependente=dependente && /^(?:e\s+)?se for\s+(?:para|pra|pro|pros|pras)\b/.test(t);
+  if(/^(?:qual|quais|quanto|quantos|a partir|posso)|\b(?:ou|idade minima|por exemplo|se (?:eu|ele|ela))\b|\d+\s*(?:a|ate|-)\s*\d+\s*(?:anos?|aninhos)\b/.test(t) || /^(?:e\s+)?se\b/.test(t) && !paraDependente)return null;
   const candidatos:RegExpMatchArray[]=[...t.matchAll(/\b(\d{1,3})\s*(?:anos?|aninhos)\b/g),
-    ...t.matchAll(/\b(?:tenho|tem|possuo|possui|estou com|esta com|idade(?: e| de|:)?)[ :]+(\d{1,3})(?![.,/:]\d)(?=\s*(?:anos?\b|aninhos\b|[,;.!?]|e\b|$))/g)];
+    ...t.matchAll(/\b(?:tenho|tem|possuo|possui|estou com|esta com|idade(?: e| de|:)?)[ :]+(\d{1,3})(?![.,/:]\d)(?=\s*(?:anos?\b|aninhos\b|[,;.!?]|e\b|$))/g),
+    ...t.matchAll(/\b(?:filh[oa]|net[oa]|crianca|bebe)\s+(?:de|com)\s+(\d{1,3})(?![.,/:]\d)(?=\s*(?:anos?\b|aninhos\b|[,;.!?]|e\b|$))/g)];
   if(aguardandoIdade) {
     const isolada=t.match(/^(?:(?:ele|ela|eu)\s+)?(?:de\s+)?(\d{1,3})\s*(?:a|anos?|aninhos)?[.!\s]*$/);
     if(isolada)candidatos.push(isolada);
@@ -32,4 +35,4 @@ export function contextualizarRespostaIdade(texto:string,historico:{role:string;
   return idade ? `${texto}\nIdade informada: ${idade[1]} anos.` : texto;
 }
 
-export const ORIENTACAO_LINGUAGEM_CT="IDADE E DATA — 22/11/2026: aceite variações naturais como 'eu tenho 23', 'tenho vinte e três', '23 anos' e, após perguntar a idade, '23' ou 'vinte e três'. Idade explícita da própria pessoa identifica o participante; não repetir a pergunta nem perder a modalidade conhecida. Número isolado só é idade na etapa que aguardava esse dado, nunca número de opção, horário ou dia do mês. Preserve a idade real e a exigência de responsável para menores; não invente idade ou nascimento. Datas podem vir por extenso, com barras, pontos, hífens ou expressões relativas; use o calendário atual do CT e consulte a data real antes de reservar. Dia sem mês usa o mês atual; se já passou ou não existe, peça esclarecimento. Idades ou datas ambíguas pedem esclarecimento, sem adivinhar nem criar reserva.";
+export const ORIENTACAO_LINGUAGEM_CT="IDADE E DATA — 22/11/2026: aceite variações naturais como 'eu tenho 23', 'tenho vinte e três', '23 anos' e, após perguntar a idade, '23' ou 'vinte e três'. “Se for para meu filho de nove” já informa participante e idade, sem repetir essa pergunta. Idade explícita da própria pessoa identifica o participante; não repetir a pergunta nem perder a modalidade conhecida. Número isolado só é idade na etapa que aguardava esse dado, nunca número de opção, horário ou dia do mês. Preserve a idade real e a exigência de responsável para menores; não invente idade ou nascimento. Datas podem vir por extenso, com barras, pontos, hífens ou expressões relativas; use o calendário atual do CT e consulte a data real antes de reservar. Dia sem mês usa o mês atual; se já passou ou não existe, peça esclarecimento. Idades ou datas ambíguas pedem esclarecimento, sem adivinhar nem criar reserva.";

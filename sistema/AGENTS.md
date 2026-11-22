@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Idade junto do dependente — 22/11/2026
+
+“Se for para meu filho de 9?”, “é para minha filha de nove” e “meu filho de nove anos” já informam participante e idade. Nesse contexto, “se for para” propõe trocar o participante; não descartar a idade como hipótese genérica. Guardar a idade ao trocar de adulto para criança, limpar apenas a proposta anterior e não repetir a pergunta. Sem modalidade explícita para a criança menor de 12, seguir a prioridade de Taekwondo pela grade real; manter responsável obrigatório e restrições das outras modalidades. Hipóteses como “se meu filho tivesse nove”, faixas ambíguas, meses e datas não fornecem idade. Preservar reservas reais e dados de produção; implantação manual.
+
 ## Variações de idade e data — 22/11/2026
 
 Aceitar idade explícita com ou sem “anos” e por extenso: “eu tenho 23”, “tenho vinte e três”, “ele tem oito”, “23 anos”. Número isolado ou por extenso só vira idade quando a agenda aguardava idade, sem reserva/opções e sem idade conhecida. Não interpretar opção, hora, dinheiro, quantidade de filhos ou data como idade. Preservar modalidade e etapa ao esclarecer a idade; autoidentificação reconhece o participante, mantendo a idade real e responsável para menores. Ambiguidade, hipótese, negação e valores fora de 0–120 não fornecem uma idade válida. Calendário aceita datas com barras, pontos, hífens, ano curto, mês por extenso, “dia 23” no mês atual e “daqui a dois dias”. Dia passado/inexistente pede esclarecimento; manter calendário dinâmico, validação futura, grade real e ausência de reserva até a escolha. Sem migrações, dados de produção ou implantação automática.

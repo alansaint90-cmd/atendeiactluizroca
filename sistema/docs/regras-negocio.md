@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Dependente com idade na mesma frase — 22/11/2026
+
+Reconhecer “meu filho de 9”, “minha filha de nove” e “se for para meu filho de nove anos” sem exigir repetição nem a palavra “anos”. A indicação do dependente troca o participante e já guarda sua idade, descartando somente a proposta anterior. Sem escolha explícita de modalidade para menor de 12, consultar Taekwondo pela prioridade infantil; não liberar Muay Thai ou outra turma incompatível. Manter responsável para menores e reservas reais existentes. Diferenciar proposta concreta de participante de hipóteses como “se meu filho tivesse nove”, datas, meses e duas idades possíveis. Testes usam banco descartável, sem envios reais; sem migração ou implantação automática.
+
 ## Respostas naturais de idade e data — 22/11/2026
 
 “Eu tenho 23” identifica idade e participante sem exigir “anos”. Aceitar números por extenso, “ele tem oito” e “23 anos”. Resposta “23” só é idade na etapa que aguardava idade, sem opções nem reserva; números de opções, horários, datas, valores e contagens não preenchem esse campo. Preservar modalidade e dados conhecidos, idade real e responsável para menores. Hipóteses, negações e mais de uma idade possível não são escolhas automáticas. Datas aceitam barras/pontos/hífens, ano curto, mês por extenso, “dia 23” no mês atual e intervalos como “daqui a dois dias”, sempre pelo relógio do CT. Datas inválidas, passadas ou ambíguas pedem esclarecimento. Consultar grade e validar futuro ao reservar; não alterar cadastros ou migrações. Testes usam banco descartável, sem contatos reais. Publicação no repositório; implantação manual.
