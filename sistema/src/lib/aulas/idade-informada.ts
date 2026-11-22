@@ -8,13 +8,13 @@ export function idadesNegadas(texto: string) {
 export function idadeParticipanteInformada(texto: string, aguardandoIdade=false): [string,string]|null {
   const t=numerosDaFala(texto),negadas=idadesNegadas(texto);
   if(/^(?:qual|quais|quanto|quantos|a partir|posso|se\b)|\b(?:ou|idade minima|por exemplo|se (?:eu|ele|ela))\b/.test(t))return null;
-  const candidatos=[...t.matchAll(/\b(\d{1,3})\s*(?:anos?|aninhos)\b/g),
+  const candidatos:RegExpMatchArray[]=[...t.matchAll(/\b(\d{1,3})\s*(?:anos?|aninhos)\b/g),
     ...t.matchAll(/\b(?:tenho|tem|possuo|possui|estou com|esta com|idade(?: e| de|:)?)[ :]+(\d{1,3})(?![.,/:]\d)(?=\s*(?:anos?\b|aninhos\b|[,;.!?]|e\b|$))/g)];
   if(aguardandoIdade) {
     const isolada=t.match(/^(?:(?:ele|ela|eu)\s+)?(?:de\s+)?(\d{1,3})\s*(?:a|anos?|aninhos)?[.!\s]*$/);
     if(isolada)candidatos.push(isolada);
   }
-  const valores=[...new Set(candidatos.filter(m=>!/\d[/:.,-]\s*$/.test(t.slice(0,m.index)) && !negadas.includes(Number(m[1])))
+  const valores=[...new Set(candidatos.filter(m=>!(/^\d/.test(m[0]) && /\d[/:.,-]\s*$/.test(t.slice(0,m.index))) && !negadas.includes(Number(m[1])))
     .map(m=>Number(m[1])).filter(n=>n>=0 && n<=120))];
   return valores.length===1?[texto,String(valores[0])]:null;
 }
@@ -27,7 +27,7 @@ export function idadePropriaInformada(texto:string) {
 export function contextualizarRespostaIdade(texto:string,historico:{role:string;content:string}[]) {
   if(idadeParticipanteInformada(texto))return texto;
   const pergunta=historico.findLast(t=>t.role==='assistant')?.content ?? '';
-  if(!/qual\s+(?:(?:é|e|a)\s+)*idade|quantos\s+anos|nome.{0,35}\be\s+(?:a\s+)?idade/iu.test(pergunta))return texto;
+  if(!/(?:qual|que)\s+(?:(?:é|e|a|sua)\s+)*idade|quantos\s+anos|nome.{0,35}\be\s+(?:a\s+)?idade/iu.test(pergunta))return texto;
   const idade=idadeParticipanteInformada(texto,true);
   return idade ? `${texto}\nIdade informada: ${idade[1]} anos.` : texto;
 }
