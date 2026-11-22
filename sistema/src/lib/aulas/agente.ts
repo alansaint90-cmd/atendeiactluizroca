@@ -9,7 +9,7 @@ import { funcionamentoNoDiaCt } from "../ct/funcionamento";
 import type { AssuntoCt } from "../ct/politicas";
 import { perguntaGradeDia } from "./aceite-consulta";
 import { limparNomeParticipante } from "./nome-participante";
-import { idadeParticipanteInformada, idadesNegadas } from "./idade-informada";
+import { idadeParticipanteInformada, idadePropriaInformada, idadesNegadas } from "./idade-informada";
 import { FalhaAtendimento } from "../agent/falha-humana";
 import { escolherHorario } from "./escolha";
 import { aberturaHorarios, semHorarios } from "./apresentacao";
@@ -60,8 +60,9 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         }
       }
       const objetivoAtual = identificarObjetivo(texto);
-      const idadeInformada = idadeParticipanteInformada(texto);
-      const detectado = identificarParticipante(texto);
+      const esperandoIdade=!cadastro.confirmada && !cadastro.reserva && !cadastro.opcoes.length && cadastro.consulta?.idade==null && cadastro.participante==='crianca';
+      const idadeInformada = idadeParticipanteInformada(texto,esperandoIdade);
+      const detectado = identificarParticipante(texto) ?? (idadeInformada && !cadastro.confirmada && !cadastro.reserva && !cadastro.opcoes.length ? Number(idadeInformada[1])<18 ? "crianca" : "adulto" : null);
       const participanteAtual = detectado === "adulto" && !idadeInformada && cadastro.participanteProprio && cadastro.consulta?.idade != null && cadastro.consulta.idade < 18 && !/sou (?:o |a )?(?:pai|mae|mãe)/iu.test(texto) ? "crianca" : detectado;
       if (!acao && cadastro.consulta?.idade != null && idadesNegadas(texto).includes(cadastro.consulta.idade)) {
         const adulto = participanteAtual === "adulto" || cadastro.participante === "adulto";
@@ -101,8 +102,8 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
           await salvar({...cadastro, assuntoInformativo:"funcionamento"});
           return funcionamentoNoDiaCt(agenda.aulas, texto);
         }
-        const idade=idadeParticipanteInformada(texto), pessoal=/\b(?:eu\s+)?tenho\s+\d+\s*anos\b/iu.test(texto) || /\bmeu filh[oa]\b/iu.test(texto);
-        await salvar({...cadastro,assuntoInformativo:duvida.assunto,...(idade && pessoal ? {participanteProprio:/\b(?:eu\s+)?tenho\s+\d+\s*anos\b/iu.test(texto),participante:Number(idade[1])<18?"crianca" as const:"adulto" as const,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? null,idade:Number(idade[1]),mostradas:[]},opcoes:[],opcaoEscolhida:undefined,reserva:undefined}: {})});
+        const idade=idadeInformada, pessoal=idadePropriaInformada(texto) || /\bmeu filh[oa]\b/iu.test(texto);
+        await salvar({...cadastro,assuntoInformativo:duvida.assunto,...(idade && pessoal ? {participanteProprio:idadePropriaInformada(texto),participante:Number(idade[1])<18?"crianca" as const:"adulto" as const,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? null,idade:Number(idade[1]),mostradas:[]},opcoes:[],opcaoEscolhida:undefined,reserva:undefined}: {})});
         return duvida.resposta;
       }
       const outrosDias=pediuOutrosDias(texto);
@@ -126,9 +127,9 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       }
       if (!acao && participanteAtual && (participanteAtual !== cadastro.participante || cadastro.confirmada && /pra mim|para mim|tamb[eé]m/iu.test(texto))) {
         const novoTurno = interpretarTurno(texto), novaData = interpretarDataCt(texto);
-        const primeiraIdentificacao = cadastro.participante === undefined && !cadastro.confirmada && !cadastro.reserva;
+        const primeiraIdentificacao = cadastro.participante === undefined && !cadastro.confirmada && !cadastro.reserva || esperandoIdade && Boolean(idadeInformada);
         cadastro = {
-          participanteProprio:primeiraIdentificacao ? cadastro.participanteProprio : /\b(?:pra|para) mim\b|\bsou eu\b/iu.test(texto),
+          participanteProprio:idadeInformada && idadePropriaInformada(texto) ? true : primeiraIdentificacao ? cadastro.participanteProprio : /\b(?:pra|para) mim\b|\bsou eu\b/iu.test(texto),
           consultaPorDia:primeiraIdentificacao ? cadastro.consultaPorDia : false,
           objetivo:objetivoAtual ?? (primeiraIdentificacao ? cadastro.objetivo : undefined),
           modalidadePreferida:primeiraIdentificacao ? cadastro.modalidadePreferida : interesse.modalidade ?? cadastro.modalidadePendente,
@@ -141,7 +142,10 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         };
         await salvar(cadastro);
       }
-      if (!acao && idadeInformada && cadastro.adultoSemIdade) { cadastro.adultoSemIdade=false; await salvar(cadastro); }
+      if (!acao && idadeInformada) {
+        cadastro={...cadastro,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? cadastro.modalidadePreferida ?? null,idade:Number(idadeInformada[1]),mostradas:cadastro.consulta?.mostradas ?? []}};
+        await salvar(cadastro);
+      }
       if (!acao && perguntaGradeDia(texto)) {
         cadastro={...cadastro,consultaPorDia:true,modalidadePreferida:null,modalidadePendente:undefined,objetivo:undefined,
           opcoes:[],opcaoEscolhida:undefined,reserva:undefined,consulta:{modalidade:null,idade:cadastro.consulta?.idade ?? null,mostradas:[]}};
