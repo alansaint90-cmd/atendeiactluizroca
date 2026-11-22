@@ -2,12 +2,14 @@ import { dataLocalCt } from "../aulas/calendario";
 import { perguntaFuncionamentoCt, continuacaoFuncionamentoCt, RESPOSTA_FUNCIONAMENTO_CT } from "./funcionamento";
 import {modalidadeMencionada} from "../aulas/objetivo";
 import {respostasCt,type AssuntoCt} from "./politicas";
+import { perguntaMuayInfantil, respostaMuayInfantil } from "./muay-infantil";
 
 /** Dúvida informativa é respondida antes de qualquer consulta ou mutação da agenda. */
 export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeContexto?:string|null):{assunto:AssuntoCt;resposta:string}|null {
  const t=texto.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase().replace(/\s+/g," ").trim();
  const modalidade=modalidadeMencionada(texto);
  const responder=(assunto:keyof typeof respostasCt)=>({assunto,resposta:respostasCt[assunto]});
+ if(perguntaMuayInfantil(texto))return {assunto:'idadeMuay',resposta:respostaMuayInfantil()};
  const agenda=/\b(?:agendar|agende|marcar|reserve|reservar|remarcar|reagendar|horarios?|vagas?)\b/.test(t);
  if (perguntaFuncionamentoCt(texto) || anterior === "funcionamento" && continuacaoFuncionamentoCt(texto)) return {assunto:"funcionamento",resposta:RESPOSTA_FUNCIONAMENTO_CT};
  if (/\b(?:professor|professora|instrutor|quem ensina|quem da (?:a |as )?aulas)\b/.test(t) || /quem.*responsavel.*(?:ct|centro)/.test(t)
@@ -48,6 +50,7 @@ export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeCon
 }
 
 export function perguntaInformativaCt(texto:string) {
+ if(perguntaMuayInfantil(texto))return true;
  if (perguntaFuncionamentoCt(texto)) return true;
  const t=texto.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
  return /\b(?:professores?|professoras?|instrutor|documentos?|equipamentos?|gratuita|gratuito|desconto|mensalidade|feminina|matricula|anuidade|kimono|quimono|beneficios?|reposicao|vestiario|banheiro|chuveiro|estacionamento|multa|contrato|fidelidade|taxa)\b|idade minima|partir de quantos|quantos.*alunos/.test(t)

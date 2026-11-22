@@ -1,5 +1,9 @@
 # Atende Aí — CT Luiz Roca — instruções para agentes IA
 
+## Dúvida sobre Muay Thai infantil sem pausa — 22/11/2026
+
+“Não tem Muay Thai para ele?”, “não tem aula de Muay Thai para ele?” e “tem Muay Thai infantil?” são perguntas, não recusas nem falhas técnicas. Responder usando a idade conhecida, preservando participante, opções válidas e histórico; não reiniciar a recepção nem pausar a IA pela consulta. Muay regular desde 14; de 10 a 13 depende de confirmação da equipe. Aos nove ou outra idade sem confirmação, explicar que a equipe precisa avaliar se há treino adequado, sem inventar turma infantil, aprovação, vaga ou nova idade mínima. Consulta retorna essa orientação; preparação e SQL continuam bloqueando reserva automática de menor de 14. Pedido explícito de humano mantém encaminhamento e aviso autorizados; falhas técnicas reais preservam alertas e pausas. Não reativar conversas já assumidas pela equipe, não alterar grade, reservas ou migrações. Implantação manual.
+
 ## Idade junto do dependente — 22/11/2026
 
 “Se for para meu filho de 9?”, “é para minha filha de nove” e “meu filho de nove anos” já informam participante e idade. Nesse contexto, “se for para” propõe trocar o participante; não descartar a idade como hipótese genérica. Guardar a idade ao trocar de adulto para criança, limpar apenas a proposta anterior e não repetir a pergunta. Sem modalidade explícita para a criança menor de 12, seguir a prioridade de Taekwondo pela grade real; manter responsável obrigatório e restrições das outras modalidades. Hipóteses como “se meu filho tivesse nove”, faixas ambíguas, meses e datas não fornecem idade. Preservar reservas reais e dados de produção; implantação manual.

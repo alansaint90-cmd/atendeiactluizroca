@@ -6,6 +6,7 @@ import { REGRA_FUNCIONAMENTO_CT } from "../ct/funcionamento";
 import { REGRA_SABADO_CT } from "../ct/sabado";
 import { REGRA_CANCELAMENTO_CT } from "../aulas/orientacao-cancelamento";
 import { ORIENTACAO_LINGUAGEM_CT } from "../aulas/idade-informada";
+import { ORIENTACAO_MUAY_INFANTIL } from "../ct/muay-infantil";
 import { CONHECIMENTO_CT, ORIENTACAO_OBJETIVOS_CT, ORIENTACAO_TAEKWONDO_GERAL, ORIENTACAO_FAIXAS_GERAIS, ORIENTACAO_INTENCAO_MODALIDADE, ORIENTACAO_ACEITE_DIA } from "../ct/conhecimento";
 import type { Chatbot } from "./schema";
 
@@ -64,5 +65,6 @@ export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [REGRA_SABADO_CT] : []),
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [REGRA_CANCELAMENTO_CT] : []),
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [ORIENTACAO_LINGUAGEM_CT] : []),
+    ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [ORIENTACAO_MUAY_INFANTIL] : []),
   ].join("\n");
 }

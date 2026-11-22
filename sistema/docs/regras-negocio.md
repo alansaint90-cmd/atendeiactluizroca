@@ -1,5 +1,9 @@
 # Regras do protótipo
 
+## Consulta de Muay Thai infantil — 22/11/2026
+
+Perguntar “não tem Muay Thai para ele?” ou “tem Muay Thai infantil?” não gera falha nem pausa automática. A resposta usa a idade já conhecida e informa que a equipe precisa confirmar a possibilidade de treino adequado antes de agendar, sem inventar turma infantil ou garantir participação aos nove anos. Turmas regulares permanecem desde 14; atendimento adaptado de 10–13 depende da equipe. A consulta mantém histórico e opções anteriores, sem nova recepção ou repetição de idade. Não mudar a segurança da preparação ou da reserva SQL de menores. Transferência explícita continua usando o fluxo autorizado; falhas reais e conversas já pausadas não são ignoradas nem reativadas. Preservar grade e reservas. Testes simulam envio e banco descartável; publicação no repositório com implantação manual.
+
 ## Dependente com idade na mesma frase — 22/11/2026
 
 Reconhecer “meu filho de 9”, “minha filha de nove” e “se for para meu filho de nove anos” sem exigir repetição nem a palavra “anos”. A indicação do dependente troca o participante e já guarda sua idade, descartando somente a proposta anterior. Sem escolha explícita de modalidade para menor de 12, consultar Taekwondo pela prioridade infantil; não liberar Muay Thai ou outra turma incompatível. Manter responsável para menores e reservas reais existentes. Diferenciar proposta concreta de participante de hipóteses como “se meu filho tivesse nove”, datas, meses e duas idades possíveis. Testes usam banco descartável, sem envios reais; sem migração ou implantação automática.

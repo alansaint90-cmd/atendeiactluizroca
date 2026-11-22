@@ -1,4 +1,5 @@
 import { responderDuvidaCt } from "../ct/duvidas";
+import { perguntaMuayInfantil, respostaMuayInfantil } from "../ct/muay-infantil";
 import { cancelamentoDoAgente } from "./cancelamento-agente";
 import type { ReservaContato } from "./alteracao-reserva";
 import { aulaProgramadaCt, consultaSabadoCt, RESPOSTA_SABADO_CT } from "../ct/sabado";
@@ -70,6 +71,11 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
           objetivo:undefined,opcoes:[],opcaoEscolhida:undefined,reserva:undefined,turnoSolicitado:undefined,dataSolicitada:null,
           consulta:{modalidade:cadastro.modalidadePreferida ?? null,idade:idadeInformada ? Number(idadeInformada[1]) : null,mostradas:[]}});
         throw new FalhaAtendimento("contexto_idade_contraditorio");
+      }
+      const idadeMuay=idadeInformada ? Number(idadeInformada[1]) : cadastro.participante==='crianca' && participanteAtual!=='adulto' ? cadastro.consulta?.idade : null;
+      if(!acao && perguntaMuayInfantil(texto,idadeMuay)) {
+        await salvar({...cadastro,assuntoInformativo:'idadeMuay'});
+        return respostaMuayInfantil(idadeMuay);
       }
       const duvida=responderDuvidaCt(texto,cadastro.assuntoInformativo,cadastro.consulta?.modalidade);
       if (!acao && !duvida && consultaSabadoCt(texto)) {
@@ -249,7 +255,11 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         const recomendacao = recomendarObjetivo(objetivo, idade, cadastro.participante === "crianca");
         const preferida = modalidadeMencionada(texto) ?? cadastro.modalidadePreferida ?? null;
         const modalidade = preferida ?? (objetivo ? recomendacao?.modalidade ?? dados.modalidade : cadastro.consulta?.modalidade ?? dados.modalidade ?? null);
-        if (modalidade === "Muay Thai" && idade !== null && idade < 14) throw new FalhaAtendimento("muay_adaptado");
+        if (modalidade === "Muay Thai" && idade !== null && idade < 14) {
+          await salvar({...cadastro,assuntoInformativo:'idadeMuay',opcoes:[],opcaoEscolhida:undefined,
+            ...(!cadastro.confirmada ? {reserva:undefined}:{}),consulta:{...cadastro.consulta,modalidade,idade,mostradas:[]}});
+          return respostaMuayInfantil(idade);
+        }
         let chaveExplicacao = `${objetivo}:${modalidade}`;
         let introducao = objetivo && modalidade && (objetivoAtual || cadastro.objetivoExplicado !== chaveExplicacao) ? explicarBeneficioObjetivo(objetivo,modalidade,idade,cadastro.participante === "crianca") : "";
         const adultoSemIdade = idade === null && (cadastro.adultoSemIdade || cadastro.participante !== "crianca" && dados.adultoSemIdade === true);

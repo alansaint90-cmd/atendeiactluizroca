@@ -111,7 +111,7 @@ test("políticas novas: Muay regular desde 14, menor depende da equipe, experime
   for(const idade of [14,15,40,60])assert.equal(elegivelParaExperimental(muay,idade),true);
   for(const idade of [10,12,13])assert.equal(elegivelParaExperimental(muay,idade),false);
   const atender=agendaAulasDoAgente(banco,redis,"lease","menor","5571000000002",async()=>true);
-  await assert.rejects(atender("Quero agendar Muay Thai para meu filho de 12 anos"),/muay_adaptado/);
+  assert.match((await atender("Quero agendar Muay Thai para meu filho de 12 anos"))!,/12 anos.*equipe.*confirmar/s);
   const aluno={nome:"Aluno Exemplo",idade:15,telefone:"+5571000000003",responsavel:"Responsavel Exemplo"};
   const pedido={aulaId:muay.id,inicio:ocorrenciasAula(muay)[0],aluno,solicitacaoId:randomUUID(),conferido:true};
   const r=await reservarAula(banco,pedido,systemUserId);assert.equal((await reservarAula(banco,pedido,systemUserId)).id,r.id);
