@@ -143,11 +143,11 @@ test("migração da base preserva personalizações, demais chatbots e a grade; 
  }finally{await cliente.close();}
 });
 
-test("pedido efetivo de alteração encaminha humano; pergunta sobre política só informa",async()=>{
+test("pedido explícito de humano encaminha; pergunta sobre política só informa",async()=>{
  let state:DeliveryState|null=null,transferencias=0;const msgs:string[]=[];
  const port:ProcessingPort={read:async()=>state,write:async s=>{state=s;},history:async()=>[],complete:async s=>{state=s;},enabled:async()=>true,aulaExperimental:async()=>{throw new Error("Não consultar agenda nesse pedido");},generate:async()=>{throw new Error("Não depender de texto livre");},transferir:async()=>{transferencias++;},send:async(_c,_n,t)=>{msgs.push(t);return "aviso";}};
  const cfg={...config,atendimento:{transferHuman:true,transferMedia:false,destination:"Atendimento humano",transferNotice:"Vou chamar a equipe para ajudar com sua reserva."}};
- assert.equal(await processMessage({identity:"alterar",conversation:"aluno",number:"5571000000001",text:"Quero remarcar minha experimental",timestamp:Date.now()/1000},cfg,port),"enviada");assert.equal(transferencias,1);assert.doesNotMatch(msgs.join(" "),/remarcada|cancelada/);
+ assert.equal(await processMessage({identity:"alterar",conversation:"aluno",number:"5571000000001",text:"Quero falar com um atendente",timestamp:Date.now()/1000},cfg,port),"enviada");assert.equal(transferencias,1);assert.doesNotMatch(msgs.join(" "),/remarcada|cancelada/);
  assert.match(responderDuvidaCt("Posso cancelar a matrícula quando quiser?")!.resposta,/30 dias/);
 });
 

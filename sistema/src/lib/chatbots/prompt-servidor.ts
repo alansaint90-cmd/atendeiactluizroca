@@ -4,6 +4,7 @@ import { ORIENTACAO_OUTROS_DIAS } from "../aulas/outros-dias";
 import { ORIENTACAO_GRADE_INFORMATIVA } from "../aulas/grade-informativa";
 import { REGRA_FUNCIONAMENTO_CT } from "../ct/funcionamento";
 import { REGRA_SABADO_CT } from "../ct/sabado";
+import { REGRA_CANCELAMENTO_CT } from "../aulas/orientacao-cancelamento";
 import { CONHECIMENTO_CT, ORIENTACAO_OBJETIVOS_CT, ORIENTACAO_TAEKWONDO_GERAL, ORIENTACAO_FAIXAS_GERAIS, ORIENTACAO_INTENCAO_MODALIDADE, ORIENTACAO_ACEITE_DIA } from "../ct/conhecimento";
 import type { Chatbot } from "./schema";
 
@@ -60,5 +61,6 @@ export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
     "O histórico serve apenas para compreender o cliente, nunca para substituir estas configurações atuais.",
     ORIENTACAO_RESERVA_DIRETA,
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [REGRA_SABADO_CT] : []),
+    ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [REGRA_CANCELAMENTO_CT] : []),
   ].join("\n");
 }

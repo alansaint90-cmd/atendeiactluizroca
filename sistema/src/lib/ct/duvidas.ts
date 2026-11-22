@@ -22,7 +22,7 @@ export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeCon
  if (/quantos.*alunos|muitos?.*alunos|alunos.*(?:por|na|em cada).*turma|tamanho.*turma/.test(t)) return responder("tamanho");
  if (/\b(?:equipamentos?|luvas?|bandagens?|kimono|quimono|uniforme|roupas?|garrafinha|garrafa)\b|o que.*levar|precisa comprar/.test(t)) return responder("equipamentos");
  if (/cancel.*(?:matricula|plano|contrato)|(?:matricula|plano|contrato).*cancel|aviso previo/.test(t)) return responder("cancelamento");
- if (/(?:remarcar|reagendar|cancelar|cancelamento).*(?:experimental|aula)|(?:experimental|aula).*(?:remarcar|cancelar|cancelamento)/.test(t)) return responder("alterarExperimental");
+ if (/(?:remarcar|reagendar|cancelar|cancelamento).*(?:experimental|aula)|(?:experimental|aula).*(?:remarcar|cancelar|cancelamento)/.test(t)) return {assunto:"alterarExperimental",resposta:"Para remarcar ou cancelar sua experimental, é só solicitar pelo WhatsApp. Primeiro entendemos o motivo e tentamos outro dia; se você preferir cancelar, respeitamos sua decisão e concluímos o cancelamento."};
  if (/\b(?:repor|reposicao|reposicoes)\b|faltar.*aula|faltar.*semana/.test(t)) return responder("reposicao");
  if (/\b(?:desconto|negociar|antecipado|antecipar)\b/.test(t)) return responder("desconto");
  if (/\bcar[oa]\b|opcao mais barata|valor.*alto/.test(t)) return responder("valor");
@@ -57,5 +57,5 @@ export function perguntaInformativaCt(texto:string) {
 export function solicitaHumanoCt(texto:string) {
  const t=texto.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase();
  return /\b(?:quero|preciso|gostaria de|posso|pode)\s+(?:falar|conversar|atendimento)\s+(?:(?:com|um|uma|o|a)\s+)*(?:humano|humana|atendente|pessoa|alguem|equipe|professor|professora)\b/.test(t)
-   || /\b(?:quero|preciso|gostaria de|pode)\s+(?:cancelar|remarcar|reagendar)\b/.test(t);
+   || /\b(?:quero|preciso|gostaria de|pode)\s+cancelar\b.*\b(?:matricula|plano|contrato)\b/.test(t);
 }

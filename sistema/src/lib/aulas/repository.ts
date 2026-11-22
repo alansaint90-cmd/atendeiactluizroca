@@ -1,4 +1,5 @@
 import { systemUserId } from "../db/bootstrap";
+import { cancelarReservaNaTransacao, type AlvoReservaContato } from "./alteracao-reserva";
 import { aulaProgramadaCt, RESPOSTA_SABADO_CT } from "../ct/sabado";
 import { nomeIdentidade,temExperimentalConfirmada,avisoExperimentalUnica } from "./experimental-unica";
 import { randomUUID } from "node:crypto";
@@ -30,7 +31,7 @@ export async function criarAula(banco: BancoSql, entrada: unknown, autor: string
     await auditar(tx, id, "aula_criada", autor); return { id };
   });
 }
-export async function reservarAula(banco: BancoSql, entrada: unknown, autor: string) {
+export async function reservarAula(banco: BancoSql, entrada: unknown, autor: string, substituir?:AlvoReservaContato) {
   const r = reservaAulaSchema.parse(entrada);
   return banco.transaction(async tx => {
     const nomePessoa=nomeIdentidade(r.aluno.nome);
@@ -48,6 +49,10 @@ export async function reservarAula(banco: BancoSql, entrada: unknown, autor: str
       return { id: existente.id };
     }
     if (autor === systemUserId && !aulaProgramadaCt(aula)) throw new ErroDeNegocio(RESPOSTA_SABADO_CT);
+    if (substituir) {
+      if (autor !== systemUserId) throw new ErroDeNegocio("Remarcação automática indisponível para esse acesso.");
+      await cancelarReservaNaTransacao(tx,substituir,r.aluno.telefone,true);
+    }
     const anteriores=linhas<{nome:string;telefone:string;status:string}>(await tx.execute(sql`SELECT nome,telefone,status FROM atendeia_aulas_reservas WHERE telefone=${r.aluno.telefone} AND status='confirmada' AND ${vivos(aulasReservas)}`));
     if (temExperimentalConfirmada(r.aluno,anteriores)) throw new ErroDeNegocio(avisoExperimentalUnica);
     const reservas = linhas<ReservaAula>(await tx.execute(sql`SELECT ${camposReserva} FROM atendeia_aulas_reservas WHERE aula_id=${r.aulaId} AND ${vivos(aulasReservas)}`));

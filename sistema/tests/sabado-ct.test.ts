@@ -44,7 +44,7 @@ test("sábado explica a política geral, libera proposta antiga e preserva grade
   assert.deepEqual(ocorrenciasAula(extra),[extra.inicio]);
   assert.match(apresentarGradeInformativa([...antes.aulas,extra],"Sábado tem aula?",null),/14:00/);
   assert.match(funcionamentoNoDiaCt([...antes.aulas,extra],"O CT abre sábado?"),/14:00.*15:00/);
-  assert.ok(PROMPT_CT_LUIZ_ROCA.endsWith(REGRA_SABADO_CT));
+  assert.ok(PROMPT_CT_LUIZ_ROCA.includes(REGRA_SABADO_CT));
   assert.deepEqual(await consultarAulas(banco),antes,"não apagar cadastros nem reservas");
  }finally{Date.now=clock;await cliente.close();}
 });
