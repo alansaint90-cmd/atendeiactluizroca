@@ -26,7 +26,7 @@ test("gerente vê métricas reais, percentual e abre a agenda", async () => {
   vi.mocked(carregarAgendaAulas).mockResolvedValue({ ok: true, dados: { aulas: [{ id: "aula-teste", modalidade: "Modalidade Teste", turma: "Turma Teste", professor: "Professor Teste", inicio: new Date(Date.now() + 86400000).toISOString(), duracao: 60, capacidade: 2, idadeMinima: 18, idadeMaxima: 80, atualizadoEm: new Date().toISOString() }], reservas: [] } });
   const abrir = vi.fn();
   render(<OperacaoPage rota="dashboard" podeVerAgenda aoVerAgenda={abrir} />);
-  const resumo = within(screen.getByRole("region", { name: "Resumo do CT Luiz Roca" }));
+  const resumo = within(screen.getByRole("region", { name: "Resumo do atendimento" }));
   expect(await resumo.findByText("75% das conversas atendidas")).toBeInTheDocument();
   expect(await resumo.findByText("Nas turmas futuras do CT")).toBeInTheDocument();
   expect(resumo.getByText("0")).toBeInTheDocument();
@@ -53,7 +53,7 @@ test("SDR não solicita dados da agenda e falha não simula vagas vazias", async
   render(<OperacaoPage rota="dashboard" podeVerAgenda aoVerAgenda={vi.fn()} />);
   expect(await screen.findByRole("alert")).toHaveTextContent("Agenda indisponível.");
   await screen.findByText("Nenhum contato com atividade no período.");
-  const resumo = within(screen.getByRole("region", { name: "Resumo do CT Luiz Roca" }));
+  const resumo = within(screen.getByRole("region", { name: "Resumo do atendimento" }));
   expect(resumo.getAllByText("—")).toHaveLength(2);
 });
 

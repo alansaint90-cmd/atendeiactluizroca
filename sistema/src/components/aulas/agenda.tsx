@@ -36,7 +36,7 @@ export function AgendaAulasPainel({ dados, porta, local = false }: { dados: Agen
       setPendente({ titulo: "Confirmar aula experimental", resumo: `${r.data.nome}, ${r.data.idade} anos · ${r.data.telefone}${r.data.responsavel ? ` · Responsável: ${r.data.responsavel}` : ""} · ${aula.modalidade}, ${aula.turma} · ${formatarAula(inicio)}. Confira as condições da aula com o interessado.`, executar: () => porta.reservar({ aulaId: aula.id, inicio, aluno: r.data, solicitacaoId, conferido: true }) });
     }
   }
-  return <div className="page-stack"><header className="page-head"><div><div className="ct-eyebrow">CT LUIZ ROCA · AULAS EXPERIMENTAIS</div><h1>Agenda de aulas</h1><p>Turmas, vagas e o primeiro passo de cada novo aluno.</p></div><button className="primary" onClick={() => { setNovo(!novo); setErro(""); }}> {novo ? "Fechar cadastro" : "+ Cadastrar aula"}</button></header>
+  return <div className="page-stack"><header className="page-head"><div><div className="ct-eyebrow">AULAS EXPERIMENTAIS</div><h1>Agenda de aulas</h1><p>Turmas, vagas e o primeiro passo de cada novo aluno.</p></div><button className="primary" onClick={() => { setNovo(!novo); setErro(""); }}> {novo ? "Fechar cadastro" : "+ Cadastrar aula"}</button></header>
     <p className="ct-note">Horários de Brasília · A grade semanal se repete; cada reserva tem sua própria data. {local ? "Reservas de teste ficam apenas neste navegador." : "A reserva não envia mensagem automaticamente."}</p>
     {erro && <p role="alert" className="ct-error">{erro}</p>}{aviso && <p role="status" className="ct-success">{aviso}</p>}
     {novo && <form className="panel feature-form" onSubmit={e => propor(e, "aula")}><h2>Nova aula disponível</h2><div className="ct-form-grid">

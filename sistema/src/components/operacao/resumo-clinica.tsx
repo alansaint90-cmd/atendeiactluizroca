@@ -27,11 +27,11 @@ export function ResumoClinica({ dados, agenda, periodo, podeVerAgenda, aoVerAgen
     ] : []),
   ];
   return <>
-    <header className="page-head"><div><div className="ct-eyebrow">CENTRO DE TREINAMENTO LUIZ ROCA</div><h1>Seu atendimento, em dia.</h1><p>Acompanhe os interessados e prepare as próximas aulas experimentais.</p></div>
+    <header className="page-head"><div><h1>Seu atendimento, em dia.</h1><p>Acompanhe os interessados e prepare as próximas aulas experimentais.</p></div>
       {podeVerAgenda && <button type="button" className="primary" onClick={aoVerAgenda}><span aria-hidden="true" dangerouslySetInnerHTML={{ __html: icon("calendar") }} />Ver agenda</button>}
     </header>
     {filtros}
-    <section className="kpi-grid clinica-resumo" aria-label="Resumo do CT Luiz Roca">{cards.map(c => <article className={`kpi ${c.cor}`} key={c.nome}>
+    <section className="kpi-grid clinica-resumo" aria-label="Resumo do atendimento">{cards.map(c => <article className={`kpi ${c.cor}`} key={c.nome}>
       <div className="clinica-kpi-label"><span>{c.nome}</span><span aria-hidden="true" dangerouslySetInnerHTML={{ __html: icon(c.icone) }} /></div>
       <strong>{c.valor ?? "—"}</strong><small>{c.nota}</small>
     </article>)}</section>
