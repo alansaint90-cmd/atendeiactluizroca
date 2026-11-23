@@ -223,7 +223,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
             }
             const horario=new Date(opcao.inicio).toLocaleTimeString("pt-BR",{timeZone:"America/Bahia",hour:"2-digit",minute:"2-digit"});
             const pedirIdade=!cadastro.adultoSemIdade && cadastro.consulta?.idade == null;
-            return `Boa! Vamos de ${horario}.\n\nPara prepararmos a aula de ${opcao.modalidade}, qual é o nome completo do participante${pedirIdade ? " e a idade" : ""}?`;
+            return `Boa! Vamos de ${horario}.\n\nPara reservar esse horário, qual o nome completo do participante${pedirIdade ? " e a idade" : ""}?`;
           }
         }
         if (cadastro.consultaPorDia && !cadastro.assuntoInformativo && !cadastro.reserva && !cadastro.confirmada && /^(?:sim|quero(?: sim)?|pode ser)[.!\s]*$/iu.test(texto.trim())) {

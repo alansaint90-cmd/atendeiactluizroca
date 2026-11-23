@@ -28,7 +28,7 @@ test("acolhe em dois balões, guarda o horário e só reserva após dados e conf
   await atender("Tem Muay Thai pela manhã?",{acao:"consultar",modalidade:"Muay Thai",idade:null,adultoSemIdade:true});
   const resposta=await atender("Às 6 é bom");const partes=mensagensDaAula(resposta!);
   assert.equal(partes.length,2);assert.equal(partes[0],"Boa! Vamos de 06:00.");
-  assert.equal(partes[1],"Para prepararmos a aula de Muay Thai, qual é o nome completo do participante?");assert.doesNotMatch(partes[1],/e a idade/);
+  assert.equal(partes[1],"Para reservar esse horário, qual o nome completo do participante?");assert.doesNotMatch(partes[1],/e a idade/);
   assert.doesNotMatch(partes[1],/06:00|feira|\d{2}\/\d{2}/);
   const cadastro=JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:escolha")!);assert.equal(cadastro.opcaoEscolhida,1);
   assert.equal((await consultarAulas(banco)).reservas.length,0);
