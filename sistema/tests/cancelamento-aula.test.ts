@@ -10,6 +10,7 @@ import {criarAula,consultarAulas,reservarAula} from '../src/lib/aulas/repository
 import {reservasFuturasDoContato,cancelarReservaDoContato} from '../src/lib/aulas/alteracao-reserva';
 import {agendaAulasDoAgente} from '../src/lib/aulas/agente';
 import {pedidoAlteracaoExperimental} from '../src/lib/aulas/cancelamento-agente';
+import {dataLocalCt,proximaSemanaCt,somarDiasCt} from '../src/lib/aulas/calendario';
 import {solicitaHumanoCt} from '../src/lib/ct/duvidas';
 import {processMessage,type ProcessingPort,type DeliveryState} from '../src/lib/agent/processor';
 import type {AgentConfig} from '../src/lib/agent/config';
@@ -17,6 +18,7 @@ import type {AgentConfig} from '../src/lib/agent/config';
 test('intenção de cancelamento distingue dúvida, matrícula, negação e pedido explícito de humano',()=>{
  for(const texto of ['Quero cancelar o agendamento','Pode cancelar minha aula','Quero cancelar e não quero remarcar','Não quero remarcar, quero cancelar'])assert.equal(pedidoAlteracaoExperimental(texto),'cancelar');
  assert.equal(pedidoAlteracaoExperimental('Quero remarcar minha experimental'),'remarcar');
+ assert.equal(pedidoAlteracaoExperimental('Quero cancelar a aula e passar pra semana que vem'),'remarcar');
  for(const texto of ['Como cancelar a aula?','Posso cancelar a matrícula quando quiser?','Não quero cancelar','qual o motivo do cancelamento?'])assert.equal(pedidoAlteracaoExperimental(texto),null);
  assert.equal(solicitaHumanoCt('Quero cancelar o agendamento'),false);
  assert.equal(solicitaHumanoCt('Quero remarcar minha experimental'),false);
@@ -64,6 +66,27 @@ test('cancelamento acolhe, seleciona a reserva certa e encerra só os lembretes 
   const cheio={aulaId:terceira.id,aluno,solicitacaoId:randomUUID(),conferido:true};
   await assert.rejects(reservarAula(banco,cheio,systemUserId,alvo),/lotada/);
   assert.equal(await status(r1.id),'confirmada');assert.equal(await statusJob(outraPendencia),'pendente','falha da nova vaga não cancela a reserva antiga');
+  const semana=proximaSemanaCt('semana que vem')!;
+  const atenderSemana=atender('semana-seguinte');
+  assert.match((await atenderSemana('Quero cancelar a aula experimental'))!,/motivo/);
+  const horariosDaSemana=await atenderSemana('Quero para semana que vem');
+  assert.match(horariosDaSemana!,/Pra semana que vem[\s\S]*1\. Muay Thai/);
+  assert.doesNotMatch(horariosDaSemana!,/Quer tentar outro dia|Para qual dia/);
+  const memoriaSemana=()=>JSON.parse(cache.get('atendeia:{evolution}:cadastro-aula:semana-seguinte')!);
+  assert.deepEqual(memoriaSemana().semanaSolicitada,semana);
+  assert.ok(memoriaSemana().opcoes.every((opcao:{inicio:string})=>{
+   const dia=dataLocalCt(Date.parse(opcao.inicio));
+   return dia>=semana.inicio && dia<semana.fimExclusivo;
+  }));
+  assert.equal(new Set(memoriaSemana().opcoes.map((opcao:{inicio:string})=>dataLocalCt(Date.parse(opcao.inicio)))).size,2);
+  assert.match((await atenderSemana('Quinta'))!,/1\. Muay Thai/);
+  assert.equal(memoriaSemana().dataSolicitada,somarDiasCt(semana.inicio,3));
+  assert.equal(await status(r1.id),'confirmada');
+  assert.equal(await statusJob(outraPendencia),'pendente');
+  const comNegacao=atender('semana-com-negacao');
+  await comNegacao('Quero cancelar a aula');
+  assert.match((await comNegacao('Não quero nessa semana, quero para a semana que vem'))!,/Pra semana que vem/);
+  assert.equal(await status(r1.id),'confirmada');
   assert.match((await atender('remarcar')('Quero cancelar o agendamento'))!,/motivo/);
   assert.match((await atender('remarcar')('Não vou conseguir ir nesse dia'))!,/Quer tentar outro dia/);
   assert.match((await atender('remarcar')('Sim'))!,/qual dia ou turno/);

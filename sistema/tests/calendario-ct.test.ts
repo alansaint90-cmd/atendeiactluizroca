@@ -6,8 +6,15 @@ import type Redis from "ioredis";
 import { applyMigrations } from "../src/lib/db/migrate";
 import { consultarAulas } from "../src/lib/aulas/repository";
 import { agendaAulasDoAgente } from "../src/lib/aulas/agente";
-import { dataLocalCt, interpretarDataCt, contextoCalendarioCt } from "../src/lib/aulas/calendario";
+import { dataLocalCt, interpretarDataCt, contextoCalendarioCt, proximaSemanaCt } from "../src/lib/aulas/calendario";
 const domingo=Date.parse("2026-11-15T12:00:00-03:00");
+test("semana que vem segue de segunda a domingo no fuso do CT, inclusive na virada do ano",()=>{
+  assert.deepEqual(proximaSemanaCt("Quero pra semana que vem",domingo),{inicio:"2026-11-16",fimExclusivo:"2026-11-23"});
+  const segunda=Date.parse("2026-11-16T00:01:00-03:00");
+  assert.deepEqual(proximaSemanaCt("na próxima semana",segunda),{inicio:"2026-11-23",fimExclusivo:"2026-11-30"});
+  assert.deepEqual(interpretarDataCt("Quinta da semana que vem",segunda),{tipo:"data",data:"2026-11-26"});
+  assert.deepEqual(proximaSemanaCt("semana seguinte",Date.parse("2026-12-31T23:00:00-03:00")),{inicio:"2027-01-04",fimExclusivo:"2027-01-11"});
+});
 test("15/11/2026: amanhã é segunda 16 e próxima terça é 17",()=>{
   assert.deepEqual(interpretarDataCt("Quero agendar para amanhã",domingo),{tipo:"data",data:"2026-11-16"});
   assert.deepEqual(interpretarDataCt("Quero próxima terça",domingo),{tipo:"data",data:"2026-11-17"});

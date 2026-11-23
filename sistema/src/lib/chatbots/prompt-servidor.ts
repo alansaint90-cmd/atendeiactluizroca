@@ -5,6 +5,7 @@ import { ORIENTACAO_GRADE_INFORMATIVA } from "../aulas/grade-informativa";
 import { REGRA_FUNCIONAMENTO_CT } from "../ct/funcionamento";
 import { REGRA_SABADO_CT } from "../ct/sabado";
 import { REGRA_CANCELAMENTO_CT } from "../aulas/orientacao-cancelamento";
+import { ORIENTACAO_RECEPCAO_CT } from "../ct/recepcao";
 import { ORIENTACAO_LINGUAGEM_CT } from "../aulas/idade-informada";
 import { ORIENTACAO_MUAY_INFANTIL } from "../ct/muay-infantil";
 import { ORIENTACAO_EQUIPAMENTOS_CT } from "../ct/equipamentos";
@@ -65,7 +66,7 @@ export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
     "O histórico serve apenas para compreender o cliente, nunca para substituir estas configurações atuais.",
     ORIENTACAO_RESERVA_DIRETA,
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [REGRA_SABADO_CT] : []),
-    ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [REGRA_CANCELAMENTO_CT] : []),
+    ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [REGRA_CANCELAMENTO_CT, ORIENTACAO_RECEPCAO_CT] : []),
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [ORIENTACAO_LINGUAGEM_CT] : []),
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [ORIENTACAO_MUAY_INFANTIL] : []),
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [ORIENTACAO_EQUIPAMENTOS_CT, ORIENTACAO_PROXIMO_PASSO_CT] : []),

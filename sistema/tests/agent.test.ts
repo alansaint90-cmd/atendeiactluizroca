@@ -11,6 +11,8 @@ import { montarInstrucoesDoAgente } from "../src/lib/chatbots/prompt-servidor";
 import { chatbotExample } from "../src/lib/chatbots/defaults";
 import { extrairNomeInformado, respostaComNome } from "../src/lib/agent/nome";
 import { pausaManualParaEvento } from "../src/lib/agent/pausa";
+import { ABERTURA_CT } from "../src/lib/ct/recepcao";
+import { CANCELAMENTO_CONCLUIDO } from "../src/lib/aulas/orientacao-cancelamento";
 
 const config: AgentConfig = { AI_ENABLED: "true", AI_SYSTEM_PROMPT: "Atenda com o contexto cadastrado.",
   OPENAI_API_KEY: "sk-test-only", OPENAI_MODEL: "gpt-4.1-mini", EVOLUTION_API_KEY: "teste",
@@ -409,14 +411,31 @@ test("blocos confirmados são registrados e falha em uma parte não repete as an
   assert.equal(envios,2);assert.deepEqual(registrados,["bloco-1"]);
 });
 
-test("recepção da Luísa é um único balão e não se repete na conversa", async()=>{
-  const f=fixture();const abertura="Boas-vindas ao CT Luis Roca. Eu sou Luísa. Como posso te ajudar?";
-  const configuracao={...config,openingMessages:[abertura]};
+test("recepção da Luísa troca a versão antiga por dois balões e não se repete durante a conversa", async()=>{
+  const f=fixture();
+  const configuracao=configurarAgente({...config,EVOLUTION_INSTANCE_NAME:"ctluizroca"},{...chatbotExample,openingMessages:[
+    "Olá! Boas-vindas ao CT Luís Roca! Sou a Luísa, assistente virtual do Centro de Treinamento Luís Roca. A aula experimental seria para você ou para outra pessoa?",
+  ]}).data!;
   assert.equal(await processMessage({...message,text:"Oi"},configuracao,f.port),"enviada");
-  assert.deepEqual(f.sentTexts,[abertura]);assert.equal(f.generations(),0);
-  f.nextMessage();f.port.generate=async()=>"Vamos continuar. Qual é a sua dúvida?";
+  assert.deepEqual(f.sentTexts,ABERTURA_CT);assert.equal(f.generations(),0);
+  f.nextMessage();
   await processMessage({...message,identity:"outro-oi",text:"Oi"},configuracao,f.port);
-  assert.equal(f.sentTexts.filter(t=>t===abertura).length,1);
+  assert.deepEqual(f.sentTexts,[...ABERTURA_CT,"Oi! Como posso te ajudar?"]);
+});
+
+test("novo atendimento após cancelamento recebe a abertura em dois balões", async()=>{
+  const f=fixture();
+  const configuracao=configurarAgente({...config,EVOLUTION_INSTANCE_NAME:"ctluizroca"},chatbotExample).data!;
+  f.port.history=async()=>[{role:"assistant",content:CANCELAMENTO_CONCLUIDO}];
+  assert.equal(await processMessage({...message,text:"Oi"},configuracao,f.port),"enviada");
+  assert.deepEqual(f.sentTexts,ABERTURA_CT);assert.equal(f.generations(),0);
+
+  const comReserva=fixture();
+  comReserva.port.history=f.port.history;
+  comReserva.port.contextoPersistido=async()=>"RESERVAS CONFIRMADAS NO BANCO: outra experimental";
+  comReserva.port.aulaExperimental=async()=>"Olá! Você ainda tem uma experimental agendada.";
+  await processMessage({...message,text:"Oi"},configuracao,comReserva.port);
+  assert.deepEqual(comReserva.sentTexts,["Olá! Você ainda tem uma experimental agendada."]);
 });
 
 test("experimental confirmada envia quatro balões com registro individual", async () => {

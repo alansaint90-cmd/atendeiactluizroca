@@ -2,6 +2,7 @@ import { z } from "zod";
 import { settingsSchema } from "../settings/schema";
 import { chatbotSchema, type Chatbot } from "../chatbots/schema";
 import { montarInstrucoesDoAgente } from "../chatbots/prompt-servidor";
+import { aberturaAtualDoCt, INSTANCIA_CT } from "../ct/recepcao";
 
 export const agentBaseConfigSchema = settingsSchema.extend({
   AI_ENABLED: z.literal("true"),
@@ -28,7 +29,8 @@ export function configurarAgente(settings: unknown, chatbot: Chatbot | null) {
   return agentConfigSchema.safeParse(base.success ? { ...base.data,
     AI_SYSTEM_PROMPT: montarInstrucoesDoAgente(chatbot),
     delay: chatbot?.delay ?? 5,
-    openingMessages: chatbot?.openingMessages,
+    openingMessages: base.data.EVOLUTION_INSTANCE_NAME === INSTANCIA_CT
+      ? aberturaAtualDoCt(chatbot?.openingMessages) : chatbot?.openingMessages,
     // O CT usa aulas em grupo; a agenda médica legada não pode ser ativada.
     agendaConsultas: false, agendaAulas: true,
     atendimento: chatbot ? { transferHuman: chatbot.transferHuman, transferMedia: chatbot.transferMedia,

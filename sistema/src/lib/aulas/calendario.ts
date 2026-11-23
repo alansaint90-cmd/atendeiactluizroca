@@ -15,7 +15,17 @@ export function contextoCalendarioCt(agora = Date.now()) {
   return `CALENDÁRIO INTERNO DO CT (${fusoCt}): hoje é ${rotuloDataCt(hoje)}. Amanhã é ${rotuloDataCt(somarDiasCt(hoje,1))}. Depois de amanhã é ${rotuloDataCt(somarDiasCt(hoje,2))}. Próximos dias: ${Array.from({length:7},(_,i)=>rotuloDataCt(somarDiasCt(hoje,i+1))).join("; ")}. Use este relógio atual, não datas antigas do histórico. “Próxima terça” significa a primeira terça futura; se hoje for terça, significa daqui a sete dias. Converta a expressão em data completa, consulte somente essa data e confira-a antes de reservar. Se não houver aula, explique isso; não troque a data silenciosamente. Este calendário é interno e não deve ser enviado como uma lista ao cliente.`;
 }
 export type DataInterpretada = {tipo:"data";data:string} | {tipo:"ambigua";datas:string[]} | {tipo:"invalida";mensagem:string};
-export function interpretarDataCt(texto:string, agora=Date.now()): DataInterpretada | null {
+export interface SemanaCt { inicio:string; fimExclusivo:string }
+
+export function proximaSemanaCt(texto:string, agora=Date.now()): SemanaCt | undefined {
+  if (!/\b(?:semana (?:que vem|seguinte)|proxima semana)\b/.test(numerosDaFala(texto))) return;
+  const hoje = dataLocalCt(agora);
+  const diaDaSemana = new Date(`${hoje}T12:00:00Z`).getUTCDay();
+  const inicio = somarDiasCt(hoje, 7 - (diaDaSemana + 6) % 7);
+  return { inicio, fimExclusivo: somarDiasCt(inicio, 7) };
+}
+
+export function interpretarDataCt(texto:string, agora=Date.now(), semana=proximaSemanaCt(texto, agora)): DataInterpretada | null {
   const hoje=dataLocalCt(agora), normal=numerosDaFala(texto);
   const encontradas:string[]=[];
   const semIso=normal.replace(/\b\d{4}-\d{2}-\d{2}\b/g,data=>{encontradas.push(data);return " ";});
@@ -26,9 +36,10 @@ export function interpretarDataCt(texto:string, agora=Date.now()): DataInterpret
   if(/\bhoje\b/.test(restante)) encontradas.push(hoje);
   const porDia:Record<string,number>={domingo:0,segunda:1,terca:2,quarta:3,quinta:4,sexta:5,sabado:6};
   for(const m of restante.matchAll(/\b(?:(proxim[ao])\s+)?(domingos?|segundas?|tercas?|quartas?|quintas?|sextas?|sabados?)(?:[ -]feiras?)?(?:\s+(que vem))?\b(?!\s+(?:opcao|alternativa))/g)) {
-    let distancia=(porDia[m[2].replace(/s$/,"")]-new Date(`${hoje}T12:00:00Z`).getUTCDay()+7)%7;
-    if(distancia===0 && (m[1] || m[3]))distancia=7;
-    encontradas.push(somarDiasCt(hoje,distancia));
+    const base = semana?.inicio ?? hoje;
+    let distancia=(porDia[m[2].replace(/s$/,"")]-new Date(`${base}T12:00:00Z`).getUTCDay()+7)%7;
+    if(!semana && distancia===0 && (m[1] || m[3]))distancia=7;
+    encontradas.push(somarDiasCt(base,distancia));
   }
   for(const m of restante.matchAll(/\b(\d{1,2})\s*[\/.-]\s*(\d{1,2})(?:\s*[\/.-]\s*(\d{4}|\d{2}))?\b(?!\s*(?:anos?|aninhos)\b)/g)) {
     let ano=m[3] ? Number(m[3])+(m[3].length===2 ? 2000 : 0) : Number(hoje.slice(0,4));

@@ -1,11 +1,12 @@
 import type { Chatbot } from "./schema";
 import { PROMPT_CT_LUIZ_ROCA } from "../ct/prompt";
+import { ABERTURA_CT } from "../ct/recepcao";
 
 export const chatbotExample: Chatbot = {
   id: "ct-luiz-roca", identifier: "CT Luiz Roca — Novos alunos", persona: "Luísa", gender: "Feminino",
   personalities: ["Amigável", "Direto ao ponto", "Profissional"],
   mission: "Acolher novos alunos do CT Luiz Roca, esclarecer dúvidas e conduzir à marcação de aulas experimentais.",
-  openingMessages: ["Boas-vindas ao CT Luis Roca. Eu sou Luísa. Como posso te ajudar?"],
+  openingMessages: ABERTURA_CT,
   context: PROMPT_CT_LUIZ_ROCA, agendaConsultas: false,
   fallback: "Se desculpe por não saber falar sobre. Ofereça uma nova ajuda com outro assunto.",
   delay: 15, transferMedia: false, transferHuman: true, destination: "Atendimento humano",

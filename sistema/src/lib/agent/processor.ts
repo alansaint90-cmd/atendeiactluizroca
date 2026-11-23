@@ -14,6 +14,8 @@ import { extrairNomeInformado, instrucoesComNome, respostaComNome, personaDoAgen
 import { deveConsultarAgenda } from "../consultas/intencao";
 import { correspondeAoGatilho } from "./ativacao";
 import { mensagensDaConsulta } from "../consultas/fluxo";
+import { INSTANCIA_CT } from "../ct/recepcao";
+import { CANCELAMENTO_CONCLUIDO } from "../aulas/orientacao-cancelamento";
 
 export interface DeliveryState { escalar?: boolean; fluxo?: {id:string;versao:number}; status: "gerando" | "gerada" | "enviando" | "enviada" | "incerta" | "falhou"; attempts: number; reply?: string; partes?: string[]; providerIds?: string[]; transcript?: string; code?: string; configHash?: string; providerId?: string; transferencia?: boolean; consulta?: boolean }
 export interface ProcessingPort {
@@ -97,11 +99,20 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
       // Preservar o histórico armazenado, mas não ensinar novamente uma persona ou roteiro antigo.
       const contextoAtual = persona ? historico.filter(turno => turno.role === "user" || turno.revisao === revisao) : historico;
       const saudacao = /^(?:oi+|ol[aá]+|bom dia|boa tarde|boa noite)[\s!.😊👋]*$/iu.test((transcript ?? message.text).trim());
-      if (!historico.length && !message.midia && ((!nome && saudacao) || Boolean(config.AI_ACTIVATION_TRIGGER && correspondeAoGatilho(message, config.AI_ACTIVATION_TRIGGER))) && config.openingMessages?.length) partes = config.openingMessages;
+      const recepcaoCt = config.agendaAulas && config.EVOLUTION_INSTANCE_NAME === INSTANCIA_CT;
+      const reservaEmAberto = /RESERVAS CONFIRMADAS NO BANCO/.test(memoria);
+      if (!historico.length && !message.midia && (!recepcaoCt || !reservaEmAberto)
+        && (((!nome || recepcaoCt) && saudacao) || Boolean(config.AI_ACTIVATION_TRIGGER && correspondeAoGatilho(message, config.AI_ACTIVATION_TRIGGER)))
+        && config.openingMessages?.length) partes = config.openingMessages;
       const pediuHumano = Boolean(config.agendaAulas && config.atendimento?.transferHuman && solicitaHumanoCt(transcript ?? message.text));
       const textoAgenda=contextualizarRespostaIdade(contextualizarGradeDia(aceiteConsulta(transcript ?? message.text,historico) ?? transcript ?? message.text,historico),historico);
       const respostaAula = config.agendaAulas && !pediuHumano ? await port.aulaExperimental?.(textoAgenda) : null;
-      if (!respostaAula && !historico.length && !message.midia && !/RESERVAS CONFIRMADAS NO BANCO/.test(memoria)) {
+      if (!respostaAula && recepcaoCt && historico.length && saudacao && !message.midia && !reservaEmAberto) {
+        const ultima = historico.at(-1);
+        const voltouAposCancelar = ultima?.role === "assistant" && ultima.content.trim() === CANCELAMENTO_CONCLUIDO;
+        partes = voltouAposCancelar ? config.openingMessages : ["Oi! Como posso te ajudar?"];
+      }
+      if (!respostaAula && !historico.length && !message.midia && !reservaEmAberto) {
         const entrada = await port.fluxoEntrada?.(transcript ?? message.text);
         if(entrada){fluxo={id:entrada.id,versao:entrada.versao};partes=entrada.mensagens;}
       }
