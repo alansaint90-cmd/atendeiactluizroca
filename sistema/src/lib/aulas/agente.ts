@@ -1,5 +1,6 @@
 import { responderDuvidaCt } from "../ct/duvidas";
 import { PERGUNTA_RETOMADA_AGENDAMENTO } from "../ct/equipamentos";
+import { apresentarModalidadesCt, pedidoIndicacaoCt, PERGUNTA_AGENDAR_EXPERIMENTAL } from "../ct/modalidades";
 import { perguntaMuayInfantil, respostaMuayInfantil } from "../ct/muay-infantil";
 import { cancelamentoDoAgente } from "./cancelamento-agente";
 import type { ReservaContato } from "./alteracao-reserva";
@@ -33,7 +34,29 @@ import { alunoSchema, elegivelParaExperimental, type AlunoDados, type Aula } fro
 import { acaoAulasSchema, type AcaoAulas } from "./agente-schema";
 import { owned, agentKeys, assertResult } from "../agent/redis";
 interface Opcao { aulaId: string; inicio: string; modalidade: string; turma: string }
-interface Cadastro { remarcacao?: ReservaContato; participanteProprio?:boolean; dataAlternativa?:string; assuntoInformativo?:AssuntoCt; consultaPorDia?: boolean; modalidadePendente?: string; modalidadePreferida?: string | null; opcaoEscolhida?: number; objetivo?: ObjetivoAula; objetivoExplicado?: string; participante?: "adulto" | "crianca" | "outraPessoa"; adultoSemIdade?: boolean; turnoSolicitado?: TurnoAula | null; aguardandoAlteracao?: boolean; aguardandoAjuda?: boolean; opcoes: Opcao[]; dataSolicitada?: string | null; consulta?: { modalidade: string | null; idade: number | null; adultoSemIdade?: boolean; mostradas: string[]; turno?: TurnoAula | null; data?: string | null }; reserva?: { aulaId: string; inicio: string; aluno: AlunoDados; solicitacaoId: string; conferido: true }; confirmada?: string }
+interface Cadastro {
+  aguardandoRetomada?: boolean;
+  remarcacao?: ReservaContato;
+  participanteProprio?: boolean;
+  dataAlternativa?: string;
+  assuntoInformativo?: AssuntoCt;
+  consultaPorDia?: boolean;
+  modalidadePendente?: string;
+  modalidadePreferida?: string | null;
+  opcaoEscolhida?: number;
+  objetivo?: ObjetivoAula;
+  objetivoExplicado?: string;
+  participante?: "adulto" | "crianca" | "outraPessoa";
+  adultoSemIdade?: boolean;
+  turnoSolicitado?: TurnoAula | null;
+  aguardandoAlteracao?: boolean;
+  aguardandoAjuda?: boolean;
+  opcoes: Opcao[];
+  dataSolicitada?: string | null;
+  consulta?: { modalidade: string | null; idade: number | null; adultoSemIdade?: boolean; mostradas: string[]; turno?: TurnoAula | null; data?: string | null };
+  reserva?: { aulaId: string; inicio: string; aluno: AlunoDados; solicitacaoId: string; conferido: true };
+  confirmada?: string;
+}
 export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: string, conversa: string, numero: string, enabled: () => Promise<boolean>) {
   const alterar=cancelamentoDoAgente(banco,client,token,conversa,numero);
   const chave = `atendeia:{evolution}:cadastro-aula:${conversa}`;
@@ -78,7 +101,10 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         await salvar({...cadastro,assuntoInformativo:'idadeMuay'});
         return respostaMuayInfantil(idadeMuay);
       }
-      const duvida=responderDuvidaCt(texto,cadastro.assuntoInformativo,cadastro.consulta?.modalidade);
+      const indicacao = pedidoIndicacaoCt(texto);
+      const respostaInformativa = responderDuvidaCt(texto,cadastro.assuntoInformativo,cadastro.consulta?.modalidade);
+      const duvida = indicacao.sedentario && respostaInformativa?.assunto === "adaptacao" && !respostaInformativa.convidarExperimental
+        ? null : respostaInformativa;
       if (!acao && !duvida && consultaSabadoCt(texto)) {
         const agenda=await consultarAulas(banco);
         const data=interpretarDataCt(texto);
@@ -110,9 +136,27 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
           return funcionamentoNoDiaCt(agenda.aulas, texto);
         }
         const idade=idadeInformada, pessoal=idadePropriaInformada(texto) || /\bmeu filh[oa]\b/iu.test(texto);
-        await salvar({...cadastro,assuntoInformativo:duvida.assunto,...(idade && pessoal ? {participanteProprio:idadePropriaInformada(texto),participante:Number(idade[1])<18?"crianca" as const:"adulto" as const,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? null,idade:Number(idade[1]),mostradas:[]},opcoes:[],opcaoEscolhida:undefined,reserva:undefined}: {})});
-        const retomar=duvida.assunto==='equipamentos' && !cadastro.confirmada && Boolean(cadastro.consulta || cadastro.opcoes.length);
-        return duvida.resposta+(retomar ? `\n\n${PERGUNTA_RETOMADA_AGENDAMENTO}` : '');
+        const emAndamento = Boolean(cadastro.consulta || cadastro.opcoes.length);
+        const convidar = !cadastro.confirmada && (duvida.assunto === "experimental" || duvida.convidarExperimental || duvida.assunto === "equipamentos" && emAndamento);
+        await salvar({...cadastro,aguardandoRetomada:convidar,assuntoInformativo:duvida.assunto,...(idade && pessoal ? {participanteProprio:idadePropriaInformada(texto),participante:Number(idade[1])<18?"crianca" as const:"adulto" as const,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? null,idade:Number(idade[1]),mostradas:[]},opcoes:[],opcaoEscolhida:undefined,reserva:undefined}: {})});
+        const pergunta = duvida.assunto === "equipamentos" ? PERGUNTA_RETOMADA_AGENDAMENTO : PERGUNTA_AGENDAR_EXPERIMENTAL;
+        return convidar ? `${duvida.resposta}\n\n${pergunta}` : duvida.resposta;
+      }
+      if (!acao && cadastro.aguardandoRetomada) {
+        cadastro = {...cadastro, aguardandoRetomada:false, assuntoInformativo:undefined};
+        await salvar(cadastro);
+        if (/^(?:sim|quero(?: sim)?|pode(?: ser| sim)?|vamos|bora)[.!\s]*$/iu.test(texto.trim())) {
+          const escolhida = cadastro.opcaoEscolhida ? cadastro.opcoes[cadastro.opcaoEscolhida - 1] : undefined;
+          if (escolhida && Date.parse(escolhida.inicio) > Date.now()) {
+            const pedirIdade = !cadastro.adultoSemIdade && cadastro.consulta?.idade == null;
+            return `Para reservar esse horário, qual o nome completo do participante${pedirIdade ? " e a idade" : ""}?`;
+          }
+          if (cadastro.opcoes.some(opcao => Date.parse(opcao.inicio) > Date.now())) return "Qual dos horários que te passei funciona pra você?";
+          if (cadastro.consulta?.modalidade) return atender(texto,{acao:"consultar",modalidade:cadastro.consulta.modalidade,idade:cadastro.consulta.idade});
+          if (cadastro.participante === "crianca" && cadastro.consulta?.idade == null) return "Qual é a idade de quem vai fazer a aula?";
+          return apresentarModalidadesCt(cadastro.consulta?.idade ?? null, false);
+        }
+        if (/^(?:n[aã]o(?:,? obrigad[oa])?|agora n[aã]o)[.!\s]*$/iu.test(texto.trim())) return "Tudo bem! Se quiser agendar depois, é só me chamar.";
       }
       const outrosDias=pediuOutrosDias(texto);
       if (!acao && outrosDias && cadastro.consulta && !cadastro.confirmada) {
@@ -153,6 +197,19 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       if (!acao && idadeInformada) {
         cadastro={...cadastro,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? cadastro.modalidadePreferida ?? null,idade:Number(idadeInformada[1]),mostradas:cadastro.consulta?.mostradas ?? []}};
         await salvar(cadastro);
+      }
+      if (!acao && (indicacao.opcoes || indicacao.sedentario || idadeInformada && Number(idadeInformada[1]) >= 16 && !cadastro.consulta?.modalidade && !cadastro.opcoes.length && !cadastro.confirmada)
+        && !interesse.modalidade && !perguntaGradeDia(texto)) {
+        const idade = cadastro.consulta?.idade ?? null;
+        if (cadastro.participante === "crianca" && idade === null) return "Qual é a idade de quem vai fazer a aula?";
+        const resposta = apresentarModalidadesCt(idade, indicacao.sedentario);
+        if (!cadastro.confirmada && resposta.endsWith(PERGUNTA_AGENDAR_EXPERIMENTAL)) {
+          await salvar({...cadastro, aguardandoRetomada:true, modalidadePendente:"Taekwondo", modalidadePreferida:"Taekwondo",
+            opcoes: cadastro.consulta?.modalidade === "Taekwondo" ? cadastro.opcoes : [],
+            opcaoEscolhida: cadastro.consulta?.modalidade === "Taekwondo" ? cadastro.opcaoEscolhida : undefined,
+            consulta:{modalidade:"Taekwondo",idade,mostradas:[]}});
+        }
+        return resposta;
       }
       if (!acao && perguntaGradeDia(texto)) {
         cadastro={...cadastro,consultaPorDia:true,modalidadePreferida:null,modalidadePendente:undefined,objetivo:undefined,

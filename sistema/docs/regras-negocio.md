@@ -377,3 +377,9 @@ Antes de pedir nome completo, idade ou endereço, o fluxo pergunta “Vamos agen
 
 Próximas datas reais: sem turma no dia pedido, apresentar alternativas reais posteriores, mantendo modalidade, idade e turno. Guardar a data original até o cliente aceitar a alternativa ou escolher uma opção; não permitir preparar reserva de outro dia antes disso. O relógio continua dinâmico, inclusive depois da meia-noite.
 
+## Indicação de modalidade e retomada da experimental
+
+Pedidos de indicação apresentam Taekwondo, Muay Thai e Jiu-Jitsu com um benefício de cada e a pergunta de escolha em outro balão. Para crianças abaixo de 14, priorizar Taekwondo a partir dos 3 anos. Dos 16 anos em diante, destacar Jiu-Jitsu e Muay Thai. Em perguntas sobre sedentarismo, orientar que as três modalidades ajudam a voltar a se movimentar e adaptar a indicação à idade conhecida. As regras de elegibilidade das turmas continuam na consulta da agenda.
+
+Dúvidas sobre o preço da experimental ou a possibilidade de se machucar recebem a resposta antes do convite de agendamento, em balões separados. O aceite retoma o horário ou a próxima informação necessária. A confirmação da reserva continua condicionada à escolha válida e aos dados do participante.
+

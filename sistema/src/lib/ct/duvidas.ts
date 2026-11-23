@@ -6,7 +6,7 @@ import { perguntaMuayInfantil, respostaMuayInfantil } from "./muay-infantil";
 import { equipamentosDaModalidade } from "./equipamentos";
 
 /** Dúvida informativa é respondida antes de qualquer consulta ou mutação da agenda. */
-export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeContexto?:string|null):{assunto:AssuntoCt;resposta:string}|null {
+export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeContexto?:string|null):{assunto:AssuntoCt;resposta:string;convidarExperimental?:boolean}|null {
  const t=texto.normalize("NFD").replace(/\p{M}/gu,"").toLowerCase().replace(/\s+/g," ").trim();
  const modalidade=modalidadeMencionada(texto);
  const responder=(assunto:keyof typeof respostasCt)=>({assunto,resposta:respostasCt[assunto]});
@@ -19,7 +19,10 @@ export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeCon
    return {assunto:"professores",resposta:alvo==="Taekwondo"?respostasCt.professorTae:alvo?respostasCt.professorLutas:`${respostasCt.professorTae} ${respostasCt.professorLutas}`};
  }
  if (/\b(?:documentos?|rg|ficha|autorizacao)\b/.test(t) && /matricul|precis|necess|levar|responsavel|document/.test(t)) return responder("documentos");
- if (/(?:experimental|experimentar).*(?:gratuit|paga|pago|custa|preco|valor)|(?:gratuit|preco|valor).*(?:experimental)/.test(t)) return responder("experimental");
+ if (/(?:experimental|experimentar).*(?:gratuit|paga|pago|custa|preco|valor)|(?:gratuit|preco|valor|custa).*(?:experimental)/.test(t)) return responder("experimental");
+ if (/\b(?:e se|tenho medo de|posso)\b.*\b(?:machucar|lesionar|me lesionar|me ferir)\b/.test(t)) {
+   return {assunto:"adaptacao",resposta:"Na experimental, o professor orienta os movimentos e adapta os exercícios ao seu ritmo. Se sentir dor ou se machucar, pare e avise o professor na hora.",convidarExperimental:true};
+ }
  if (/\b(?:feminina|feminino|mulheres|mulher|homens)\b/.test(t) && !agenda) return responder("feminina");
  if (/competicao|competicoes|campeonato/.test(t) && !agenda) return responder("competicao");
  if (/quantos.*alunos|muitos?.*alunos|alunos.*(?:por|na|em cada).*turma|tamanho.*turma/.test(t)) return responder("tamanho");

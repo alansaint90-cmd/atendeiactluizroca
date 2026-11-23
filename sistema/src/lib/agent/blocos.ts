@@ -1,4 +1,5 @@
 import { PERGUNTA_RETOMADA_AGENDAMENTO } from '../ct/equipamentos';
+import { PERGUNTA_AGENDAR_EXPERIMENTAL, PERGUNTA_MODALIDADES } from '../ct/modalidades';
 /** Divide em parágrafos e frases, preservando o texto e os IDs de cada envio. */
 export function dividirResposta(texto: string, limite = 450): string[] {
   const partes: string[] = [];
@@ -17,7 +18,10 @@ export function dividirResposta(texto: string, limite = 450): string[] {
 
 /** Preserva os três balões da confirmação da experimental. */
 export function mensagensDaAula(texto: string): string[] {
-  if(texto.endsWith(`\n\n${PERGUNTA_RETOMADA_AGENDAMENTO}`))return texto.split('\n\n').flatMap(p=>dividirResposta(p));
+  const perguntasSeparadas = [PERGUNTA_RETOMADA_AGENDAMENTO, PERGUNTA_AGENDAR_EXPERIMENTAL, PERGUNTA_MODALIDADES];
+  if (perguntasSeparadas.some(pergunta => texto.endsWith(`\n\n${pergunta}`))) {
+    return texto.split("\n\n").flatMap(parte => dividirResposta(parte));
+  }
   if (/^(?:Sua experimental de |Boa! Vamos de )/u.test(texto)) return texto.split("\n\n").flatMap(parte=>dividirResposta(parte));
   if (/^Para (?:seu objetivo|a criança), recomendo /u.test(texto)) {
     const [explicacao,...agenda] = texto.split("\n\n");

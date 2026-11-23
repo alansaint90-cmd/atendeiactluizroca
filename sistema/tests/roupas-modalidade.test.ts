@@ -17,12 +17,33 @@ test('equipamentos respeitam a modalidade explícita ou atual sem listar outras'
  assert.doesNotMatch(responderDuvidaCt('O que levar?')!.resposta,/Muay|empréstimo/);
 });
 
-test('dúvida de roupa mantém a escolha e retoma em outro balão, sem reservar no aceite da retomada',async()=>{
+test('indicações e dúvidas da experimental chegam em dois balões e retomam a etapa sem reservar no aceite',async()=>{
  const cliente=new PGlite(),banco=drizzle(cliente),cache=new Map<string,string>();
  const redis={get:async(k:string)=>cache.get(k)??null,eval:async(_s:string,_n:number,_l:string,k:string,_t:string,v:string)=>{cache.set(k,v);return 1;}} as unknown as Redis;
  const atender=agendaAulasDoAgente(banco,redis,'lease','roupas','5571000000001',async()=>true);
  try {
-  await applyMigrations(banco);await atender('É para meu filho de 9');await atender('1');
+  const recomendar=agendaAulasDoAgente(banco,redis,'lease','recomendar','5571000000002',async()=>true);
+  await applyMigrations(banco);
+  await recomendar('Quero agendar pra mim agora');
+  for (const pedido of ['O que vc me indicaria?\nTenho 44 anos','Vcs tem oq aí pra mim?\nTenho 44 anos','O que é melhor para minha saúde? Estou sedentária.']) {
+   const partes=mensagensDaAula((await recomendar(pedido))!);
+   assert.equal(partes.length,2);
+   assert.match(partes[0],/indicaria Jiu-Jitsu ou Muay Thai/);
+   assert.match(partes[0],/Taekwondo trabalha.*Muay Thai trabalha.*Jiu-Jitsu trabalha/s);
+   assert.equal(partes[1],'Qual das três você prefere?');
+   if(pedido.includes('sedentária')) assert.match(partes[0],/sair do sedentarismo/);
+  }
+  const infantil=agendaAulasDoAgente(banco,redis,'lease','infantil','5571000000003',async()=>true);
+  assert.match((await infantil('O que você me indicaria para meu filho de 9 anos?'))!,/minha indicação é o Taekwondo/);
+  await recomendar('Muay Thai');
+  for(const pergunta of ['Vou fazer o experimental. Mas qual o valor da aula?','E se eu me machucar na aula?']) {
+   const partes=mensagensDaAula((await recomendar(pergunta))!);
+   assert.equal(partes.length,2);
+   assert.match(partes[0],/gratuita|avise o professor/);
+   assert.equal(partes[1],'Vamos agendar sua aula experimental?');
+  }
+  assert.match((await recomendar('Sim'))!,/Qual dos horários/);
+  await atender('É para meu filho de 9');await atender('1');
   const antes=JSON.parse(cache.get('atendeia:{evolution}:cadastro-aula:roupas')!);
   const partes=mensagensDaAula((await atender('Qual roupa ele deve ir?'))!);
   assert.equal(partes.length,2);assert.doesNotMatch(partes[0],/Muay|Jiu/);assert.equal(partes[1],'Podemos prosseguir com o agendamento?');
