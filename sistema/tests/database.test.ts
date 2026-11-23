@@ -17,8 +17,10 @@ test("migrações PostgreSQL preservam credenciais e impõem integridade", async
 
     await t.test("cria todas as tabelas com auditoria e FK RESTRICT", async () => {
       const tables = await client.query<{ table_name: string }>("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name LIKE 'atendeia_%'");
-      assert.equal(tables.rows.length, 40);
-      for (const nome of ["atendeia_agenda_horarios", "atendeia_agenda_horarios_reservas", "atendeia_aulas", "atendeia_aulas_reservas", "atendeia_campanhas", "atendeia_campanha_destinatarios"]) assert.ok(tables.rows.some(tabela => tabela.table_name === nome));
+      assert.equal(tables.rows.length, 41);
+      for (const nome of ["atendeia_agenda_horarios", "atendeia_agenda_horarios_reservas", "atendeia_aulas", "atendeia_aulas_reservas", "atendeia_campanhas", "atendeia_campanha_destinatarios", "atendeia_empresa"]) {
+        assert.ok(tables.rows.some(tabela => tabela.table_name === nome));
+      }
       for (const { table_name } of tables.rows) {
         const columns = await client.query<{ column_name: string }>("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name=$1", [table_name]);
         for (const expected of ["created_at", "updated_at", "deleted_at", "is_deleted", "modified_by"]) assert.ok(columns.rows.some(row => row.column_name === expected), `${table_name}: ${expected}`);
@@ -33,6 +35,7 @@ test("migrações PostgreSQL preservam credenciais e impõem integridade", async
       assert.deepEqual(rows.rows, [{ encrypted_payload: "existing-encrypted-secret", version: 5 }]);
       assert.equal((await client.query("SELECT id FROM atendeia_departments WHERE is_deleted=false")).rows.length, 4);
       assert.equal((await client.query("SELECT id FROM atendeia_users WHERE enabled=true")).rows.length, 0);
+      assert.deepEqual((await client.query("SELECT nome, foto FROM atendeia_empresa WHERE is_deleted=false")).rows, [{ nome: "CT Luiz Roca", foto: null }]);
     });
 
     await t.test("rejeita referências inválidas e permite reutilização após exclusão lógica", async () => {
