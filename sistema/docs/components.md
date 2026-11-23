@@ -3,9 +3,9 @@
 Como construir e organizar componentes nesta base. A IA DEVE seguir este padrao.
 Arquivo-ouro de referencia: [`templates/component.tsx`](../templates/component.tsx).
 
-## Identidade Atende Pro IA
+## Identidade Atende IA Pro
 
-O componente `Marca` em `src/components/marca.tsx` reúne o robô, o nome Atende Pro IA e a identificação do CT Luiz Roca. O ícone da aba fica em `src/app/icon.svg`. A fonte Inter é servida localmente pelo Next.js e tem sua licença em `src/app/_fonts/OFL-Inter.txt`.
+O componente `Marca` em `src/components/marca.tsx` reúne o robô, o nome Atende IA Pro e a identificação do CT Luiz Roca. O ícone da aba fica em `src/app/icon.svg`. A fonte Inter é servida localmente pelo Next.js e tem sua licença em `src/app/_fonts/OFL-Inter.txt`.
 
 O tema de `src/styles/atende-pro.css` adapta a paleta e os componentes compartilhados do AtendeFarma. O layout raiz carrega os tokens de cor, borda, raio e sombra para todas as páginas, incluindo as que ficam fora do painel. A classe `tema-atende-pro` aplica o menu roxo, o degradê das ações e as superfícies ao painel. Login e primeiro acesso usam os mesmos tokens em `src/app/entrar/login.css`.
 

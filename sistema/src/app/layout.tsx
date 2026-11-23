@@ -18,7 +18,7 @@ import "@/styles/atende-pro.css";
 
 const inter = localFont({ src: "./_fonts/inter-latin.woff2", weight: "100 900", variable: "--fonte-atende-pro", display: "swap" });
 
-export const metadata: Metadata = { title: "Atende Pro IA | CT Luiz Roca", description: "Atendimento de novos alunos e agendamento de aulas experimentais do Centro de Treinamento Luiz Roca." };
+export const metadata: Metadata = { title: "Atende IA Pro | CT Luiz Roca", description: "Atendimento de novos alunos e agendamento de aulas experimentais do Centro de Treinamento Luiz Roca." };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="pt-BR" className={inter.variable}><body>{children}</body></html>;
 }

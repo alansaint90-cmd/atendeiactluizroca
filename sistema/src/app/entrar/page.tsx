@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { obterSessao } from "@/lib/auth/sessao";
 import { FormularioLogin } from "./_components/formulario";
 import { TelaAcesso } from "./_components/tela-acesso";
-export const metadata = { title: { absolute: "Atende Pro IA" } };
+export const metadata = { title: { absolute: "Atende IA Pro" } };
 export const dynamic = "force-dynamic";
 export default async function Entrar() {
   if (process.env.NODE_ENV === "development" && process.env.ATENDEIA_PREVIA_LOCAL === "true") return <TelaAcesso><FormularioLogin previaLocal /></TelaAcesso>;

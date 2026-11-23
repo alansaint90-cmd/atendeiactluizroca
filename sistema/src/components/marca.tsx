@@ -3,13 +3,13 @@ import { useId } from "react";
 interface MarcaProps { grande?: boolean; clara?: boolean; slogan?: boolean }
 
 export function NomeMarca() {
-  return <span className="marca-palavra"><span>Atende</span>{" "}<span className="marca-selo">Pro</span>{" "}<span className="marca-ia">IA</span></span>;
+  return <span className="marca-palavra"><span>Atende</span>{" "}<span className="marca-ia">IA</span>{" "}<span className="marca-selo">Pro</span></span>;
 }
 
 /** Versão vetorial da marca de referência, legível também no menu recolhido. */
 export function Marca({ grande = false, clara = false, slogan = false }: MarcaProps) {
   const gradiente = useId();
-  return <div className={`marca${grande ? " large" : ""}${clara ? " marca-clara" : ""}`} aria-label="Atende Pro IA — CT Luiz Roca">
+  return <div className={`marca${grande ? " large" : ""}${clara ? " marca-clara" : ""}`} aria-label="Atende IA Pro — CT Luiz Roca">
     <svg className="marca-simbolo" width="48" height="54" viewBox="0 0 96 108" aria-hidden="true">
       <defs><linearGradient id={gradiente} x1="0" y1="1" x2="1" y2="0"><stop stopColor="#7C3AED" /><stop offset=".5" stopColor="#9270FF" /><stop offset="1" stopColor="#4293FF" /></linearGradient></defs>
       <path d="M49 25V13" stroke="#8B5CF6" strokeWidth="7" strokeLinecap="round" />

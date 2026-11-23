@@ -7,7 +7,7 @@ import "../login.css";
 export function TelaAcesso({children}:{children:ReactNode}) {
  return <main className="atende-login">
   <div className="atende-login-layout">
-   <section className="atende-login-apresentacao" aria-label="Atende Pro IA">
+   <section className="atende-login-apresentacao" aria-label="Atende IA Pro">
     <span className="atende-login-etiqueta">SEU ATENDIMENTO, MAIS PERTO</span>
     <div className="atende-login-nome"><NomeMarca /></div>
     <p className="atende-login-chamada">Conversas que conectam.<br/>Um atendimento que acolhe.</p>
