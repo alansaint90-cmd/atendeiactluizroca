@@ -87,7 +87,7 @@ test("falha ao consultar servidor exibe erro e permite nova tentativa posteriorm
 test("URL de webhook usa a origem do navegador somente no cliente", () => {
   expect(renderToString(<Settings />)).not.toContain(`${window.location.origin}/api/webhooks/evolution`);
   render(<Settings />);
-  expect(screen.getByLabelText("URL de recebimento do Atende Aí Gym")).toHaveValue(`${window.location.origin}/api/webhooks/evolution`);
+  expect(screen.getByLabelText("URL de recebimento do Atende Pro IA")).toHaveValue(`${window.location.origin}/api/webhooks/evolution`);
 });
 
 test("erro ao sincronizar fecha a confirmação e mostra a resposta do servidor", async () => {

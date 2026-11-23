@@ -6,9 +6,9 @@ import "../login.css";
 export function TelaAcesso({children}:{children:ReactNode}) {
  return <main className="atende-login">
   <div className="atende-login-layout">
-   <section className="atende-login-apresentacao" aria-label="Atende Aí">
+   <section className="atende-login-apresentacao" aria-label="Atende Pro IA">
     <span className="atende-login-etiqueta">SEU ATENDIMENTO, MAIS PERTO</span>
-    <div className="atende-login-nome" aria-label="Atende Aí">Atende <span>Aí</span></div>
+    <div className="atende-login-nome">Atende <span>Pro IA</span></div>
     <p className="atende-login-chamada">Conversas que conectam.<br/>Um atendimento que acolhe.</p>
     <div className="atende-login-robo"><Image src={agente} alt="Agente virtual FXP com headset e notebook" priority sizes="(max-width: 700px) 660px, 1060px" /></div>
     <p className="atende-login-legenda"><span aria-hidden="true"/> Inteligência artificial. Conexões reais.</p>
