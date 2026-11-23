@@ -4,7 +4,7 @@
 .atende-login-apresentacao{padding:10px 0}
 .atende-login-etiqueta{display:inline-block;padding:7px 12px;border-radius:30px;background:var(--accent);color:var(--primary-hover);font-size:10px;font-weight:750;letter-spacing:1.4px}
 .atende-login-nome{margin:15px 0 14px;font-size:clamp(42px,5vw,65px);font-weight:800;letter-spacing:-.05em;line-height:1.05;color:var(--text)}
-.atende-login-nome span{background:var(--pro-gradiente);background-clip:text;-webkit-background-clip:text;color:transparent}
+.atende-login-nome .marca-ia{background:var(--pro-gradiente);background-clip:text;-webkit-background-clip:text;color:transparent}
 .atende-login-chamada{font-size:19px;line-height:1.4;font-weight:650;letter-spacing:-.4px;margin:0 0 25px;color:var(--text)}
 .atende-login-robo{width:323px;max-width:100%;aspect-ratio:323/341;position:relative;overflow:hidden;border-radius:24px;background:#e9d9ff;box-shadow:0 22px 50px -30px #6423dc70}
 .atende-login-robo img{position:absolute;width:293.19%;max-width:none;height:auto;left:-145.2%;top:-1.76%;display:block}

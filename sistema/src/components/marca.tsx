@@ -2,6 +2,10 @@ import { useId } from "react";
 
 interface MarcaProps { grande?: boolean; clara?: boolean; slogan?: boolean }
 
+export function NomeMarca() {
+  return <span className="marca-palavra"><span>Atende</span>{" "}<span className="marca-selo">Pro</span>{" "}<span className="marca-ia">IA</span></span>;
+}
+
 /** Versão vetorial da marca de referência, legível também no menu recolhido. */
 export function Marca({ grande = false, clara = false, slogan = false }: MarcaProps) {
   const gradiente = useId();
@@ -14,7 +18,7 @@ export function Marca({ grande = false, clara = false, slogan = false }: MarcaPr
       <rect x="17" y="38" width="62" height="45" rx="18" fill="#0F172A" />
       <path d="M29 59c0-9 12-9 12 0m14 0c0-9 12-9 12 0M41 70c4 4 10 4 14 0" fill="none" stroke={`url(#${gradiente})`} strokeWidth="5" strokeLinecap="round" />
     </svg>
-    <span className="marca-textos"><span className="marca-nome">Atende <span className="marca-ia">Pro IA</span></span><span className="ct-marca-unidade">CT Luiz Roca</span>
+    <span className="marca-textos"><span className="marca-nome"><NomeMarca /></span><span className="ct-marca-unidade">CT Luiz Roca</span>
       {slogan && <span className="marca-slogan">Novos alunos.<br />Novas histórias no tatame.</span>}
     </span>
   </div>;
