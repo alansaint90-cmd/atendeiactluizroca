@@ -1,15 +1,15 @@
 import { useId } from "react";
 
-interface MarcaProps { grande?: boolean; clara?: boolean; slogan?: boolean; apenasSimbolo?: boolean }
+interface MarcaProps { grande?: boolean; clara?: boolean; slogan?: boolean }
 
 export function NomeMarca() {
   return <span className="marca-palavra"><span>Atende</span>{" "}<span className="marca-ia">IA</span>{" "}<span className="marca-selo">Pro</span></span>;
 }
 
 /** Versão vetorial da marca de referência, legível também no menu recolhido. */
-export function Marca({ grande = false, clara = false, slogan = false, apenasSimbolo = false }: MarcaProps) {
+export function Marca({ grande = false, clara = false, slogan = false }: MarcaProps) {
   const gradiente = useId();
-  return <div className={`marca${grande ? " large" : ""}${clara ? " marca-clara" : ""}`} role="img" aria-label={apenasSimbolo ? "Atende IA Pro" : "Atende IA Pro — CT Luiz Roca"}>
+  return <div className={`marca${grande ? " large" : ""}${clara ? " marca-clara" : ""}`} role="img" aria-label="Atende IA Pro">
     <svg className="marca-simbolo" width="48" height="54" viewBox="0 0 96 108" aria-hidden="true">
       <defs><linearGradient id={gradiente} x1="0" y1="1" x2="1" y2="0"><stop stopColor="#7C3AED" /><stop offset=".5" stopColor="#9270FF" /><stop offset="1" stopColor="#4293FF" /></linearGradient></defs>
       <path d="M49 25V13" stroke="#8B5CF6" strokeWidth="7" strokeLinecap="round" />
@@ -18,8 +18,8 @@ export function Marca({ grande = false, clara = false, slogan = false, apenasSim
       <rect x="17" y="38" width="62" height="45" rx="18" fill="#0F172A" />
       <path d="M29 59c0-9 12-9 12 0m14 0c0-9 12-9 12 0M41 70c4 4 10 4 14 0" fill="none" stroke={`url(#${gradiente})`} strokeWidth="5" strokeLinecap="round" />
     </svg>
-    {!apenasSimbolo && <span className="marca-textos"><span className="marca-nome"><NomeMarca /></span><span className="ct-marca-unidade">CT Luiz Roca</span>
+    <span className="marca-textos"><span className="marca-nome"><NomeMarca /></span>
       {slogan && <span className="marca-slogan">Novos alunos.<br />Novas histórias no tatame.</span>}
-    </span>}
+    </span>
   </div>;
 }

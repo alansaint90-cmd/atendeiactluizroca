@@ -19,6 +19,8 @@ afterEach(() => { cleanup(); vi.clearAllMocks(); });
 test("meu cadastro mantém menu lateral e as opções da conta", () => {
   render(<PerfilPainel papel="admin" nome="Wellington Junior" email="wellington@exemplo.com"><h1>Meu cadastro</h1></PerfilPainel>);
   expect(screen.getByRole("navigation", { name: "Menu principal" })).toBeInTheDocument();
+  expect(screen.getByRole("img", { name: "Atende IA Pro" })).toHaveTextContent(/^Atende IA Pro$/);
+  expect(screen.getByText("CT Luiz Roca").closest(".topbar")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Dashboard" })).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Configurações" })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Opções de CT Luiz Roca" })).not.toBeInTheDocument();

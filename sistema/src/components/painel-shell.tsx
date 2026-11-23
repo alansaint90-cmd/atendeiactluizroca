@@ -31,7 +31,7 @@ export function PainelShell({ papel, nome, email, foto, rota, titulo, aoNavegar,
   const menu = nav.filter(([id]) => podeAcessarRotaPainel(papel, id) && (!rotasVisiveis || rotasVisiveis.includes(id)));
 
   return <div className={`shell tema-atende-pro${recolhido ? " sidebar-collapsed" : ""}`}>
-    <aside className="sidebar"><div className="sidebar-marca"><Marca clara apenasSimbolo /></div><nav aria-label="Menu principal">
+    <aside className="sidebar"><div className="sidebar-marca"><Marca clara /></div><nav aria-label="Menu principal">
       {menu.map(([id, label, ico]) => <button key={id} type="button" className={rota === id ? "active" : ""}
         data-route={id} aria-label={label} aria-current={rota === id ? "page" : undefined}
         onClick={() => aoNavegar(id)}><span className="nav-icone" aria-hidden="true" dangerouslySetInnerHTML={{ __html: icon(ico) }} /><span className="nav-label">{label}</span></button>)}
