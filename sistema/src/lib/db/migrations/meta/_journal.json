@@ -169,6 +169,13 @@
       "when": 1795136400000,
       "tag": "0023_politicas_ct_confirmadas",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795405078789,
+      "tag": "0024_identidade_empresa",
+      "breakpoints": true
     }
   ]
 }

@@ -15,6 +15,7 @@ import "@/styles/ct-luiz-roca.css";
 import "@/styles/conversas.css";
 import "@/styles/campanhas.css";
 import "@/styles/atende-pro.css";
+import "@/styles/empresa.css";
 
 const inter = localFont({ src: "./_fonts/inter-latin.woff2", weight: "100 900", variable: "--fonte-atende-pro", display: "swap" });
 

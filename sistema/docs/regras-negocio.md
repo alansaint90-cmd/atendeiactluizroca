@@ -1,5 +1,11 @@
 # Regras do protótipo
 
+## Identidade da empresa no cabeçalho
+
+O cabeçalho do painel e do perfil exibe o nome e a foto circular da empresa. Sem foto, exibe as iniciais. O menu lateral conserva o símbolo do Atende IA Pro. A seção Identidade da empresa em Configurações é acessível também pelo botão do cabeçalho. Somente o super administrador salva nome e foto (JPG ou PNG, até 2 MB).
+
+A migração `0024_identidade_empresa` cria a tabela `atendeia_empresa` com o nome inicial CT Luiz Roca. A ação `salvarEmpresa` atualiza esse cadastro único, valida a imagem, impede sobrescrita de alterações simultâneas e registra os campos alterados em auditoria sem guardar cópias da foto.
+
 ## Modo de atendimento, player e respostas contextuais — 22/11/2026
 
 A caixa de entrada exibe no cabeçalho quem conduz a conversa: IA ou humano/manual. Tomada humana no SQL e pausa manual real no Redis prevalecem; configuração indisponível mostra estado desconhecido e IA sem configuração válida aparece pausada. Não é indicador de saúde do worker. Atualizar no mesmo ciclo da caixa de entrada, com texto legível também no celular. Áudios recebidos/enviados, inclusive registros antigos, usam player com carregamento sob demanda e opção de tentar novamente. GET /api/conversas/mensagens/[id]/audio exige sessão individual e operador ou superior, procura mensagem/conversa/contato/canal não excluídos e recupera o áudio pelo ID na instância configurada da Evolution. Não usar URLs do webhook ou do cliente, não expor API key, limitar resposta a 10 MB, revalidar o registro e auditar acesso. Resposta privada sem cache, MIME restrito e range para o player. Disponibilidade de arquivos antigos depende da Evolution; não inventar um arquivo quando não houver mídia. Não alterar históricos ou criar migrações. FAQ de roupas cita só a modalidade explícita ou atual; sem modalidade, usar orientação geral. Em agendamento pendente, concluir a resposta com outro balão “Podemos prosseguir com o agendamento?”, preservando dados e horário. Aceitar retomar não confirma reserva; depois de reserva concluída, não insistir em agendar novamente. Implantação manual.

@@ -147,3 +147,4 @@ export const auditLogs = pgTable("atendeia_audit_logs", {
 }, t => [index("atendeia_audit_entity").on(t.entityType, t.entityId, t.createdAt)]);
 
 export * from "./schema/campanhas";
+export * from "./schema/empresa";

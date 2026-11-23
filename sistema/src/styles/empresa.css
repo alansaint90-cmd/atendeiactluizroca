@@ -1,0 +1,86 @@
+.empresa-menu {
+  position: relative;
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  min-width: 0;
+  max-width: min(44%, 260px);
+}
+.empresa-identidade {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 0;
+  gap: 8px;
+  padding: 3px 8px 3px 4px;
+  color: var(--text);
+}
+.empresa-acionador {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+}
+.empresa-acionador:hover, .empresa-acionador[aria-expanded="true"] {
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+.empresa-avatar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--primary-hover);
+  font-weight: 700;
+  overflow: hidden;
+}
+.empresa-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.empresa-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 650;
+}
+.empresa-seta {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  margin: 0 2px 3px 0;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+.empresa-opcoes {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: calc(100% + 8px);
+  inset-inline-end: 0;
+  width: min(256px, calc(100vw - 32px));
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.empresa-opcoes button {
+  width: 100%;
+  min-height: 44px;
+  justify-content: flex-start;
+  padding-inline: 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  text-align: start;
+}
+.empresa-opcoes button:hover { background: var(--accent); }
+.empresa-formulario form { display: grid; gap: 10px; max-width: 540px; }
+.empresa-formulario form > .primary { justify-self: start; }
+.empresa-formulario .profile-photo-row { margin-block: 6px; justify-content: flex-start; }
+.empresa-formulario input { scroll-margin-top: 88px; }
+.shell .topbar > strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 600px) {
+  .empresa-menu { max-width: 60%; }
+  .empresa-identidade { gap: 6px; }
+}
