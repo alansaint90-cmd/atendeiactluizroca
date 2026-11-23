@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { AvatarContato } from "./avatar";
+import { AudioMensagem } from "./audio-mensagem";
+import type { ModoAtendimento } from "@/lib/atendimento/status";
 
-export interface MensagemConversa { id: string; conteudo: string | null; direcao: string; instante: string }
-export interface ConversaLista { id: string; nome: string; telefone: string | null; canal: string; status: string; fotoUrl?: string | null; mensagens: MensagemConversa[] }
+export interface MensagemConversa { id: string; conteudo: string | null; direcao: string; instante: string; tipo?:string }
+export interface ConversaLista { id: string; nome: string; telefone: string | null; canal: string; status: string; modoAtendimento?:ModoAtendimento; fotoUrl?: string | null; mensagens: MensagemConversa[] }
 interface CaixaEntradaProps {
   conversas: ConversaLista[]; selecionada: string; aoSelecionar: (id: string) => void;
   resposta?: ReactNode; atualizar: () => void; atualizando?: boolean;
@@ -12,6 +14,8 @@ const normalizar = (texto: string) => texto.normalize("NFD").replace(/[\u0300-\u
 const hora = (instante: string) => new Date(instante).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 const dia = (instante: string) => new Date(instante).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
 const status: Record<string, string> = { open: "Em atendimento", pending: "Pendente", closed: "Encerrada" };
+const modos:Record<ModoAtendimento,string>={ia:'Atendimento com IA',humano:'Atendimento humano',pausada:'IA pausada',indisponivel:'Status indisponível',encerrado:'Atendimento encerrado'};
+const audio=(m:MensagemConversa)=>m.tipo==='audio'||/^\[(?:audio|áudio)\]$/iu.test(m.conteudo??'');
 
 /** Apresentação compartilhável entre instalações; autenticação e envio ficam no adaptador. */
 export function CaixaEntrada({ conversas, selecionada, aoSelecionar, resposta, atualizar, atualizando = false }: CaixaEntradaProps) {
@@ -22,6 +26,7 @@ export function CaixaEntrada({ conversas, selecionada, aoSelecionar, resposta, a
   const historico = useRef<HTMLDivElement>(null), acompanhar = useRef(true), anterior = useRef(""), estavaAberta = useRef(false);
   const conversa = conversas.find(c => c.id === selecionada) ?? conversas[0];
   const ultimaId = conversa?.mensagens.at(-1)?.id;
+  const modo=conversa?.modoAtendimento ?? (conversa?.status==='closed'?'encerrado':'indisponivel');
   const filtradas = conversas.filter(c => normalizar(`${c.nome} ${c.telefone ?? ""} ${c.canal}`).includes(normalizar(busca.trim())));
   useEffect(() => {
     const elemento = historico.current;
@@ -41,7 +46,7 @@ export function CaixaEntrada({ conversas, selecionada, aoSelecionar, resposta, a
         return <li key={c.id}><button type="button" className="conversas-contato" aria-label={`Abrir conversa com ${c.nome} · ${c.canal}`} aria-pressed={conversa?.id === c.id}
           onClick={() => { aoSelecionar(c.id); definirAberta(true); }}>
           <AvatarContato nome={c.nome} fotoUrl={c.fotoUrl} /><span className="conversas-resumo"><span className="conversas-identificacao"><strong>{c.nome}</strong>{ultima && <time dateTime={ultima.instante}>{hora(ultima.instante)}</time>}</span>
-            <span className="conversas-previa">{ultima ? `${ultima.direcao === "outbound" ? "Você: " : ""}${ultima.conteudo || "Mensagem sem texto"}` : "Nenhuma mensagem no histórico"}</span>
+            <span className="conversas-previa">{ultima ? `${ultima.direcao === "outbound" ? "Você: " : ""}${audio(ultima)?'Áudio':ultima.conteudo || "Mensagem sem texto"}` : "Nenhuma mensagem no histórico"}</span>
             <span className="conversas-canal">{c.canal} · {status[c.status] ?? c.status}</span></span>
         </button></li>;
       })}</ul>
@@ -50,7 +55,7 @@ export function CaixaEntrada({ conversas, selecionada, aoSelecionar, resposta, a
     <div className="conversas-principal">
       {conversa ? <><header className="conversas-barra conversas-cabecalho">
         <button type="button" className="conversas-voltar" onClick={() => { definirAberta(false); campoBusca.current?.focus(); }} aria-label="Voltar para a lista de conversas">←</button>
-        <AvatarContato nome={conversa.nome} fotoUrl={conversa.fotoUrl} /><div><h2 ref={titulo} tabIndex={-1}>{conversa.nome}</h2><span>{conversa.telefone ?? "Sem telefone"} · {conversa.canal} · {status[conversa.status] ?? conversa.status}</span></div>
+        <AvatarContato nome={conversa.nome} fotoUrl={conversa.fotoUrl} /><div className="conversas-dados-contato"><div className="conversas-titulo-contato"><h2 ref={titulo} tabIndex={-1}>{conversa.nome}</h2><span className="conversas-modo" data-modo={modo} aria-live="polite" aria-atomic="true">{modos[modo]}</span></div><span>{conversa.telefone ?? "Sem telefone"} · {conversa.canal} · {status[conversa.status] ?? conversa.status}</span></div>
       </header>
       <div className="conversas-historico" ref={historico} role="region" aria-label={`Histórico de ${conversa.nome}`} tabIndex={0}
         onScroll={e => { const el = e.currentTarget; acompanhar.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80; }}>
@@ -58,7 +63,7 @@ export function CaixaEntrada({ conversas, selecionada, aoSelecionar, resposta, a
         {conversa.mensagens.map((m, i) => <div key={m.id} className="conversas-linha">
           {(i === 0 || dia(m.instante) !== dia(conversa.mensagens[i - 1].instante)) && <span className="conversas-dia">{dia(m.instante)}</span>}
           <article className={`conversas-balao ${m.direcao === "inbound" ? "recebida" : "enviada"}`} aria-label={m.direcao === "inbound" ? "Mensagem recebida" : "Mensagem enviada"}>
-            <p>{m.conteudo || "Mensagem sem texto"}</p><time dateTime={m.instante}>{hora(m.instante)}</time>
+            {audio(m)?<AudioMensagem id={m.id} recebida={m.direcao==='inbound'}/>:<p>{m.conteudo || "Mensagem sem texto"}</p>}<time dateTime={m.instante}>{hora(m.instante)}</time>
           </article></div>)}
         {!conversa.mensagens.length && <p className="conversas-vazio">Nenhuma mensagem neste atendimento.</p>}
       </div><footer className="conversas-resposta">{resposta}</footer></> : <div className="conversas-sem-selecao"><h2>Seu atendimento começa aqui</h2><p>As conversas recebidas pelo WhatsApp aparecerão ao lado.</p></div>}

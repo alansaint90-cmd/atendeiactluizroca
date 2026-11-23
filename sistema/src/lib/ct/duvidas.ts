@@ -3,6 +3,7 @@ import { perguntaFuncionamentoCt, continuacaoFuncionamentoCt, RESPOSTA_FUNCIONAM
 import {modalidadeMencionada} from "../aulas/objetivo";
 import {respostasCt,type AssuntoCt} from "./politicas";
 import { perguntaMuayInfantil, respostaMuayInfantil } from "./muay-infantil";
+import { equipamentosDaModalidade } from "./equipamentos";
 
 /** Dúvida informativa é respondida antes de qualquer consulta ou mutação da agenda. */
 export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeContexto?:string|null):{assunto:AssuntoCt;resposta:string}|null {
@@ -22,7 +23,7 @@ export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeCon
  if (/\b(?:feminina|feminino|mulheres|mulher|homens)\b/.test(t) && !agenda) return responder("feminina");
  if (/competicao|competicoes|campeonato/.test(t) && !agenda) return responder("competicao");
  if (/quantos.*alunos|muitos?.*alunos|alunos.*(?:por|na|em cada).*turma|tamanho.*turma/.test(t)) return responder("tamanho");
- if (/\b(?:equipamentos?|luvas?|bandagens?|kimono|quimono|uniforme|roupas?|garrafinha|garrafa)\b|o que.*levar|precisa comprar/.test(t)) return responder("equipamentos");
+ if (/\b(?:equipamentos?|luvas?|bandagens?|kimono|quimono|uniforme|roupas?|garrafinha|garrafa)\b|o que.*levar|precisa comprar/.test(t)) return {assunto:'equipamentos',resposta:equipamentosDaModalidade(modalidade ?? modalidadeContexto)};
  if (/cancel.*(?:matricula|plano|contrato)|(?:matricula|plano|contrato).*cancel|aviso previo/.test(t)) return responder("cancelamento");
  if (/(?:remarcar|reagendar|cancelar|cancelamento).*(?:experimental|aula)|(?:experimental|aula).*(?:remarcar|cancelar|cancelamento)/.test(t)) return {assunto:"alterarExperimental",resposta:"Para remarcar ou cancelar sua experimental, é só solicitar pelo WhatsApp. Primeiro entendemos o motivo e tentamos outro dia; se você preferir cancelar, respeitamos sua decisão e concluímos o cancelamento."};
  if (/\b(?:repor|reposicao|reposicoes)\b|faltar.*aula|faltar.*semana/.test(t)) return responder("reposicao");

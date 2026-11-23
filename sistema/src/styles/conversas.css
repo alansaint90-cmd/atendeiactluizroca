@@ -31,6 +31,15 @@
 .conversas-canal { font-size:10px; color:var(--muted); }
 .conversas-principal { min-width:0; min-height:0; display:flex; flex-direction:column; }
 .conversas-cabecalho { flex-shrink:0; }
+.conversas-dados-contato { flex:1; overflow-wrap:anywhere; }
+.conversas-titulo-contato { display:flex; align-items:center; flex-wrap:wrap; gap:6px 12px; margin-bottom:3px; }
+.conversas-titulo-contato h2 { margin:0; }
+.conversas-barra .conversas-modo[data-modo] { display:inline-flex; align-items:center; flex-shrink:0; border:1px solid var(--line); border-radius:999px; padding:4px 9px; color:var(--text); background:var(--bg); font-size:12px; font-weight:600; line-height:1.5; white-space:nowrap; }
+.conversas-barra .conversas-modo[data-modo=ia] { color:var(--marca-acao); background:color-mix(in srgb,var(--marca-acao) 8%,var(--surface)); }
+.conversas-barra .conversas-modo[data-modo=humano] { border-color:var(--text); }
+.conversas-balao:has(.conversas-audio) { width:min(340px,92%); }
+.conversas-audio audio { display:block; width:100%; max-width:300px; min-width:0; }
+.conversas-audio button { min-height:44px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); padding:8px 12px; }
 .conversas-voltar { display:none; }
 .conversas-historico { flex:1; min-height:0; overflow:auto; padding:20px 28px; background-color:#f5f2eb; background-image:radial-gradient(#d5cfc344 .8px,transparent .8px); background-size:15px 15px; scroll-padding:16px; }
 .conversas-aviso { margin:0 auto 20px; width:fit-content; border:1px solid #e4dfd5; background:#fffaf0; border-radius:8px; color:#645c4c; padding:6px 12px; text-align:center; font-size:11px; }

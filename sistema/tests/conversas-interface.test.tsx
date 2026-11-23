@@ -46,6 +46,22 @@ test("foto indisponível ou inválida usa iniciais e não executa URL não HTTPS
   tela.rerender(<AvatarContato nome="Álvaro Silva" fotoUrl="javascript:alert(1)"/>);
   expect(tela.container.querySelector("img")).toBeNull();expect(screen.getByText("ÁS")).toBeInTheDocument();
 });
+
+test('cabeçalho atualiza o modo real sem depender apenas de cor',()=>{
+ const props={selecionada:'a',aoSelecionar:vi.fn(),atualizar:vi.fn()};
+ const tela=render(<CaixaEntrada {...props} conversas={[{...conversas[0],modoAtendimento:'ia'}]}/>);
+ expect(screen.getByText('Atendimento com IA')).toHaveAttribute('aria-live','polite');
+ tela.rerender(<CaixaEntrada {...props} conversas={[{...conversas[0],modoAtendimento:'humano'}]}/>);
+ expect(screen.getByText('Atendimento humano')).toBeInTheDocument();expect(screen.queryByText('Atendimento com IA')).not.toBeInTheDocument();
+});
+
+test('áudio antigo mostra controles protegidos, com carregamento sob demanda e recuperação de erro',()=>{
+ render(<CaixaEntrada conversas={[{...conversas[0],mensagens:[{...conversas[0].mensagens[0],id:'audio-teste',tipo:'audio',conteudo:'[audio]'}]}]} selecionada='a' aoSelecionar={vi.fn()} atualizar={vi.fn()}/>);
+ const player=screen.getByLabelText('Ouvir áudio recebido');expect(player).toHaveAttribute('controls');expect(player).toHaveAttribute('preload','none');expect(player).toHaveAttribute('src','/api/conversas/mensagens/audio-teste/audio');
+ expect(screen.queryByText('[audio]')).not.toBeInTheDocument();
+ fireEvent.error(player);expect(screen.getByRole('button',{name:'Tentar ouvir novamente'})).toBeInTheDocument();
+ fireEvent.click(screen.getByRole('button',{name:'Tentar ouvir novamente'}));expect(screen.getByLabelText('Ouvir áudio recebido')).toBeInTheDocument();
+});
 test("mensagem nova não arrasta quem está lendo mensagens anteriores",()=>{
   const props={conversas,selecionada:"a",aoSelecionar:vi.fn(),atualizar:vi.fn()};
   const tela=render(<CaixaEntrada {...props}/>);const historico=screen.getByRole("region",{name:"Histórico de Álvaro Silva"});

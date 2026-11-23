@@ -28,6 +28,8 @@ antes de virar codigo.
 
 ## Matriz — papel MINIMO por acao
 
+O player da caixa de entrada usa `GET /api/conversas/mensagens/[id]/audio`, com sessão autenticada e papel mínimo `operador`, igual à leitura das conversas. O servidor valida a mensagem e o chip, recupera a mídia sem expor credenciais e registra `audio_conversa_acessado` na auditoria.
+
 | Recurso | Ler | Criar | Alterar | Excluir |
 |---------|-----|-------|---------|---------|
 | Lancamentos | visualizador | operador | operador | admin |

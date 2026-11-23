@@ -1,4 +1,5 @@
 import { responderDuvidaCt } from "../ct/duvidas";
+import { PERGUNTA_RETOMADA_AGENDAMENTO } from "../ct/equipamentos";
 import { perguntaMuayInfantil, respostaMuayInfantil } from "../ct/muay-infantil";
 import { cancelamentoDoAgente } from "./cancelamento-agente";
 import type { ReservaContato } from "./alteracao-reserva";
@@ -110,7 +111,8 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         }
         const idade=idadeInformada, pessoal=idadePropriaInformada(texto) || /\bmeu filh[oa]\b/iu.test(texto);
         await salvar({...cadastro,assuntoInformativo:duvida.assunto,...(idade && pessoal ? {participanteProprio:idadePropriaInformada(texto),participante:Number(idade[1])<18?"crianca" as const:"adulto" as const,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? null,idade:Number(idade[1]),mostradas:[]},opcoes:[],opcaoEscolhida:undefined,reserva:undefined}: {})});
-        return duvida.resposta;
+        const retomar=duvida.assunto==='equipamentos' && !cadastro.confirmada && Boolean(cadastro.consulta || cadastro.opcoes.length);
+        return duvida.resposta+(retomar ? `\n\n${PERGUNTA_RETOMADA_AGENDAMENTO}` : '');
       }
       const outrosDias=pediuOutrosDias(texto);
       if (!acao && outrosDias && cadastro.consulta && !cadastro.confirmada) {

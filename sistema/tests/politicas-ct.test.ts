@@ -31,7 +31,7 @@ const perguntas:[string,RegExp][]=[
  ["Com esse valor eu posso fazer aulas todos os dias?",/turma.*mesma modalidade/],
  ["O valor muda por modalidade que eu queira fazer?",/uma modalidade/],
  ["A aula experimental é gratuita?",/gratuita.*única experimental/],
- ["Precisa comprar algum equipamento antes de ir para a aula?",/roupa leve.*água.*kimono.*empréstimo/s],
+ ["Precisa comprar algum equipamento antes de ir para a aula?",/roupa leve.*água.*Muay Thai.*empréstimo/s],
  ["Quais documentos são necessários para a matrícula?",/RG.*ficha.*autorização/],
  ["Tem idade mínima para o Muay Thai?",/14 anos.*10 a 13.*equipe/],
  ["Eu tenho 15 anos, nunca lutei, posso começar no CT?",/Pode começar.*regulares/s],
