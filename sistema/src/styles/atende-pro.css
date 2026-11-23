@@ -171,7 +171,10 @@ html body .shell.tema-atende-pro {
     &.sidebar-collapsed .sidebar nav { display: none; }
     .sidebar .marca .marca-textos { display: flex; }
     .sidebar .marca-nome { font-size: 20px; }
-    .sidebar .account { display: none; }
+    .sidebar .account { margin-top: 0; padding-block-start: 10px; }
+    &.sidebar-collapsed .sidebar .account-identity { flex-wrap: nowrap; justify-content: flex-start; }
+    &.sidebar-collapsed .sidebar .account-details { display: grid; }
+    .sidebar .account-menu, &.sidebar-collapsed .sidebar .account-menu { left: 0; top: calc(100% + 5px); bottom: auto; }
     .topbar { padding-inline: 16px; }
     .content { padding: 16px; gap: 20px; }
     .content.content-conversas { padding: 8px; }

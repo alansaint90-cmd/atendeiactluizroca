@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function Perfil() {
   const sessao = await obterSessao(); if (!sessao) redirect("/entrar");
   const [r, perfil, empresa] = await Promise.all([minhasSessoes(), carregarMeuPerfil(), lerEmpresa(db())]);
-  return <PerfilPainel papel={sessao.papel} nome={sessao.nome} email={sessao.email} foto={perfil.ok ? perfil.dados.foto : null} empresa={empresa}>
+  return <PerfilPainel papel={sessao.papel} email={sessao.email} empresa={empresa}>
     <section className="profile-heading"><h1>Meu cadastro</h1><p>Seus dados e a segurança da sua conta.</p></section>
     {perfil.ok ? <PerfilDados inicial={perfil.dados} /> : <p role="alert">{perfil.erro}</p>}
     <Senha />

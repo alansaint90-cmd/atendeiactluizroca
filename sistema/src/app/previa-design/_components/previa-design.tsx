@@ -25,7 +25,7 @@ export function PreviaDesign() {
   function navegar(r: string) { setRota(r); history.pushState(null, "", `/previa-design?view=${r}`); window.scrollTo({ top: 0 }); }
   function salvar(e: EstadoLocal) { const validado = lerEstadoLocal(JSON.stringify(e)); localStorage.setItem(CHAVE_CT, JSON.stringify(validado)); setEstado(validado); }
   const cadastros = ["contacts", "tags", "campaigns", "agendamentos", "team", "plans"];
-  return <PainelShell papel="super_admin" nome="Equipe CT Luiz Roca" email="Ambiente local" rota={rota} titulo={nav.find(([id]) => id === rota)?.[1] ?? "Dashboard"} aoNavegar={navegar}
+  return <PainelShell papel="super_admin" email="Ambiente local" rota={rota} titulo={nav.find(([id]) => id === rota)?.[1] ?? "Dashboard"} aoNavegar={navegar}
     rodape={<div className="account"><div className="account-identity"><span className="account-avatar">CT</span><span className="account-details"><strong>CT Luiz Roca</strong><small>Ambiente de testes</small></span></div><a className="ct-sair" href="/entrar">Ver tela de login</a></div>}>
     <main className="content"><div className="ct-local-banner"><span><strong>Ambiente local de testes</strong> · Dados salvos neste navegador. Sem envios ao WhatsApp ou cobranças.</span><a href="/entrar">Tela de login ↗</a></div>
       {erro && <p role="alert">{erro}</p>}{!estado && !erro && <p role="status">Carregando ambiente do CT…</p>}

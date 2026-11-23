@@ -1,8 +1,8 @@
 # Regras do protótipo
 
-## Identidade da empresa no cabeçalho
+## Identidade da empresa no menu da conta
 
-O cabeçalho do painel e do perfil exibe o nome e a foto circular da empresa. Sem foto, exibe as iniciais. O menu lateral exibe o nome Atende IA Pro ao lado do robô. A seção Identidade da empresa em Configurações é acessível também pelo botão do cabeçalho. Somente o super administrador salva nome e foto (JPG ou PNG, até 2 MB).
+O menu da conta, no rodapé da barra lateral, exibe o nome e a foto circular da empresa com o e-mail da sessão. Sem foto, exibe as iniciais da empresa. O menu lateral exibe o nome Atende IA Pro ao lado do robô. Somente o super administrador salva nome e foto (JPG ou PNG, até 2 MB) na seção Identidade da empresa em Configurações.
 
 A migração `0024_identidade_empresa` cria a tabela `atendeia_empresa` com o nome inicial CT Luiz Roca. A ação `salvarEmpresa` atualiza esse cadastro único, valida a imagem, impede sobrescrita de alterações simultâneas e registra os campos alterados em auditoria sem guardar cópias da foto.
 

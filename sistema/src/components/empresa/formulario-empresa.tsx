@@ -58,7 +58,7 @@ export function FormularioEmpresa({ inicial, aoSalvar }: { inicial: DadosEmpresa
 
   return <section className="panel form-panel empresa-formulario" aria-labelledby="identidade-empresa">
     <h2 id="identidade-empresa">Identidade da empresa</h2>
-    <p>O nome e a foto aparecem no cabeçalho do painel para toda a equipe.</p>
+    <p>O nome e a foto aparecem no menu da conta para toda a equipe.</p>
     <form onSubmit={salvar}>
       <label htmlFor="nome-empresa">Nome da empresa</label>
       <input id="nome-empresa" value={nome} minLength={2} maxLength={120} required disabled={ocupado}

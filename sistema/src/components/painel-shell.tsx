@@ -9,13 +9,10 @@ import { ContaMenu } from "./conta-menu";
 import { Marca } from "./marca";
 import { podeAcessarRotaPainel } from "@/lib/auth/rotas-painel";
 import { empresaPadrao, type DadosEmpresa } from "@/lib/empresa/dados";
-import { MenuEmpresa } from "./empresa/menu-empresa";
 
 interface PainelShellProps {
   papel: Papel;
-  nome: string;
   email: string;
-  foto?: string | null;
   rota: string;
   titulo: string;
   aoNavegar: (rota: string) => void;
@@ -23,10 +20,9 @@ interface PainelShellProps {
   rodape?: ReactNode;
   rotasVisiveis?: readonly string[];
   empresa?: Pick<DadosEmpresa, "nome" | "foto">;
-  aoEditarEmpresa?: () => void;
 }
 
-export function PainelShell({ papel, nome, email, foto, rota, titulo, aoNavegar, children, rodape, rotasVisiveis, empresa = empresaPadrao, aoEditarEmpresa }: PainelShellProps) {
+export function PainelShell({ papel, email, rota, titulo, aoNavegar, children, rodape, rotasVisiveis, empresa = empresaPadrao }: PainelShellProps) {
   const [recolhido, setRecolhido] = useState(false);
   const menu = nav.filter(([id]) => podeAcessarRotaPainel(papel, id) && (!rotasVisiveis || rotasVisiveis.includes(id)));
 
@@ -35,11 +31,10 @@ export function PainelShell({ papel, nome, email, foto, rota, titulo, aoNavegar,
       {menu.map(([id, label, ico]) => <button key={id} type="button" className={rota === id ? "active" : ""}
         data-route={id} aria-label={label} aria-current={rota === id ? "page" : undefined}
         onClick={() => aoNavegar(id)}><span className="nav-icone" aria-hidden="true" dangerouslySetInnerHTML={{ __html: icon(ico) }} /><span className="nav-label">{label}</span></button>)}
-    </nav>{rodape ?? <ContaMenu nome={nome} email={email} foto={foto} aoAbrirAssinatura={() => aoNavegar("plans")} />}</aside>
+    </nav>{rodape ?? <ContaMenu nome={empresa.nome} email={email} foto={empresa.foto} aoAbrirAssinatura={() => aoNavegar("plans")} />}</aside>
     <section className="workspace"><header className="topbar">
       <button className="icon-button" type="button" aria-label="Alternar menu" aria-expanded={!recolhido} onClick={() => setRecolhido(!recolhido)}>☰</button>
       <strong>{titulo}</strong>
-      <MenuEmpresa empresa={empresa} aoEditar={menu.some(([id]) => id === "settings") ? aoEditarEmpresa : undefined} />
     </header>{children}</section>
   </div>;
 }

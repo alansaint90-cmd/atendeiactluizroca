@@ -8,18 +8,15 @@ import type { DadosEmpresa } from "@/lib/empresa/dados";
 
 interface PerfilPainelProps {
   papel: Papel;
-  nome: string;
   email: string;
-  foto?: string | null;
   empresa?: DadosEmpresa;
   children: ReactNode;
 }
 
-export function PerfilPainel({ papel, nome, email, foto, empresa, children }: PerfilPainelProps) {
+export function PerfilPainel({ papel, email, empresa, children }: PerfilPainelProps) {
   const router = useRouter();
   const navegar = (rota: string) => router.push(`/?view=${encodeURIComponent(rota)}`);
-  return <PainelShell papel={papel} nome={nome} email={email} foto={foto} empresa={empresa} rota="perfil" titulo="Meu cadastro"
-    aoNavegar={navegar} aoEditarEmpresa={() => navegar("settings")}>
+  return <PainelShell papel={papel} email={email} empresa={empresa} rota="perfil" titulo="Meu cadastro" aoNavegar={navegar}>
     <main className="content profile-content">{children}</main>
   </PainelShell>;
 }
