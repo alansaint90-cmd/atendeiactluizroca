@@ -1,5 +1,6 @@
 import { PERGUNTA_RETOMADA_AGENDAMENTO } from '../ct/equipamentos';
 import { PERGUNTA_AGENDAR_EXPERIMENTAL, PERGUNTA_MODALIDADES } from '../ct/modalidades';
+import { PERGUNTA_AJUDA_CT, PERGUNTA_MATRICULA_CT, PERGUNTA_VISITA_CT } from '../ct/proximo-passo';
 /** Divide em parágrafos e frases, preservando o texto e os IDs de cada envio. */
 export function dividirResposta(texto: string, limite = 450): string[] {
   const partes: string[] = [];
@@ -18,7 +19,7 @@ export function dividirResposta(texto: string, limite = 450): string[] {
 
 /** Preserva os três balões da confirmação da experimental. */
 export function mensagensDaAula(texto: string): string[] {
-  const perguntasSeparadas = [PERGUNTA_RETOMADA_AGENDAMENTO, PERGUNTA_AGENDAR_EXPERIMENTAL, PERGUNTA_MODALIDADES];
+  const perguntasSeparadas = [PERGUNTA_RETOMADA_AGENDAMENTO, PERGUNTA_AGENDAR_EXPERIMENTAL, PERGUNTA_MODALIDADES, PERGUNTA_AJUDA_CT, PERGUNTA_MATRICULA_CT, PERGUNTA_VISITA_CT];
   if (perguntasSeparadas.some(pergunta => texto.endsWith(`\n\n${pergunta}`))) {
     return texto.split("\n\n").flatMap(parte => dividirResposta(parte));
   }
@@ -30,4 +31,11 @@ export function mensagensDaAula(texto: string): string[] {
   if (!texto.startsWith("Aula experimental agendada no sistema!")) return dividirResposta(texto);
   const [titulo, dados, ...demais] = texto.split("\n\n");
   return [titulo + "\n\n" + dados, ...demais].flatMap(parte => dividirResposta(parte));
+}
+
+/** Separa a pergunta final que o agente escreveu em seu próprio parágrafo. */
+export function mensagensInformativasCt(texto: string): string[] {
+  const corte = texto.lastIndexOf("\n\n");
+  if (corte < 0 || !texto.trimEnd().endsWith("?")) return dividirResposta(texto);
+  return [...dividirResposta(texto.slice(0, corte)), ...dividirResposta(texto.slice(corte + 2))];
 }

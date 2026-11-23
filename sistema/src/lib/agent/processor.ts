@@ -5,7 +5,7 @@ import { FalhaAtendimento } from "./falha-humana";
 import { escalarFalha } from "./escalonamento";
 import type { EntradaFluxo } from "../fluxos/schema";
 import type { AcaoAulas } from "../aulas/agente-schema";
-import { dividirResposta, mensagensDaAula } from "./blocos";
+import { dividirResposta, mensagensDaAula, mensagensInformativasCt } from "./blocos";
 import type { AgentConfig } from "./config";
 import type { IncomingMessage } from "./message";
 import { digest } from "./message";
@@ -128,7 +128,10 @@ export async function processMessage(message: IncomingMessage, config: AgentConf
         transferencia = true;
         reply = config.atendimento.transferNotice.replace(/\[(?:NOME|NOME DO CLIENTE)\]|\{NOME\}/giu, nome?.split(" ")[0] ?? "").trim()
           || "Vou encaminhar seu atendimento para nossa equipe.";
-      } else reply = partes ? gerada : removerRotuloDaPersona(respostaComNome(gerada, nome, !config.agendaAulas), persona);
+      } else {
+        reply = partes ? gerada : removerRotuloDaPersona(respostaComNome(gerada, nome, !config.agendaAulas), persona);
+        if (!partes && config.agendaAulas) partes = mensagensInformativasCt(reply);
+      }
       if (consulta) partes = mensagensDaConsulta(reply);
       if (respostaAula) partes = mensagensDaAula(reply);
     }

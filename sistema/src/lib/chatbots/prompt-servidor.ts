@@ -8,6 +8,7 @@ import { REGRA_CANCELAMENTO_CT } from "../aulas/orientacao-cancelamento";
 import { ORIENTACAO_LINGUAGEM_CT } from "../aulas/idade-informada";
 import { ORIENTACAO_MUAY_INFANTIL } from "../ct/muay-infantil";
 import { ORIENTACAO_EQUIPAMENTOS_CT } from "../ct/equipamentos";
+import { ORIENTACAO_PROXIMO_PASSO_CT } from "../ct/proximo-passo";
 import { CONHECIMENTO_CT, ORIENTACAO_OBJETIVOS_CT, ORIENTACAO_TAEKWONDO_GERAL, ORIENTACAO_FAIXAS_GERAIS, ORIENTACAO_INTENCAO_MODALIDADE, ORIENTACAO_ACEITE_DIA } from "../ct/conhecimento";
 import type { Chatbot } from "./schema";
 
@@ -67,6 +68,6 @@ export function montarInstrucoesDoAgente(chatbot: Chatbot | null): string {
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [REGRA_CANCELAMENTO_CT] : []),
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [ORIENTACAO_LINGUAGEM_CT] : []),
     ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [ORIENTACAO_MUAY_INFANTIL] : []),
-    ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [ORIENTACAO_EQUIPAMENTOS_CT] : []),
+    ...(/\b(?:lu[ií]s|luiz)\s+roca\b/iu.test(`${chatbot.identifier} ${contexto}`) ? [ORIENTACAO_EQUIPAMENTOS_CT, ORIENTACAO_PROXIMO_PASSO_CT] : []),
   ].join("\n");
 }

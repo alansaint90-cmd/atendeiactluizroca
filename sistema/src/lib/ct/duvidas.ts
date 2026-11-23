@@ -13,6 +13,7 @@ export function responderDuvidaCt(texto:string,anterior?:AssuntoCt,modalidadeCon
  if(perguntaMuayInfantil(texto))return {assunto:'idadeMuay',resposta:respostaMuayInfantil()};
  const agenda=/\b(?:agendar|agende|marcar|reserve|reservar|remarcar|reagendar|horarios?|vagas?)\b/.test(t);
  if (perguntaFuncionamentoCt(texto) || anterior === "funcionamento" && continuacaoFuncionamentoCt(texto)) return {assunto:"funcionamento",resposta:RESPOSTA_FUNCIONAMENTO_CT};
+ if (/\bestacionamento\b|\bonde estacionar\b|\bvaga (?:de|para) carro\b/.test(t)) return {assunto:"estacionamento",resposta:"Sim, o CT oferece estacionamento para os alunos."};
  if (/\b(?:professor|professora|instrutor|quem ensina|quem da (?:a |as )?aulas)\b/.test(t) || /quem.*responsavel.*(?:ct|centro)/.test(t)
    || anterior==="professores" && modalidade && /^(?:e\s+(?:(?:o|a|de|do|da)\s+)*|(?:de|do|da)\s+)(?:muay(?: thai)?|jiu(?:[ -]?jitsu)?|taekwondo|tae)[?!.\s]*$/.test(t)) {
    const alvo=modalidade ?? (/responsavel.*(?:ct|centro)/.test(t)?"Taekwondo":modalidadeContexto);

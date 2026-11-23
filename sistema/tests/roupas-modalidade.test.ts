@@ -43,6 +43,18 @@ test('indicações e dúvidas da experimental chegam em dois balões e retomam a
    assert.equal(partes[1],'Vamos agendar sua aula experimental?');
   }
   assert.match((await recomendar('Sim'))!,/Qual dos horários/);
+  for (const [pergunta, resposta, convite] of [
+   ['Qual o valor da mensalidade?', /mensalidade/, 'Vamos agendar sua aula experimental?'],
+   ['Tem estacionamento?', /estacionamento para os alunos/, 'Quer visitar o CT e experimentar uma aula?'],
+   ['Tem aula só com mulheres?', /turmas mistas/, 'Vamos agendar sua aula experimental?'],
+   ['Quais documentos preciso para a matrícula?', /RG/, 'Gostaria de fazer sua matrícula?'],
+  ] as const) {
+   const partes=mensagensDaAula((await recomendar(pergunta))!);
+   assert.equal(partes.length,2);
+   assert.match(partes[0],resposta);
+   assert.equal(partes[1],convite);
+  }
+  assert.match((await recomendar('Sim'))!,/matrícula presencialmente.*\?/);
   await atender('É para meu filho de 9');await atender('1');
   const antes=JSON.parse(cache.get('atendeia:{evolution}:cadastro-aula:roupas')!);
   const partes=mensagensDaAula((await atender('Qual roupa ele deve ir?'))!);
@@ -50,6 +62,6 @@ test('indicações e dúvidas da experimental chegam em dois balões e retomam a
   const depois=JSON.parse(cache.get('atendeia:{evolution}:cadastro-aula:roupas')!);assert.equal(depois.opcaoEscolhida,antes.opcaoEscolhida);assert.equal(depois.consulta.idade,9);
   await atender('Sim');assert.equal((await consultarAulas(banco)).reservas.length,0);
   assert.match((await atender('Aluno Teste',{acao:'preparar',opcao:1,nome:'Aluno Teste',idade:9,responsavel:'Responsavel Teste'}))!,/está agendada/);
-  assert.doesNotMatch((await atender('Qual roupa levar?'))!,/prosseguir com o agendamento/);
+  assert.equal(mensagensDaAula((await atender('Qual roupa levar?'))!).at(-1),'Posso te ajudar com mais alguma coisa?');
  }finally{await cliente.close();}
 });

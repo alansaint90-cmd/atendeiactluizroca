@@ -1,6 +1,6 @@
 import { responderDuvidaCt } from "../ct/duvidas";
-import { PERGUNTA_RETOMADA_AGENDAMENTO } from "../ct/equipamentos";
 import { apresentarModalidadesCt, pedidoIndicacaoCt, PERGUNTA_AGENDAR_EXPERIMENTAL } from "../ct/modalidades";
+import { PERGUNTA_AJUDA_CT, proximoPassoCt } from "../ct/proximo-passo";
 import { perguntaMuayInfantil, respostaMuayInfantil } from "../ct/muay-infantil";
 import { cancelamentoDoAgente } from "./cancelamento-agente";
 import type { ReservaContato } from "./alteracao-reserva";
@@ -130,22 +130,28 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         return resposta;
       }
       if (duvida) {
+        const pergunta = proximoPassoCt(duvida.assunto, {
+          emAndamento: Boolean(cadastro.consulta || cadastro.opcoes.length),
+          confirmada: Boolean(cadastro.confirmada),
+        });
+        const aguardar = pergunta !== PERGUNTA_AJUDA_CT;
         if (duvida.assunto === "funcionamento") {
           const agenda = await consultarAulas(banco);
-          await salvar({...cadastro, assuntoInformativo:"funcionamento"});
-          return funcionamentoNoDiaCt(agenda.aulas, texto);
+          const resposta = funcionamentoNoDiaCt(agenda.aulas, texto);
+          const temPergunta = resposta.trimEnd().endsWith("?");
+          await salvar({...cadastro, assuntoInformativo:"funcionamento", aguardandoRetomada:aguardar && !temPergunta});
+          return temPergunta ? resposta : `${resposta}\n\n${pergunta}`;
         }
         const idade=idadeInformada, pessoal=idadePropriaInformada(texto) || /\bmeu filh[oa]\b/iu.test(texto);
-        const emAndamento = Boolean(cadastro.consulta || cadastro.opcoes.length);
-        const convidar = !cadastro.confirmada && (duvida.assunto === "experimental" || duvida.convidarExperimental || duvida.assunto === "equipamentos" && emAndamento);
-        await salvar({...cadastro,aguardandoRetomada:convidar,assuntoInformativo:duvida.assunto,...(idade && pessoal ? {participanteProprio:idadePropriaInformada(texto),participante:Number(idade[1])<18?"crianca" as const:"adulto" as const,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? null,idade:Number(idade[1]),mostradas:[]},opcoes:[],opcaoEscolhida:undefined,reserva:undefined}: {})});
-        const pergunta = duvida.assunto === "equipamentos" ? PERGUNTA_RETOMADA_AGENDAMENTO : PERGUNTA_AGENDAR_EXPERIMENTAL;
-        return convidar ? `${duvida.resposta}\n\n${pergunta}` : duvida.resposta;
+        await salvar({...cadastro,aguardandoRetomada:aguardar,assuntoInformativo:duvida.assunto,...(idade && pessoal ? {participanteProprio:idadePropriaInformada(texto),participante:Number(idade[1])<18?"crianca" as const:"adulto" as const,adultoSemIdade:false,consulta:{...cadastro.consulta,modalidade:cadastro.consulta?.modalidade ?? null,idade:Number(idade[1]),mostradas:[]},opcoes:[],opcaoEscolhida:undefined,reserva:undefined}: {})});
+        return `${duvida.resposta}\n\n${pergunta}`;
       }
       if (!acao && cadastro.aguardandoRetomada) {
+        const matricula = cadastro.assuntoInformativo === "documentos";
         cadastro = {...cadastro, aguardandoRetomada:false, assuntoInformativo:undefined};
         await salvar(cadastro);
         if (/^(?:sim|quero(?: sim)?|pode(?: ser| sim)?|vamos|bora)[.!\s]*$/iu.test(texto.trim())) {
+          if (matricula) return "A equipe do CT pode te ajudar com a matrícula presencialmente. Você já escolheu a modalidade?";
           const escolhida = cadastro.opcaoEscolhida ? cadastro.opcoes[cadastro.opcaoEscolhida - 1] : undefined;
           if (escolhida && Date.parse(escolhida.inicio) > Date.now()) {
             const pedirIdade = !cadastro.adultoSemIdade && cadastro.consulta?.idade == null;
@@ -156,7 +162,7 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
           if (cadastro.participante === "crianca" && cadastro.consulta?.idade == null) return "Qual é a idade de quem vai fazer a aula?";
           return apresentarModalidadesCt(cadastro.consulta?.idade ?? null, false);
         }
-        if (/^(?:n[aã]o(?:,? obrigad[oa])?|agora n[aã]o)[.!\s]*$/iu.test(texto.trim())) return "Tudo bem! Se quiser agendar depois, é só me chamar.";
+        if (/^(?:n[aã]o(?:,? obrigad[oa])?|agora n[aã]o)[.!\s]*$/iu.test(texto.trim())) return "Tudo bem! Se quiser continuar depois, é só me chamar.";
       }
       const outrosDias=pediuOutrosDias(texto);
       if (!acao && outrosDias && cadastro.consulta && !cadastro.confirmada) {
