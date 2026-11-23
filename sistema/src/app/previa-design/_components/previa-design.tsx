@@ -7,7 +7,7 @@ import {FluxosPage} from "@/components/fluxos/page";
 import { AutomacoesLocais } from "@/components/ct/automacoes-locais";
 import { DashboardLocal } from "@/components/ct/dashboard-local";
 import { InboxLocal } from "@/components/ct/inbox-local";
-import { novoEstadoLocal, lerEstadoLocal, reservarLocal, CHAVE_CT, type EstadoLocal, type RegistroLocal } from "@/lib/ct/local";
+import { novoEstadoLocal, lerEstadoLocal, CHAVE_CT, type EstadoLocal, type RegistroLocal } from "@/lib/ct/local";
 import { chatbotExample } from "@/lib/chatbots/defaults";
 import { nav } from "@/lib/demo/data";
 import "./previa.css";
@@ -30,7 +30,7 @@ export function PreviaDesign() {
     <main className="content"><div className="ct-local-banner"><span><strong>Ambiente local de testes</strong> · Dados salvos neste navegador. Sem envios ao WhatsApp ou cobranças.</span><a href="/entrar">Tela de login ↗</a></div>
       {erro && <p role="alert">{erro}</p>}{!estado && !erro && <p role="status">Carregando ambiente do CT…</p>}
       {estado && <>{rota === "dashboard" && <DashboardLocal estado={estado} navegar={navegar} />}
-        {rota === "consultas" && <AgendaAulasPainel dados={estado} local porta={{ criar: async a => { salvar({ ...estado, aulas: [...estado.aulas, { ...a, id: crypto.randomUUID(), atualizadoEm: new Date().toISOString() }] }); }, reservar: async r => salvar({ ...estado, ...reservarLocal(estado, r) }), cancelar: async r => { const alvo = estado.reservas.find(i => i.id === r.id); if (!alvo || alvo.atualizadoEm !== r.atualizadoEm || alvo.status !== "confirmada") throw new Error("Reserva alterada. Reabra a agenda."); salvar({ ...estado, reservas: estado.reservas.map(i => i.id === r.id ? { ...i, status: "cancelada", atualizadoEm: new Date().toISOString() } : i) }); } }} />}
+        {rota === "consultas" && <AgendaAulasPainel dados={estado} local porta={{ criar: async a => { salvar({ ...estado, aulas: [...estado.aulas, { ...a, id: crypto.randomUUID(), atualizadoEm: new Date().toISOString() }] }); }, cancelar: async r => { const alvo = estado.reservas.find(i => i.id === r.id); if (!alvo || alvo.atualizadoEm !== r.atualizadoEm || alvo.status !== "confirmada") throw new Error("Reserva alterada. Reabra a agenda."); salvar({ ...estado, reservas: estado.reservas.map(i => i.id === r.id ? { ...i, status: "cancelada", atualizadoEm: new Date().toISOString() } : i) }); } }} />}
         {cadastros.includes(rota) && <CadastrosLocais key={rota} tipo={rota as RegistroLocal["tipo"]} estado={estado} salvar={salvar} />}
         {rota === "flows" && <FluxosPage previa/>}
         {["chatbot", "followups", "settings"].includes(rota) && <AutomacoesLocais key={rota} rota={rota} estado={estado} salvar={salvar} />}

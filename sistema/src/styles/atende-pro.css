@@ -137,7 +137,7 @@ html body .shell.tema-atende-pro {
   .dashboard-page .kpi.ia { background: linear-gradient(145deg, var(--surface) 40%, var(--green-soft)); }
   .dashboard-atalhos button { border-color: var(--line); color: var(--primary); }
   .dashboard-atalhos button.ativo, .dashboard-personalizado button { border-color: var(--primary); background: var(--pro-gradiente); color: #fff; }
-  .ct-aula, .fluxo-card, .feature-form { border-color: var(--line); border-radius: var(--radius-lg); }
+  .fluxo-card, .feature-form { border-color: var(--line); border-radius: var(--radius-lg); }
 }
 
 @media (min-width: 769px) {
