@@ -19,6 +19,7 @@ export function dividirResposta(texto: string, limite = 450): string[] {
 
 /** Preserva os três balões da confirmação da experimental. */
 export function mensagensDaAula(texto: string): string[] {
+  if (texto.startsWith("Aqui estão os horários")) return mensagensInformativasCt(texto);
   const perguntasSeparadas = [PERGUNTA_RETOMADA_AGENDAMENTO, PERGUNTA_AGENDAR_EXPERIMENTAL, PERGUNTA_MODALIDADES, PERGUNTA_AJUDA_CT, PERGUNTA_MATRICULA_CT, PERGUNTA_VISITA_CT];
   if (perguntasSeparadas.some(pergunta => texto.endsWith(`\n\n${pergunta}`))) {
     return texto.split("\n\n").flatMap(parte => dividirResposta(parte));

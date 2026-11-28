@@ -5,7 +5,11 @@ import { drizzle } from "drizzle-orm/pglite";
 import type Redis from "ioredis";
 import { applyMigrations } from "../src/lib/db/migrate";
 import { agendaAulasDoAgente } from "../src/lib/aulas/agente";
-import { consultarAulas } from "../src/lib/aulas/repository";
+import { consultarAulas, reservarAula } from "../src/lib/aulas/repository";
+import { systemUserId } from "../src/lib/db/bootstrap";
+import { mensagensDaAula } from "../src/lib/agent/blocos";
+import { PERGUNTA_AGENDAR_EXPERIMENTAL } from "../src/lib/ct/modalidades";
+import { PERGUNTA_AJUDA_CT } from "../src/lib/ct/proximo-passo";
 import { pediuOutrosDias } from "../src/lib/aulas/outros-dias";
 import { pedidoGradeInformativa } from "../src/lib/aulas/grade-informativa";
 
@@ -61,6 +65,27 @@ test("só segunda e outro dia à tarde consultam quarta sem repetir a segunda ne
     }
     const tarde=await atender("Todos os horários de Muay Thai à tarde");
     assert.match(tarde!,/15:45/);assert.doesNotMatch(tarde!,/06:00|18:15|21:15/);
+
+    const contatoNovo=agendaAulasDoAgente(banco,redis,"lease","conhecer-grade","5571000000001",async()=>true);
+    const pedido="Gostaria de saber os horários do muay thai";
+    const baloes=mensagensDaAula((await contatoNovo(pedido))!);
+    assert.equal(baloes.length,2);
+    assert.match(baloes[0],/Segunda e quarta: 15:45, 18:15 e 21:15/);
+    assert.equal(baloes[1],PERGUNTA_AGENDAR_EXPERIMENTAL);
+    assert.equal(await contatoNovo("Sim"),"A aula é para você ou para outra pessoa?");
+    assert.match((await contatoNovo("Para mim"))!,/1\. Muay Thai/);
     assert.equal((await consultarAulas(banco)).reservas.length,0);
+
+    const {opcoes}=JSON.parse(cache.get("atendeia:{evolution}:cadastro-aula:conhecer-grade")!);
+    await reservarAula(banco,{
+      aulaId:opcoes[0].aulaId,inicio:opcoes[0].inicio,conferido:true,solicitacaoId:crypto.randomUUID(),
+      aluno:{nome:"Aluno Teste",idade:25,telefone:"+5571000000001",responsavel:""},
+    },systemUserId);
+    const contatoComReserva=agendaAulasDoAgente(banco,redis,"lease","grade-com-reserva","5571000000001",async()=>true);
+    const baloesComReserva=mensagensDaAula((await contatoComReserva(pedido))!);
+    assert.equal(baloesComReserva.length,2);
+    assert.equal(baloesComReserva[1],PERGUNTA_AJUDA_CT);
+    assert.equal(await contatoComReserva("Sim"),null);
+    assert.equal((await consultarAulas(banco)).reservas.length,1);
   } finally {Date.now=clock;await cliente.close();}
 });

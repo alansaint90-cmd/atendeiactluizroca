@@ -113,12 +113,13 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
       if (!acao && !duvida && consultaSabadoCt(texto)) {
         const agenda=await consultarAulas(banco);
         const data=interpretarDataCt(texto);
-        await salvar({...cadastro,assuntoInformativo:undefined,opcoes:[],opcaoEscolhida:undefined,
+        // Sábado é política do CT inteiro; não reaproveitar modalidade/turno antigos na resposta.
+        const resposta = apresentarGradeInformativa(agenda.aulas,texto,null,PERGUNTA_AJUDA_CT);
+        await salvar({...cadastro,assuntoInformativo:undefined,aguardandoRetomada:false,opcoes:[],opcaoEscolhida:undefined,
           ...(!cadastro.confirmada ? {reserva:undefined}:{}),dataAlternativa:undefined,
           dataSolicitada:data?.tipo==="data" ? data.data : null,turnoSolicitado:null,
           ...(cadastro.consulta ? {consulta:{...cadastro.consulta,mostradas:[],turno:null,data:data?.tipo==="data" ? data.data : null}} : {})});
-        // Sábado é política do CT inteiro; não reaproveitar modalidade/turno antigos.
-        return apresentarGradeInformativa(agenda.aulas,texto,null);
+        return resposta;
       }
       const modalidadeGrade=modalidadeMencionada(texto) ?? cadastro.modalidadePreferida ?? cadastro.modalidadePendente ?? cadastro.consulta?.modalidade ?? null;
       const gradeDoDia=Boolean(modalidadeGrade) && perguntaGradeDia(texto);
@@ -126,8 +127,16 @@ export function agendaAulasDoAgente(banco: BancoSql, client: Redis, token: strin
         const modalidade=modalidadeGrade;
         const turno=interpretarTurno(texto),data=interpretarDataCt(texto);
         const agenda=await consultarAulas(banco);
-        const resposta=apresentarGradeInformativa(agenda.aulas,texto,modalidade);
-        if(turno!=="ambiguo" && (!data || data.tipo==="data")) await salvar({...cadastro,assuntoInformativo:undefined,consultaPorDia:false,
+        const agora = Date.now();
+        const temReserva = agenda.reservas.some(reserva => {
+          if (reserva.telefone !== `+${numero}` || reserva.status !== "confirmada") return false;
+          const aula = agenda.aulas.find(item => item.id === reserva.aulaId);
+          return aula && Date.parse(reserva.inicio ?? aula.inicio) > agora;
+        });
+        const pergunta = cadastro.remarcacao || temReserva ? PERGUNTA_AJUDA_CT : PERGUNTA_AGENDAR_EXPERIMENTAL;
+        const resposta=apresentarGradeInformativa(agenda.aulas,texto,modalidade,pergunta);
+        if(turno!=="ambiguo" && (!data || data.tipo==="data")) await salvar({...cadastro,assuntoInformativo:undefined,
+          aguardandoRetomada:resposta.endsWith(PERGUNTA_AGENDAR_EXPERIMENTAL),consultaPorDia:false,
           modalidadePreferida:modalidade,modalidadePendente:modalidade ?? undefined,objetivo:undefined,objetivoExplicado:undefined,
           opcoes:[],opcaoEscolhida:undefined,...(!cadastro.confirmada ? {reserva:undefined}:{}),dataAlternativa:undefined,
           dataSolicitada:data?.data ?? null,turnoSolicitado:turno ?? null,

@@ -17,7 +17,7 @@ const dias=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 function lista(itens:string[]) {return itens.length<2 ? itens[0] : `${itens.slice(0,-1).join(", ")} e ${itens.at(-1)!}`;}
 
 /** Grade informativa não é oferta de vaga nem preparação de reserva. */
-export function apresentarGradeInformativa(aulas:Aula[],texto:string,modalidade:string|null) {
+export function apresentarGradeInformativa(aulas:Aula[],texto:string,modalidade:string|null,pergunta?:string) {
   const turno=interpretarTurno(texto),data=interpretarDataCt(texto);
   if(turno==="ambiguo") return "Você quer ver os horários da manhã, da tarde ou da noite?";
   if(data && data.tipo!=="data") return "Quais dias você quer consultar?";
@@ -45,7 +45,7 @@ export function apresentarGradeInformativa(aulas:Aula[],texto:string,modalidade:
   });
   if(!blocos.length && !pontuais.length)return dia===6 ? RESPOSTA_SABADO_CT : `Não há horários${modalidade ? ` de ${modalidade}` : ""} cadastrados nesse recorte. Posso te mostrar a grade de outros dias ou períodos.`;
   const semanal=data && !/\b(?:hoje|amanh[aã]|pr[oó]xim[ao]|que vem)\b|\d{1,2}[/-]\d{1,2}|\d{4}-\d{2}-\d{2}/iu.test(texto);
-  return `Aqui estão os horários${modalidade ? ` de ${modalidade}` : ""}${data ? semanal ? "" : ` para ${data.data.slice(8,10)}/${data.data.slice(5,7)}/${data.data.slice(0,4)}` : " da semana"}:\n\n${[...blocos,...pontuais].join("\n\n")}`;
+  return `Aqui estão os horários${modalidade ? ` de ${modalidade}` : ""}${data ? semanal ? "" : ` para ${data.data.slice(8,10)}/${data.data.slice(5,7)}/${data.data.slice(0,4)}` : " da semana"}:\n\n${[...blocos,...pontuais, ...(pergunta ? [pergunta] : [])].join("\n\n")}`;
 }
 
-export const ORIENTACAO_GRADE_INFORMATIVA = "GRADE COMPLETA — 20/11/2026: pedidos de todos os horários, horários da semana ou grade de uma modalidade são informativos. Mostre a grade real solicitada, agrupando dias iguais, sem limitar a duas opções ou exigir dados para reservar. Abandone filtros antigos de data e turno quando o pedido for geral; mantenha somente filtros explícitos na mensagem atual. 'Todos' após uma oferta amplia para a grade da modalidade em conversa. Preserve idade e responsável conhecidos para uma eventual reserva futura. Mostrar a grade não confirma vaga nem reserva. Pedidos de outros horários continuam oferecendo alternativas no contexto; pedido da grade completa permite listar todos. Não repetir o aviso de indisponibilidade de uma data antiga.";
+export const ORIENTACAO_GRADE_INFORMATIVA = "GRADE COMPLETA — 20/11/2026: pedidos de todos os horários, horários da semana ou grade de uma modalidade são informativos. Mostre a grade real solicitada, agrupando dias iguais, sem limitar a duas opções ou exigir dados para reservar. Depois da grade, em um balão separado, convide para uma aula experimental. Se a pessoa já tiver uma reserva ou estiver remarcando, pergunte se precisa de mais alguma ajuda. Abandone filtros antigos de data e turno quando o pedido for geral; mantenha somente filtros explícitos na mensagem atual. 'Todos' após uma oferta amplia para a grade da modalidade em conversa. Preserve idade e responsável conhecidos para uma eventual reserva futura. Mostrar a grade não confirma vaga nem reserva. Pedidos de outros horários continuam oferecendo alternativas no contexto; pedido da grade completa permite listar todos. Não repetir o aviso de indisponibilidade de uma data antiga.";
